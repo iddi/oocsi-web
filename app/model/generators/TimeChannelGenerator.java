@@ -30,7 +30,7 @@ public class TimeChannelGenerator {
 	}
 
 	private void initialize() {
-		this.actorSystem.scheduler().schedule(Duration.create(2, TimeUnit.SECONDS),
+		this.actorSystem.scheduler().scheduleAtFixedRate(Duration.create(2, TimeUnit.SECONDS),
 		        Duration.create(1, TimeUnit.SECONDS), () -> publish(), this.executionContext);
 	}
 

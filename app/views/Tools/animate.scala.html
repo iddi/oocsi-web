@@ -351,7 +351,7 @@
 						configuration.platform = "ESP32";
 						$.ajax({
 						  type: "POST",
-						  url: "@routes.Codegen.generateOOCSIMoteCode",
+						  url: "@routes.Codegen.generateOOCSIMoteCode()",
 						  data: JSON.stringify(configuration),
 						  success: function(data) {
 							downloadFile("OOCSImote_" + configuration.channel.replace(/\\s/g, "_") + "_ESP32.ino", data);
@@ -365,7 +365,7 @@
 						configuration.platform = "Processing";
 						$.ajax({
 						  type: "POST",
-						  url: "@routes.Codegen.generateOOCSIMoteCode",
+						  url: "@routes.Codegen.generateOOCSIMoteCode()",
 						  data: JSON.stringify(configuration),
 						  success: function(data) {
 							downloadFile("OOCSImote_" + configuration.channel.replace(/\\s/g, "_") + ".pde", data);

@@ -28,8 +28,8 @@ public class TestChannelGenerator {
 	}
 
 	private void initialize() {
-		this.actorSystem.scheduler().schedule(Duration.create(2, TimeUnit.SECONDS),
-				Duration.create(100, TimeUnit.MILLISECONDS), () -> publish(), this.executionContext);
+		this.actorSystem.scheduler().scheduleAtFixedRate(Duration.create(2, TimeUnit.SECONDS),
+		        Duration.create(100, TimeUnit.MILLISECONDS), () -> publish(), this.executionContext);
 	}
 
 	private void publish() {

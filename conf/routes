@@ -4,9 +4,9 @@
 
 # Home page
 GET		/								controllers.Application.index(request: Request)
-GET		/ws								controllers.Application.ws
+GET		/ws								controllers.Application.ws()
 GET 	/metrics						controllers.Application.metrics(request: Request)
-GET 	/network.json					controllers.Application.netJson
+GET 	/network.json					controllers.Application.netJson()
 GET 	/network						controllers.Application.network(request: Request)
 
 # Tools
@@ -37,9 +37,9 @@ POST	/send/							controllers.Application.send(request: Request, channel: String
 POST	/send/:channel					controllers.Application.send(request: Request, channel)
 
 #tutorial pages
-GET 	/tutorials						controllers.Tutorial.index
-GET 	/tutorials/						controllers.Tutorial.index
-GET 	/tutorials/paint-the-canvas		controllers.Tutorial.paint_the_canvas
+GET 	/tutorials						controllers.Tutorial.index()
+GET 	/tutorials/						controllers.Tutorial.index()
+GET 	/tutorials/paint-the-canvas		controllers.Tutorial.paint_the_canvas()
 
 
 # services with least priority

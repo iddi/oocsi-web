@@ -5,12 +5,12 @@
 		<a href="/" class="brand-logo" style="padding: 0 1em">OOCSI</a>
 		<ul id="nav-mobile" class="right hide-on-med-and-down">
 			@if(option.equals("metrics")) { <li class="active"> } else { <li> }
-				<a href="@routes.Application.metrics">
+				<a href="@routes.Application.metrics()">
 					Metrics <i class="material-icons right">insert_chart</i>
 				</a>
 			</li>
 			@if(option.equals("tools")) { <li class="active"> } else { <li> }
-				<a href="@routes.Tools.index">
+				<a href="@routes.Tools.index()">
 					Tools <i class="material-icons right">build</i>
 				</a>
 			</li>

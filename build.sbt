@@ -5,7 +5,7 @@ version := "0.3.19"
 
 maintainer := "m.funk@tue.nl"
 
-scalaVersion := "2.12.10"
+scalaVersion := "2.13.5"
 
 //offline := true
 
