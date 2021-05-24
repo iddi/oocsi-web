@@ -1,5 +1,8 @@
 package model.actors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Inject;
 
 import akka.actor.AbstractActor;
@@ -8,9 +11,10 @@ import akka.actor.PoisonPill;
 import akka.actor.Props;
 import model.clients.WebSocketClient;
 import nl.tue.id.oocsi.server.OOCSIServer;
-import play.Logger;
 
 public class WebSocketClientActor extends AbstractActor {
+
+	private static final Logger logger = LoggerFactory.getLogger(WebSocketClientActor.class);
 
 	public static Props props(ActorRef out, OOCSIServer server) {
 		return Props.create(WebSocketClientActor.class, out, server);
@@ -42,11 +46,11 @@ public class WebSocketClientActor extends AbstractActor {
 			if (client == null) {
 				client = new WebSocketClient(event, server, this);
 				if (server.addClient(client)) {
-					Logger.info("WS client " + client.getName() + " connected");
+					logger.info("WS client " + client.getName() + " connected");
 					// status(200, );
 					out.tell("{\"message\" : \"welcome " + client.getName() + "\"}", self());
 				} else {
-					Logger.info("WS client " + client.getName() + " rejected as existing");
+					logger.info("WS client " + client.getName() + " rejected as existing");
 					// status(401, );
 					out.tell("{\"message\" : \"ERROR: client " + client.getName() + " exists already\"}", self());
 
@@ -85,7 +89,7 @@ public class WebSocketClientActor extends AbstractActor {
 	public void postStop() throws Exception {
 		if (client != null) {
 			client.disconnect();
-			Logger.info("WS client " + client.getName() + " disconnected");
+			logger.info("WS client " + client.getName() + " disconnected");
 		}
 	}
 }

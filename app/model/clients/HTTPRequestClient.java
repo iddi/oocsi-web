@@ -2,17 +2,21 @@ package model.clients;
 
 import java.util.concurrent.CompletionStage;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import nl.tue.id.oocsi.client.services.OOCSICall;
 import nl.tue.id.oocsi.server.OOCSIServer;
 import nl.tue.id.oocsi.server.model.Channel;
 import nl.tue.id.oocsi.server.model.Client;
 import nl.tue.id.oocsi.server.protocol.Message;
-import play.Logger;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
 import play.libs.ws.WSResponse;
 
 public class HTTPRequestClient extends Client {
+
+	private static final Logger logger = LoggerFactory.getLogger(HTTPRequestClient.class);
 
 	private OOCSIServer server;
 	private WSClient wsClient;
@@ -95,7 +99,7 @@ public class HTTPRequestClient extends Client {
 		}
 
 		// log and make the call
-		Logger.info("Calling http-web-request for URL " + url + " with method " + method + " by " + event.sender);
+		logger.info("Calling http-web-request for URL " + url + " with method " + method + " by " + event.sender);
 		try {
 			WSRequest request = wsClient.url(url);
 			final CompletionStage<WSResponse> wsResponse;
@@ -128,12 +132,12 @@ public class HTTPRequestClient extends Client {
 					}
 				}
 			}).exceptionally(e -> {
-				Logger.error("Problem calling http-web-request for URL " + url + " with method " + method + " by "
+				logger.error("Problem calling http-web-request for URL " + url + " with method " + method + " by "
 				        + event.sender + ": " + e.getLocalizedMessage());
 				return null;
 			});
 		} catch (Exception e) {
-			Logger.error("Problem calling http-web-request for URL " + url + " with method " + method + " by "
+			logger.error("Problem calling http-web-request for URL " + url + " with method " + method + " by "
 			        + event.sender + ": " + e.getLocalizedMessage());
 			if (validate(event.recipient)) {
 				Message m = new Message("http-web-request", event.sender);

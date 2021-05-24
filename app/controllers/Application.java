@@ -7,6 +7,9 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -25,13 +28,13 @@ import nl.tue.id.oocsi.server.model.Channel;
 import nl.tue.id.oocsi.server.model.Client;
 import nl.tue.id.oocsi.server.protocol.Message;
 import play.Environment;
-import play.Logger;
 import play.data.DynamicForm;
 import play.data.FormFactory;
 import play.inject.ApplicationLifecycle;
 import play.libs.Json;
 import play.libs.streams.ActorFlow;
 import play.mvc.Controller;
+import play.mvc.Http.Request;
 import play.mvc.Result;
 import play.mvc.WebSocket;
 import scala.compat.java8.FutureConverters;
@@ -43,7 +46,8 @@ public class Application extends Controller {
 	private final Materializer materializer;
 	private final FormFactory formFactory;
 	private final OOCSIServer server;
-	private final Environment environment;
+
+	private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
 	@Inject
 	public Application(ActorSystem as, Materializer m, ApplicationLifecycle lifecycle, FormFactory f, Environment env,
@@ -52,7 +56,6 @@ public class Application extends Controller {
 		this.system = as;
 		this.materializer = m;
 		this.formFactory = f;
-		this.environment = env;
 		this.server = server;
 
 		// configure the number of maximal clients
@@ -61,7 +64,7 @@ public class Application extends Controller {
 				int clients = configuration.getInt("oocsi.clients");
 				OOCSIServer.getInstance().setMaxClients(clients);
 			} catch (Exception e) {
-				Logger.warn("Property 'oocsi.clients' not readable or parseable in configuration");
+				logger.warn("Property 'oocsi.clients' not readable or parseable in configuration");
 			}
 		}
 
@@ -77,7 +80,7 @@ public class Application extends Controller {
 	 * 
 	 * @return
 	 */
-	public Result index() {
+	public Result index(Request request) {
 		String channels = server.getChannelList().replace("OOCSI_connections,", "").replace("OOCSI_clients,", "")
 		        .replace("OOCSI_events,", "").replace("OOCSI_metrics,", "").replace("OSC,", "");
 		if (channels.length() > 160) {
@@ -89,7 +92,7 @@ public class Application extends Controller {
 			clients = clients.substring(0, 160) + "...";
 		}
 
-		return ok(views.html.Application.index.render("index", "", request().host(), clients, channels));
+		return ok(views.html.Application.index.render("index", "", request.host(), clients, channels));
 	}
 
 	/**
@@ -97,8 +100,8 @@ public class Application extends Controller {
 	 * 
 	 * @return
 	 */
-	public Result metrics() {
-		return ok(views.html.Application.metrics.render("metrics", "", request().host()));
+	public Result metrics(Request request) {
+		return ok(views.html.Application.metrics.render("metrics", "", request.host()));
 	}
 
 	/**
@@ -106,8 +109,8 @@ public class Application extends Controller {
 	 * 
 	 * @return
 	 */
-	public Result network() {
-		return ok(views.html.Application.network.render("network", "", request().host()));
+	public Result network(Request request) {
+		return ok(views.html.Application.network.render("network", "", request.host()));
 	}
 
 	/**
@@ -200,7 +203,7 @@ public class Application extends Controller {
 	 * @param data
 	 * @return
 	 */
-	public Result track(String channel, String data) {
+	public Result track(Request request, String channel, String data) {
 		if (channel == null || channel.trim().length() == 0) {
 			return badRequest("ERROR: channel missing");
 		} else if (server.getChannel(channel) == null) {
@@ -208,9 +211,9 @@ public class Application extends Controller {
 		} else {
 			Message m = new Message("WEB-REQUEST", channel);
 			m.addData("parameter", data);
-			m.addData("User-Agent", request().header("User-Agent").orElse(""));
-			m.addData("Referer", request().header("Referer").orElse(""));
-			m.addData("Origin", request().header("Origin").orElse(""));
+			m.addData("User-Agent", request.header("User-Agent").orElse(""));
+			m.addData("Referer", request.header("Referer").orElse(""));
+			m.addData("Origin", request.header("Origin").orElse(""));
 
 			server.getChannel(channel).send(m);
 
@@ -224,7 +227,7 @@ public class Application extends Controller {
 	 * @param channel
 	 * @return
 	 */
-	public Result send(String channel) {
+	public Result send(Request request, String channel) {
 
 		// // check channel available
 		if (channel == null || channel.trim().isEmpty()) {
@@ -232,7 +235,7 @@ public class Application extends Controller {
 		}
 
 		String sender;
-		JsonNode jn = request().body().asJson();
+		JsonNode jn = request.body().asJson();
 		if (jn != null) {
 			JsonNode sjn = jn.get("sender");
 			if (sjn != null) {
@@ -249,7 +252,7 @@ public class Application extends Controller {
 
 			return internalSend(sender, channel, map);
 		} else {
-			DynamicForm dynamicForm = formFactory.form().bindFromRequest();
+			DynamicForm dynamicForm = formFactory.form().bindFromRequest(request);
 
 			// check server available
 			sender = dynamicForm.get("sender");
@@ -337,9 +340,9 @@ public class Application extends Controller {
 	 * @param call
 	 * @return
 	 */
-	public CompletionStage<Result> serviceCallPost(String service, String call) {
+	public CompletionStage<Result> serviceCallPost(Request request, String service, String call) {
 		if (server.getChannel(service) != null) {
-			return internalServiceCall(service, call, request().body().asText());
+			return internalServiceCall(service, call, request.body().asText());
 		} else {
 			return CompletableFuture.completedFuture(notFound(service + " not found"));
 		}

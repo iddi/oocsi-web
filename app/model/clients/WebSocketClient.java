@@ -7,6 +7,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Semaphore;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -18,12 +21,12 @@ import nl.tue.id.oocsi.server.OOCSIServer;
 import nl.tue.id.oocsi.server.model.Channel;
 import nl.tue.id.oocsi.server.model.Client;
 import nl.tue.id.oocsi.server.protocol.Message;
-import play.Logger;
 import play.libs.Json;
 
 public class WebSocketClient extends Client {
 
 	private static final Gson GSON = new Gson();
+	private static final Logger logger = LoggerFactory.getLogger(WebSocketClient.class);
 
 	private OOCSIServer server;
 	private WebSocketClientActor output;
@@ -147,7 +150,7 @@ public class WebSocketClient extends Client {
 					}
 				} catch (Exception e) {
 					// outputStream.write("ERROR: parse exception");
-					Logger.warn("JSON parse exception", e);
+					logger.warn("JSON parse exception", e);
 				}
 			}
 		} else if (inputLine.startsWith("subscribe")) {

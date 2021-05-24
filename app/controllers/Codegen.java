@@ -10,15 +10,16 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import model.codegen.Interactable;
 import play.libs.Json;
 import play.mvc.Controller;
+import play.mvc.Http.Request;
 import play.mvc.Result;
 
 public class Codegen extends Controller {
 
 	// @BodyParser.Of(BodyParser.Json.class)
-	public Result generateOOCSIMoteCode() {
+	public Result generateOOCSIMoteCode(Request request) {
 
 		// Map<String, String[]> items = request().body().asFormUrlEncoded();
-		JsonNode jn = request().body().asJson();
+		JsonNode jn = request.body().asJson();
 		if (jn == null || !jn.isObject()) {
 			return badRequest();
 		}
