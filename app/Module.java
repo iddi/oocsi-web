@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.AbstractModule;
 
 import nl.tue.id.oocsi.server.OOCSIServer;
+import utils.SummarizingLogger;
 
 public class Module extends AbstractModule {
 
@@ -20,10 +21,15 @@ public class Module extends AbstractModule {
 				os.destroyInstance();
 			}
 
+			// create logger
+			SummarizingLogger sl = new SummarizingLogger(logger);
+			bind(SummarizingLogger.class).toInstance(sl);
+
+			// create OOCSI server
 			bind(OOCSIServer.class).toInstance(new OOCSIServer(4444, 1000, true) {
 				@Override
 				protected void internalLog(String message) {
-					logger.info(message);
+					sl.log(message);
 				}
 			});
 		} catch (IOException e) {

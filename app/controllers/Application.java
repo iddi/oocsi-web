@@ -2,6 +2,7 @@ package controllers;
 
 import static akka.pattern.Patterns.ask;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -38,6 +39,8 @@ import play.mvc.Http.Request;
 import play.mvc.Result;
 import play.mvc.WebSocket;
 import scala.compat.java8.FutureConverters;
+import scala.concurrent.ExecutionContext;
+import utils.SummarizingLogger;
 
 @Singleton
 public class Application extends Controller {
@@ -50,8 +53,8 @@ public class Application extends Controller {
 	private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
 	@Inject
-	public Application(ActorSystem as, Materializer m, ApplicationLifecycle lifecycle, FormFactory f, Environment env,
-	        OOCSIServer server, Config configuration) {
+	public Application(ActorSystem as, Materializer m, ApplicationLifecycle lifecycle, ExecutionContext ec,
+	        FormFactory f, Environment env, OOCSIServer server, Config configuration, SummarizingLogger sl) {
 
 		this.system = as;
 		this.materializer = m;
@@ -67,6 +70,11 @@ public class Application extends Controller {
 				logger.warn("Property 'oocsi.clients' not readable or parseable in configuration");
 			}
 		}
+
+		// trigger the log summary every minute
+		as.scheduler().scheduleAtFixedRate(Duration.ofMinutes(1), Duration.ofMinutes(1), () -> {
+			sl.logSummary();
+		}, ec);
 
 		// register shutdown hook
 		lifecycle.addStopHook(() -> {
