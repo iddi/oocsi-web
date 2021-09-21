@@ -11,3 +11,4 @@ addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.8.7")
 //addSbtPlugin("org.irundaia.sbt" % "sbt-sassify" % "1.4.2")
 
 addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "5.2.2")
+addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.8.1")
