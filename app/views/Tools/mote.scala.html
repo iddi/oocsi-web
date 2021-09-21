@@ -3,11 +3,10 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
+		<link rel="shortcut icon" type="image/png" href="images/favicon.png"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>OOCSImote</title>
-		<link rel="stylesheet" media="screen,projection" type="text/css" href="@routes.Assets.versioned("css/materialize.min.css")">
-		<link rel="stylesheet" media="screen,projection" type="text/css" href="@routes.Assets.versioned("css/main.css")">
-		<link rel="shortcut icon" type="image/png" href="images/favicon.png">
+		<link rel="stylesheet" media="screen,projection" type="text/css" href="@routes.Assets.versioned("stylesheets/main.css")"/>
 		<script src="@routes.Assets.versioned("js/jquery.min.js")" type="text/javascript"></script>
 		<script src="@routes.Assets.versioned("js/materialize.min.js")" type="text/javascript"></script>
 		<script src="@routes.Assets.versioned("js/qrcode.min.js")" type="text/javascript"></script>
@@ -15,7 +14,7 @@
 		<script src="@routes.Assets.versioned("js/oocsi-web.min.js")" type="text/javascript"></script>
 	</head>
 	<body>
-		<div class="container" class="grey">
+		<div class="container" style="background: white">
 			<div class="row grey lighten-5">
 				<div class="col s12" style="text-align: right">
 					<h4 style="display: inline-block; width: 100%">
@@ -42,7 +41,7 @@
 				<div id="progress" class="progress">
 					<div class="indeterminate"></div>
 				</div>
-				<div id="controlContainer" class="col s12">
+				<div id="controlContainer" class="col s12" style="padding: 2em">
 				</div>
 			</div>
 

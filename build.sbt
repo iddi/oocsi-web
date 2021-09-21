@@ -1,11 +1,11 @@
 name := """oocsi-web"""
 organization := "IndustrialDesign"
 
-version := "0.3.21"
+version := "0.3.22"
 
 maintainer := "m.funk@tue.nl"
 
-scalaVersion := "2.13.5"
+scalaVersion := "2.13.6"
 
 //offline := true
 

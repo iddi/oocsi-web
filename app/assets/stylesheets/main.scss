@@ -1,3 +1,27 @@
+@charset "UTF-8";
+
+@import "materialize";
+
+body {
+	background: #eeefef;
+}
+
+.container {
+	background: #eeefef;
+	margin-top: 1em;
+}
+
+.btn, .switch, label, .collapsible-header {
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
+#nav-mobile li a {
+	color: #333;
+}
+
 @font-face {
   font-family: 'Material Icons';
   font-style: normal;
@@ -21,3 +45,11 @@
   -webkit-font-smoothing: antialiased;
 }
 
+kbd {
+	border-radius: 4px;
+	border: 2px solid #ccc;
+	border-bottom-width: 3px;
+	margin-right: 5px;
+	font-size: 14px;
+	padding: 1px 5px;
+}
