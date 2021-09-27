@@ -1,7 +1,7 @@
 name := """oocsi-web"""
 organization := "IndustrialDesign"
 
-version := "0.3.22"
+version := "0.3.23"
 
 maintainer := "m.funk@tue.nl"
 
@@ -12,8 +12,8 @@ scalaVersion := "2.13.6"
 libraryDependencies ++= Seq(
   guice,
   javaWs,
-  "com.google.inject" % "guice" % "5.0.1",
-  "com.google.code.gson" % "gson" % "2.8.6"
+  
+  "com.google.inject" % "guice" % "5.0.1"
 )
 
 

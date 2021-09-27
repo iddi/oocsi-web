@@ -2,30 +2,26 @@ package model.clients;
 
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.Semaphore;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 
 import model.actors.WebSocketClientActor;
 import nl.tue.id.oocsi.server.OOCSIServer;
 import nl.tue.id.oocsi.server.model.Channel;
 import nl.tue.id.oocsi.server.model.Client;
 import nl.tue.id.oocsi.server.protocol.Message;
+import nl.tue.id.oocsi.server.protocol.Protocol;
 import play.libs.Json;
 
 public class WebSocketClient extends Client {
 
-	private static final Gson GSON = new Gson();
+	private static final ObjectMapper JSON_SERIALIZER = new ObjectMapper();
 	private static final Logger logger = LoggerFactory.getLogger(WebSocketClient.class);
 
 	private OOCSIServer server;
@@ -84,73 +80,10 @@ public class WebSocketClient extends Client {
 			if (tokens.length == 3) {
 				String recipient = tokens[1];
 				String data = tokens[2];
-				try {
-					JsonNode node = Json.parse(data);
-					if (node.isObject()) {
-						Channel c = server.getChannel(recipient);
-						if (c != null) {
-							Map<String, Object> map = new HashMap<String, Object>();
-							ObjectNode on = (ObjectNode) node;
-							for (Iterator<Entry<String, JsonNode>> iterator = on.fields(); iterator.hasNext();) {
-								Entry<String, JsonNode> entry = iterator.next();
-								JsonNode val = entry.getValue();
-								if (val.isBoolean()) {
-									map.put(entry.getKey(), val.booleanValue());
-								} else if (val.isInt()) {
-									map.put(entry.getKey(), val.intValue());
-								} else if (val.isFloat()) {
-									map.put(entry.getKey(), val.floatValue());
-								} else if (val.isDouble()) {
-									map.put(entry.getKey(), val.doubleValue());
-								} else if (val.isLong()) {
-									map.put(entry.getKey(), val.longValue());
-								} else if (val.isTextual()) {
-									map.put(entry.getKey(), val.textValue());
-								} else if (val.isObject()) {
-									ObjectNode object = (ObjectNode) val;
-									map.put(entry.getKey(), object.toString());
-								} else if (val.isArray()) {
-									ArrayNode array = (ArrayNode) val;
-									JsonNode jnn = array.get(0);
-									if (jnn.isBoolean()) {
-										// proceed with boolean array
-										boolean[] ba = new boolean[array.size()];
-										for (int i = 0; i < array.size(); i++) {
-											ba[i] = array.get(i).asBoolean();
-										}
-										map.put(entry.getKey(), ba);
-									} else if (jnn.isInt() || jnn.isLong()) {
-										// proceed with int array
-										int[] ba = new int[array.size()];
-										for (int i = 0; i < array.size(); i++) {
-											ba[i] = array.get(i).asInt();
-										}
-										map.put(entry.getKey(), ba);
-									} else if (jnn.isFloat() || jnn.isDouble()) {
-										// proceed with float array
-										double[] ba = new double[array.size()];
-										for (int i = 0; i < array.size(); i++) {
-											ba[i] = array.get(i).asDouble();
-										}
-										map.put(entry.getKey(), ba);
-									} else if (jnn.isTextual()) {
-										// proceed with string array
-										String[] ba = new String[array.size()];
-										for (int i = 0; i < array.size(); i++) {
-											ba[i] = array.get(i).asText();
-										}
-										map.put(entry.getKey(), ba);
-									} else {
-										map.put(entry.getKey(), array.toString());
-									}
-								}
-							}
-							c.send(new Message(token, recipient, new Date(), map));
-						}
-					}
-				} catch (Exception e) {
-					// outputStream.write("ERROR: parse exception");
-					logger.warn("JSON parse exception", e);
+				Channel c = server.getChannel(recipient);
+				if (c != null) {
+					Map<String, Object> map = Protocol.parseJSONMessage(data);
+					c.send(new Message(token, recipient, new Date(), map));
 				}
 			}
 		} else if (inputLine.startsWith("subscribe")) {
@@ -198,12 +131,16 @@ public class WebSocketClient extends Client {
 	}
 
 	private String toJson(Message m) {
-		JsonObject jo = new JsonObject();
-		jo.addProperty("sender", m.sender);
-		jo.addProperty("recipient", m.recipient);
-		jo.addProperty("timestamp", m.timestamp.getTime());
-		jo.add("data", GSON.toJsonTree(m.data));
+		ObjectNode je = Json.newObject();
 
-		return jo.toString();
+		// add OOCSI properties
+		je.put("recipient", m.recipient);
+		je.put("timestamp", m.timestamp.getTime());
+		je.put("sender", m.sender);
+
+		je.set("data", JSON_SERIALIZER.valueToTree(m.data));
+
+		// serialize
+		return je.toString();
 	}
 }
