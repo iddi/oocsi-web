@@ -37,8 +37,8 @@ dockerChmodType := DockerChmodType.UserGroupWriteExecute
 dockerPermissionStrategy := DockerPermissionStrategy.CopyChown
 
 Docker / maintainer := "m.funk@tue.nl"
-Docker / packageName := "oocsi-web"
-Docker / version := sys.env.getOrElse("BUILD_NUMBER", "0")
+Docker / packageName := "matsfunk/oocsi-server"
+Docker / version := sys.env.getOrElse("BUILD_NUMBER", "0.3.23")
 Docker / daemonUserUid  := None
 Docker / daemonUser := "daemon"
 dockerExposedPorts := Seq(9000,4444)
