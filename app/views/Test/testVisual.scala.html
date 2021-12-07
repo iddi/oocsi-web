@@ -73,6 +73,7 @@
 
 	$('#c1_unsubscribe').click(function(e) {
 		let channelName = $('#c1_channel').val();
+		channelName = channelName.split("[")[0];
 		OOCSI.unsubscribe(channelName);
 
 		e.preventDefault();
