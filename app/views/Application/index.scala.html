@@ -68,7 +68,7 @@
 				<p>
 					@if(clients.length() > 0) {
 						The following <em>clients</em> are currently connected (refresh page to update):
-						<code class="blue-text">							
+						<code class="blue-text" style="font-size: 0.9em;">
 							@clients.replace(",", ", ")
 						</code>
 					} else {
@@ -78,7 +78,7 @@
 				<p>
 					@if(channels.length() > 0) {
 						The following <em>channels</em> are currently open (refresh page to update):
-						<code class="blue-text">							
+						<code class="blue-text" style="font-size: 0.9em;">
 							@channels.replace(",", ", ")
 						</code>
 					} else {
@@ -88,7 +88,10 @@
 
 				<svg width="100%" height="500"></svg>
 				<br>
-				<a href="/network">bigger version</a>
+				<a href="/network">bigger version</a><br>
+				<small>
+					(Your client does not have any emoji? Well, check <a href="/heyOOCSI">heyOOCSI</a> how to add one.)
+				</small>
 
 			</div>
 			<div class="col m5 offset-m1 s12">
@@ -241,10 +244,10 @@
 		var height = +svg.attr("height");
 		$('svg').css("border", "1px #ddd solid")
 
-		var color = d3.scaleOrdinal(d3.schemeCategory20);
+		var color = d3.scaleOrdinal(["#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#66a61e", "#e6ab02", "#a6761d", "#666666"]);
 
 		var simulation = d3.forceSimulation()
-		    .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(height/5).strength(0.2))
+		    .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(height/5).strength(0.4))
 		    .force("charge", d3.forceManyBody())
 		    .force("center", d3.forceCenter(width / 2, height / 2));
 
@@ -265,7 +268,7 @@
 		    .enter().append("g")
 		    
 		  var circles = node.append("circle")
-		      .attr("r", 5)
+		      .attr("r", function(d) { return Math.max(5, d.value*2); })
 		      .attr("fill", function(d) { return color(d.group); })
 		      .call(d3.drag()
 		          .on("start", dragstarted)
@@ -274,7 +277,7 @@
 
 		  var labels = node.append("text")
 		      .text(function(d) {
-		        return d.id;
+		        return d.label ? d.label : d.id;
 		      })
 		      .attr('x', 6)
 		      .attr('y', 3);

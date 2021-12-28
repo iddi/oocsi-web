@@ -1,8 +1,14 @@
 package controllers;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
 
+import model.clients.HeyOOCSIClient;
+import model.clients.HeyOOCSIClient.OOCSIDevice;
+import nl.tue.id.oocsi.server.OOCSIServer;
 import play.Environment;
+import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http.Request;
 import play.mvc.Result;
@@ -10,11 +16,14 @@ import play.mvc.Result;
 public class Tools extends Controller {
 
 	private final Environment environment;
+	private final OOCSIServer oocsiServer;
+	private final HeyOOCSIClient heyOOCSIClient;
 
 	@Inject
-	public Tools(Environment env) {
+	public Tools(Environment env, OOCSIServer oocsi, HeyOOCSIClient heyOOCSIClient) {
 		this.environment = env;
-
+		this.oocsiServer = oocsi;
+		this.heyOOCSIClient = heyOOCSIClient;
 	}
 
 	/**
@@ -64,6 +73,8 @@ public class Tools extends Controller {
 		return ok(views.html.Tools.animate.render("animOOCSI", "", request.host()));
 	}
 
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	/**
 	 * action to show the data canvas page
 	 * 
@@ -76,6 +87,17 @@ public class Tools extends Controller {
 		} else {
 			return ok(views.html.Tools.datacanvas.render("Data Canvas", token, request.host()));
 		}
+	}
+
+	/**
+	 * show a visualization of the current map of heyOOCSI-identified devices
+	 * 
+	 * @param request
+	 * @return
+	 */
+	public Result heyOOCSI(Request request, String route) {
+		Multimap<String, OOCSIDevice> locations = heyOOCSIClient.devicesByLocation();
+		return ok(views.html.Tools.heyOOCSI.render(locations.asMap()));
 	}
 
 	/**
@@ -114,6 +136,22 @@ public class Tools extends Controller {
 	 */
 	public Result testVisual(Request request) {
 		return ok(views.html.Test.testVisual.render("Testing", "", request.host()));
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * return the stats for last action on client as JSON
+	 * 
+	 * @return
+	 */
+	public Result clientRefreshStats(Request request) {
+		ObjectNode on = Json.newObject();
+		oocsiServer.getClients().stream().forEach(cl -> {
+			on.put(cl.getName(), cl.lastAction());
+		});
+
+		return ok(on);
 	}
 
 }

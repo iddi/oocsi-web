@@ -3,8 +3,11 @@ package controllers;
 import static akka.pattern.Patterns.ask;
 
 import java.time.Duration;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -14,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.typesafe.config.Config;
@@ -24,6 +28,9 @@ import akka.actor.PoisonPill;
 import akka.stream.Materializer;
 import model.actors.ServiceClientActor;
 import model.actors.WebSocketClientActor;
+import model.clients.HeyOOCSIClient;
+import model.clients.HeyOOCSIClient.DeviceEntity;
+import model.clients.HeyOOCSIClient.OOCSIDevice;
 import nl.tue.id.oocsi.server.OOCSIServer;
 import nl.tue.id.oocsi.server.model.Channel;
 import nl.tue.id.oocsi.server.model.Client;
@@ -49,17 +56,20 @@ public class Application extends Controller {
 	private final Materializer materializer;
 	private final FormFactory formFactory;
 	private final OOCSIServer server;
+	private final HeyOOCSIClient heyOOCSIClient;
 
 	private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
 	@Inject
 	public Application(ActorSystem as, Materializer m, ApplicationLifecycle lifecycle, ExecutionContext ec,
-	        FormFactory f, Environment env, OOCSIServer server, Config configuration, SummarizingLogger sl) {
+	        FormFactory f, Environment env, OOCSIServer server, HeyOOCSIClient heyOOCSIClient, Config configuration,
+	        SummarizingLogger sl) {
 
 		this.system = as;
 		this.materializer = m;
 		this.formFactory = f;
 		this.server = server;
+		this.heyOOCSIClient = heyOOCSIClient;
 
 		// configure the number of maximal clients
 		if (configuration.hasPath("oocsi.clients")) {
@@ -131,11 +141,20 @@ public class Application extends Controller {
 		ObjectNode on = Json.newObject();
 		ArrayNode nodes = on.putArray("nodes");
 		ArrayNode links = on.putArray("links");
+
+		// add root node (server)
+		ObjectNode serverNode = Json.newObject();
+		serverNode.put("id", "OOCSI Server");
+		serverNode.put("value", 4);
+		serverNode.put("group", 0);
+		nodes.add(serverNode);
+
 		for (Channel c : server.getChannels()) {
 			if (!c.isPrivate() && !c.getName().startsWith("OOCSI_")) {
 				ObjectNode node = Json.newObject();
 				node.put("id", c.getName());
 				node.put("group", c instanceof Client ? 2 : 1);
+				node.put("value", c.getChannels().size());
 				nodes.add(node);
 
 				ObjectNode link = Json.newObject();
@@ -155,10 +174,74 @@ public class Application extends Controller {
 		}
 
 		{
-			ObjectNode serverNode = Json.newObject();
-			serverNode.put("id", "OOCSI Server");
-			serverNode.put("group", 0);
-			nodes.add(serverNode);
+			// add hey OOCSI locations
+			Set<String> completedDevices = new HashSet<>();
+			Multimap<String, OOCSIDevice> locations = heyOOCSIClient.devicesByLocation();
+			locations.keySet().stream().forEach(k -> {
+
+				{
+					ObjectNode locationNode = Json.newObject();
+					locationNode.put("id", k);
+					locationNode.put("label", heyOOCSIClient.labelLocation(k));
+					locationNode.put("value", 3);
+					locationNode.put("group", 3);
+					nodes.add(locationNode);
+
+					ObjectNode link = Json.newObject();
+					link.put("source", "OOCSI Server");
+					link.put("target", k);
+					links.add(link);
+				}
+
+				Collection<OOCSIDevice> locationDevices = locations.get(k);
+				for (OOCSIDevice od : locationDevices) {
+
+					// add location link to device
+					String deviceName = "[ " + od.name + " ]";
+					{
+						ObjectNode link = Json.newObject();
+						link.put("source", k);
+						link.put("target", deviceName);
+						links.add(link);
+					}
+
+					// only add device once, even though it might be present in multiple locations
+					if (completedDevices.contains(od.name)) {
+						continue;
+					}
+					completedDevices.add(od.name);
+
+					{
+						ObjectNode deviceNode = Json.newObject();
+						deviceNode.put("id", deviceName);
+						deviceNode.put("label", od.toString());
+						deviceNode.put("value", 1);
+						deviceNode.put("group", 4);
+						nodes.add(deviceNode);
+					}
+					{
+						ObjectNode link = Json.newObject();
+						link.put("source", od.deviceId);
+						link.put("target", deviceName);
+						links.add(link);
+					}
+
+					// add OOCSI entities for this location
+					for (DeviceEntity dc : od.components) {
+						ObjectNode entityNode = Json.newObject();
+						entityNode.put("id", od.name + "_" + dc.name);
+						entityNode.put("label", dc.toString());
+						entityNode.put("value", 2);
+						entityNode.put("group", 5);
+						nodes.add(entityNode);
+
+						ObjectNode link = Json.newObject();
+						link.put("source", deviceName);
+						link.put("target", od.name + "_" + dc.name);
+						links.add(link);
+					}
+				}
+			});
 		}
 
 		return ok(on).as("application/json");

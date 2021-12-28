@@ -1,0 +1,126 @@
+@(locations: Map[String, Collection[model.clients.HeyOOCSIClient.OOCSIDevice]])
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+		<link rel="shortcut icon" type="image/png" href="images/favicon.png"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Hey OOCSI!</title>
+		<link rel="stylesheet" media="screen,projection" type="text/css" href="@routes.Assets.versioned("stylesheets/main.css")"/>
+		<script src="@routes.Assets.versioned("js/htmx.min.js")" type="text/javascript"></script>
+		<script src="@routes.Assets.versioned("js/oocsi-web.min.js")" type="text/javascript"></script>
+		<script src="@routes.Assets.versioned("js/sparkline.min.js")" type="text/javascript"></script>
+		<style type="text/css">
+			summary {
+				user-select: none;
+				-webkit-user-select: none;
+				outline: none;
+			}
+
+			.entity span {
+				display: inline-flex;
+				font-family: monospace;
+				font-size: 0.9rem;
+				max-width: 8rem;
+				text-overflow: ellipsis;
+				overflow: hidden;
+				white-space: nowrap;
+			}
+
+			.sparkline {
+ 				stroke: #1E88E5;
+				fill: rgba(0, 0, 255, .1);
+				border-bottom: gray 1px dotted;
+			}
+		</style>
+		<script type="text/javascript">
+			OOCSI.connect((window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws');
+			var currentChannel = undefined;
+			function subscribe(channel) {
+				currentChannel = channel
+				eventLog.innerText = 'waiting for data...'
+			}
+			function update(ev, id) {
+				let elem = document.getElementById("node_" + id)
+				elem.innerText = ev.data.value || (ev.data.state !== false ? "true" : "false")
+				if(sl_data["sl_" + id] === undefined) {sl_data["sl_" + id] = [];}
+				while(sl_data["sl_" + id].length > 30) {sl_data["sl_" + id].shift();}
+				sl_data["sl_" + id].push(ev.data.value || (ev.data.state !== false? 1 : 0))
+				sparkline.sparkline(document.getElementById("sl_" + id), sl_data["sl_" + id])
+
+				if(ev.recipient == currentChannel) {
+					eventLog.innerText = JSON.stringify(ev.data)
+				}
+			}
+			var sl_data = {}
+		</script>
+    </head>
+    <body>
+        <div class="container white">
+        	<div class="row grey lighten-5">
+        		<div class="col s12">
+	 				<h3 style="display: inline;">
+						Hey OOCSI!
+	 	 			</h3>
+	 	 		</div>
+			</div>
+
+			<div class="row">
+				<div class="col s12 m8">
+					<h4>Locations</h4>
+					@if(locations.isEmpty()) {
+						<p>
+							No devices available from heyOOCSI at the moment. <a href="https://github.com/iddi/oocsi/wiki/heyOOCSI!">create the first</a>
+						</p>
+					}
+					@for(loc <- locations.keySet()) {
+					<div class="row">
+				        <div class="col s12">
+				        	<h5><b>@loc</b></h5>
+				        </div>
+				        @for(od <- locations.get(loc)) {
+				        <div class="col s6">
+				        	<details>
+				        		<summary>
+				        			@od.toString()
+				        			@if(!od.name.equals(od.deviceId)) {(@od.deviceId)}
+				        		</summary>
+				        		@for(comp <- od.components) {
+				        		<p class="entity">
+				        			@comp.toString() (<a href="#" onclick="subscribe('@comp.channel')">subscribe</a>) <br>
+				        			<svg class="sparkline" id="sl_@comp.toString().hashCode()" width="200" height="24" stroke-width="2"></svg>
+				        			<span id="node_@comp.toString().hashCode()"></span>
+				        			<script type="text/javascript">
+				        				OOCSI.subscribe('@comp.channel', function(ev) {
+											update(ev, "@comp.toString().hashCode()")
+				        				})
+				        			</script>
+				        		</p>
+				        		}
+				        	</details>
+				        </div>
+				    	}
+				    </div>
+					}
+				</div>
+
+				<div class="col s12 m4">
+					<h4>Event log</h4>
+					<div id="eventLog" style="font-family: monospace; font-size: 0.9rem;">
+						no data
+					</div>
+				</div>
+			</div>
+        </div>
+
+        <footer class="container">
+        	<div class="row">
+        		<div class="col s12">
+        			<small>
+        				For more information about the heyOOCSI functionality, check the <a href="https://github.com/iddi/oocsi/wiki/heyOOCSI!" target="_blank">OOCSI wiki</a>.
+        			</small>
+        		</div>
+        	</div>
+        </footer>
+    </body>
+</html>

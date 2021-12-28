@@ -15,6 +15,8 @@ GET 	/dashboard						controllers.Tools.dashboard(request: Request)
 GET 	/oocsimote						controllers.Tools.mote(request: Request)
 GET 	/oocsimote/share				controllers.Tools.moteShare(request: Request)
 GET 	/iotsim							controllers.Tools.iotsim(request: Request)
+GET 	/heyOOCSI						controllers.Tools.heyOOCSI(request: Request, route: String ?= "")
+GET 	/heyOOCSI/:route					controllers.Tools.heyOOCSI(request: Request, route: String)
 GET 	/datacanvas						controllers.Tools.datacanvas(request: Request, token : String ?= "")
 GET 	/datacanvas/:token				controllers.Tools.datacanvas(request: Request, token: String)
 GET 	/animoocsi						controllers.Tools.animate(request: Request)
@@ -24,6 +26,7 @@ POST 	/generateMoteCode				controllers.Codegen.generateOOCSIMoteCode(request: Re
 GET 	/test/jotted					controllers.Tools.testJotted(request: Request)
 GET 	/test/raw						controllers.Tools.testRaw(request: Request)
 GET 	/test/visual					controllers.Tools.testVisual(request: Request)
+GET 	/test/server/clientRefresh		controllers.Tools.clientRefreshStats(request: Request)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               	controllers.Assets.versioned(path="/public", file: Asset)

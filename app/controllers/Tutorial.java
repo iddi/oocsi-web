@@ -6,6 +6,7 @@ import com.google.inject.Singleton;
 import akka.actor.ActorSystem;
 import model.clients.EchoClient;
 import model.clients.HTTPRequestClient;
+import model.clients.HeyOOCSIClient;
 import model.generators.TestChannelGenerator;
 import model.generators.TimeChannelGenerator;
 import nl.tue.id.oocsi.server.OOCSIServer;
@@ -22,7 +23,7 @@ public class Tutorial extends Controller {
 
 	@Inject
 	public Tutorial(Environment environment, OOCSIServer server, ActorSystem system, ExecutionContext ectx,
-	        WSClient wsClient) {
+	        WSClient wsClient, HeyOOCSIClient heyOOCSIClient) {
 		this.environment = environment;
 
 		// start client

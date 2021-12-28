@@ -1,7 +1,7 @@
 name := """oocsi-web"""
 organization := "IndustrialDesign"
 
-version := "0.3.25"
+version := "0.3.26"
 
 maintainer := "m.funk@tue.nl"
 
@@ -38,7 +38,7 @@ dockerPermissionStrategy := DockerPermissionStrategy.CopyChown
 
 Docker / maintainer := "m.funk@tue.nl"
 Docker / packageName := "matsfunk/oocsi-server"
-Docker / version := sys.env.getOrElse("BUILD_NUMBER", "0.3.25")
+Docker / version := sys.env.getOrElse("BUILD_NUMBER", "0.3.26")
 Docker / daemonUserUid  := None
 Docker / daemonUser := "daemon"
 dockerExposedPorts := Seq(9000,4444)
