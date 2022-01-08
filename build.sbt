@@ -1,7 +1,7 @@
 name := """oocsi-web"""
 organization := "IndustrialDesign"
 
-version := "0.3.26"
+version := "0.3.27"
 
 maintainer := "m.funk@tue.nl"
 
@@ -45,3 +45,7 @@ dockerExposedPorts := Seq(9000,4444)
 dockerBaseImage := "openjdk:11.0.11-jre-slim"
 dockerRepository := sys.env.get("ecr_repo")
 dockerUpdateLatest := true
+
+// don't publish/package source documentation
+sources in (Compile, doc) := Seq.empty
+publishArtifact in (Compile, packageDoc) := false

@@ -3,11 +3,9 @@
 <html lang="en">
     <head>
         <title>@title</title>
-        <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")"/>        
-
-		<!--Let browser know website is optimized for mobile-->
-		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
+        <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")"/>
+        <!--Let browser know website is optimized for mobile-->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <link rel="stylesheet" media="screen,projection" type="text/css" href="@routes.Assets.versioned("stylesheets/main.css")"/>
         
         <script src="@routes.Assets.versioned("js/oocsi-web.min.js")" type="text/javascript"></script>
@@ -16,5 +14,49 @@
     </head>
     <body>
         @content
+
+        <footer class="page-footer grey" style="margin-top: 10em;">
+            <div class="container">
+                <div class="row">
+                    <div class="col s6 l4">
+                        <h5 class="white-text">
+                        OOCSI web
+                        <small style="margin-left: 1em;">version 0.3.27</small>
+                        </h5>
+                        <p class="grey-text text-lighten-4">
+                            OOCSI is a prototyping middlware for designing systems and connected products.
+                            This website gives access to the OOCSI server, and the rest of the OOCSI system.
+                        </p>
+                    </div>
+                    <div class="col s3 offset-l2 l3">
+                        <h5 class="white-text">Links</h5>
+                        <ul>
+                            <li><a class="grey-text text-lighten-3" href="https://github.com/iddi/oocsi" target="_blank">OOCSI on GitHub</a></li>
+                            <li><a class="grey-text text-lighten-3" href="https://github.com/iddi/oocsi-processing" target="_blank">OOCSI for Java/Processing</a></li>
+                            <li><a class="grey-text text-lighten-3" href="https://github.com/iddi/oocsi-python" target="_blank">OOCSI for Python</a></li>
+                            <li><a class="grey-text text-lighten-3" href="https://github.com/iddi/oocsi-micropython" target="_blank">OOCSI for Micropython</a></li>
+                        </ul>
+                    </div>
+                    <div class="col s3 l3">
+                        <h5 class="white-text">&nbsp;</h5>
+                        <ul>
+                            <li><a class="grey-text text-lighten-3" href="https://github.com/iddi/oocsi/wiki" target="_blank">OOCSI wiki</a></li>
+                            <li><a class="grey-text text-lighten-3" href="https://github.com/iddi/oocsi-esp" target="_blank">OOCSI for Arduino/ESP</a></li>
+                            <li><a class="grey-text text-lighten-3" href="https://github.com/iddi/oocsi-websocket" target="_blank">OOCSI for JS</a></li>
+                            <li><a class="grey-text text-lighten-3" href="https://github.com/iddi/oocsi-nodejs" target="_blank">OOCSI for Node.js</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-copyright">
+                <div class="container">
+                    <div class="row">
+                        <div class="col s12">
+                            © 2022 ID Eindhoven
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
     </body>
 </html>

@@ -151,34 +151,24 @@
 						</div>
 					</li>
 					<li>
-						<div class="collapsible-header">Java/Android</div>
+						<div class="collapsible-header">Arduino / ESP (C/C++)</div>
 						<div class="collapsible-body" style="padding: 1rem;">
 								Connect to this server:
 								<blockquote>
-									OOCSICommunicator oc = new OOCSICommunicator(this, "my_unique_handle");
-									oc.setReconnect(true);
-									oc.connect("ADDRESS", 4444);
+									OOCSI oocsi = OOCSI();
+									oocsi.connect(OOCSIName, hostserver, ssid, password, processOOCSI);
 								</blockquote>
-								More information: <a href="https://github.com/iddi/oocsi#oocsi-client" target="_blank">setup & use</a>.
+								More information: <a href="https://github.com/iddi/oocsi-esp" target="_blank">setup & use</a>.
 						</div>
 					</li>
 					<li>
-						<div class="collapsible-header">Python</div>
+						<div class="collapsible-header">Python/Micropython</div>
 						<div class="collapsible-body" style="padding: 1rem;">
 								Connect to this server:
 								<blockquote>
 									oocsi = OOCSI('my_unique_handle', 'ADDRESS')
 								</blockquote>
 								More information: <a href="https://github.com/iddi/oocsi-python" target="_blank">setup & use</a>.
-						</div>
-					</li>
-					<li>
-						<div class="collapsible-header">REST</div>
-						<div class="collapsible-body" style="padding: 1rem;">
-								Send message to a channel on this server:
-								<blockquote>
-									curl -X POST https://ADDRESS/send/testchannel -d "sender=myhandle&amp;param1=1.6&amp;param2=text"
-								</blockquote>
 						</div>
 					</li>
 					<li>
@@ -192,14 +182,24 @@
 						</div>
 					</li>
 					<li>
-						<div class="collapsible-header">Arduino / ESP (C/C++)</div>
+						<div class="collapsible-header">Java/Android</div>
 						<div class="collapsible-body" style="padding: 1rem;">
 								Connect to this server:
 								<blockquote>
-									OOCSI oocsi = OOCSI();
-									oocsi.connect(OOCSIName, hostserver, ssid, password, processOOCSI);
+									OOCSICommunicator oc = new OOCSICommunicator(this, "my_unique_handle");
+									oc.setReconnect(true);
+									oc.connect("ADDRESS", 4444);
 								</blockquote>
-								More information: <a href="https://github.com/iddi/oocsi-esp" target="_blank">setup & use</a>.
+								More information: <a href="https://github.com/iddi/oocsi#oocsi-client" target="_blank">setup & use</a>.
+						</div>
+					</li>
+					<li>
+						<div class="collapsible-header">Command line</div>
+						<div class="collapsible-body" style="padding: 1rem;">
+								Send message to a channel on this server:
+								<blockquote>
+									curl -X POST https://ADDRESS/send/testchannel -d "sender=myhandle&amp;param1=1.6&amp;param2=text"
+								</blockquote>
 						</div>
 					</li>
 				</ul>

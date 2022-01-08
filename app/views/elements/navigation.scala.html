@@ -1,10 +1,10 @@
 @(option: String)
-
 <nav>
 	<div class="nav-wrapper white">
 		<a href="/" class="brand-logo" style="padding: 0 1em">
 			<img src="@routes.Assets.versioned("images/OOCSI_logo_medium_small.png")" style="height: 50px; margin-top: 7px;">
 		</a>
+		<a href="#" data-target="mobile-navigation" class="sidenav-trigger grey-text"><i class="material-icons">menu</i></a>
 		<ul id="nav-mobile" class="right hide-on-med-and-down">
 			@if(option.equals("metrics")) { <li class="active"> } else { <li> }
 				<a href="@routes.Application.metrics()">
@@ -19,3 +19,24 @@
 		</ul>
 	</div>
 </nav>
+<ul class="sidenav" id="mobile-navigation">
+	@if(option.equals("metrics")) { <li class="active"> } else { <li> }
+		<a href="@routes.Application.metrics()">
+			<span>
+				<i class="material-icons" style="margin-right: 0.5rem; top: 0.5rem; position: relative;">insert_chart</i> Metrics
+			</span>
+		</a>
+	</li>
+	@if(option.equals("tools")) { <li class="active"> } else { <li> }
+		<a href="@routes.Tools.index()">
+			<span>
+				<i class="material-icons" style="margin-right: 0.5rem; top: 0.5rem; position: relative;">build</i> Tools
+			</span>
+		</a>
+	</li>
+</ul>
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function() {
+	M.Sidenav.init(document.querySelectorAll('.sidenav'));
+});
+</script>

@@ -15,7 +15,7 @@ import scala.concurrent.duration.Duration;
 public class TimeChannelGenerator {
 
 	private static final String CHANNEL = "timechannel";
-	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
+	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
 	final private OOCSIServer server;
 	final private ActorSystem actorSystem;

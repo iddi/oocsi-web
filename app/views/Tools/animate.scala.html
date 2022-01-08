@@ -42,11 +42,11 @@
 					<form>
 						<div class="row">
 							<div class="input-field col s6 m4">
-								<input id="minValue" type="number" class="validate">
+								<input id="minValue" type="number" name="minValue" value="0" class="validate">
 								<label for="minValue">output range min</label>
 							</div>
 							<div class="input-field col s6 m4">
-								<input id="maxValue" type="number" class="validate">
+								<input id="maxValue" type="number" name="maxValue" value="100" class="validate">
 								<label for="maxValue">output range max</label>
 							</div>
 							<div class="col s12 m4" style="padding: 1em;">
@@ -59,15 +59,15 @@
 						</div>
 						<div class="row">
 							<div class="input-field col s6 m4">
-								<input id="speedValue" type="number" class="validate">
+								<input id="speedValue" type="number" name="speedValue" value="15" class="validate">
 								<label for="speedValue">loop duration in seconds</label>
 							</div>
 							<div class="input-field col s6 m4">
-								<input id="distValue" type="number" class="validate">
+								<input id="distValue" type="number" name="distValue" value="20" class="validate">
 								<label for="distValue">pixel distance</label>
 							</div>
 							<div class="input-field col s6 m4">
-								<input id="parValue" type="text" class="validate">
+								<input id="parValue" type="text" name="parValue" value="" class="validate">
 								<label for="parValue">event parameter name</label>
 							</div>
 						</div>
@@ -86,7 +86,7 @@
 					</div>
 				</div>
 				<div class="modal-footer">
-					<a href="#!" class="modal-close waves-effect waves-green btn-flat">close</a>
+					<a href="#!" class="modal-close btn-flat">close</a>
 				</div>
 			</div>
 
@@ -111,8 +111,8 @@
 					</form>
 				</div>
 				<div class="modal-footer">
-					<a href="#!" class="modal-close waves-effect waves-green btn-flat">Cancel</a>
-					<a href="#!" id="connectBtn" class="modal-close waves-effect waves-green btn">Connect</a>
+					<a href="#!" class="modal-close btn-flat">Cancel</a>
+					<a href="#!" id="connectBtn" class="modal-close btn">Connect</a>
 				</div>
 			</div>
 

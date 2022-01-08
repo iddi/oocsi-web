@@ -100,6 +100,7 @@ public class WebSocketClient extends Client {
 			}
 		} else {
 			// ignore all other messages, do nothing
+			server.refreshChannelPresence(this);
 			pong();
 		}
 
