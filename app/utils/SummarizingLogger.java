@@ -46,7 +46,7 @@ public class SummarizingLogger {
 		}
 	}
 
-	public void log(String message) {
+	public synchronized void log(String message) {
 		if (logStatements != null) {
 			logStatements.merge(message, 1, (a, b) -> a + b);
 			dirty = true;
