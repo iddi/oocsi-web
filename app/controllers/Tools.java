@@ -82,10 +82,9 @@ public class Tools extends Controller {
 	 */
 	public Result datacanvas(Request request, String token) {
 		if (token == null || token.isEmpty() || !token.matches("^[A-Za-z0-9-_]+$")) {
-			return ok(views.html.Tools.token.render("Please enter the channel token:", "Data Canvas",
-			        controllers.routes.Tools.datacanvas(token).relativeTo("/")));
+			return ok(views.html.Tools.token.render("Please enter the channel token:", "Data Canvas"));
 		} else {
-			return ok(views.html.Tools.datacanvas.render("Data Canvas", token, request.host()));
+			return ok(views.html.Tools.datacanvas.render("Data Canvas", token));
 		}
 	}
 

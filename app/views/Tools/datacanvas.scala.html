@@ -1,4 +1,4 @@
-@(message: String, token: String, address: String) 
+@(message: String, token: String)
 
 <!DOCTYPE html>
 <html lang="en">
@@ -14,12 +14,17 @@
     </head>
     <body>
         <div class="container" class="grey">
-        	<div class="row grey lighten-5" style="text-align: right">
- 				<h4>
-					<a class="modal-trigger" style="color: black;float: left">
-						Data Canvas <small>@token</small>
+        	<div class="row" style="text-align: right">
+	       		<div class="col s12">
+	 				<h4>
+						<a class="modal-trigger" style="color: black;float: left">
+							Data Canvas <small>@token</small>
+						</a>
+	 	 			</h4>
+					<a href="#modalConfiguration" id="connectionBtn" class="btn modal-trigger">
+						discover clients
 					</a>
- 	 			</h4>
+	 	 		</div>
 			</div>
 
 			<div class="row">
@@ -28,52 +33,80 @@
 						<div class="indeterminate"></div>
 					</div>
 		        </div>
-		        <div class="col s12">
-					<a href="#modalConfiguration" id="connectionBtn" class="btn green modal-trigger">
-						configure
-					</a>
-					<a id="pauseBtn" class="btn green">2D view</a>
-					<a id="playBtn" class="btn green">3D view</a> 
-					<span style="float: right">
+		        <div class="col s3">
+					<div id="viewSwitchLabels" class="switch" style="display: inline-block;">
+					    <label>
+					      edit view
+					      <input type="checkbox">
+					      <span class="lever" id="viewSwitch"></span>
+					      play view
+					    </label>
+					</div>
+				</div>
+				<div class="col s2">
+					<label id="showLabels">
+						<input type="checkbox" checked="checked">
+						<span>show labels</span>
+					</label>
+				</div>
+				<div class="col s2">
+					<label id="showChannels">
+						<input type="checkbox" checked="checked">
+						<span>show channels</span>
+					</label>
+				</div>
+				<div class="col s2">
+					<label id="showHeyOOCSI">
+						<input type="checkbox" checked="checked">
+						<span>show heyOOCSI</span>
+					</label>
+				</div>
+				<div class="col s3">
+					<label id="showClientNames">
+						<input type="checkbox" checked="checked">
+						<span>show client names</span>
+					</label>
+				</div>
+
+<!--
+ 					<span style="float: right">
 						<i class="material-icons">book</i> Click on map to add a label
 						<a id="resetLabelsBtn" class="btn-flat red-text"> reset labels</a>
 					</span>
-		        </div>
+ -->
+ 		        </div>
 	        	<br>
 		    </div>
         </div>
 
-    	<div class="" style="width: 100%; height: 80vh; user-select: none">
-        	<div class="" style="overflow: hidden">
-	        	<div id="canvas" class="">
+    	<div style="width: 100%; height: 80vh; user-select: none">
+        	<div style="text-align: center; overflow: hidden;">
+	        	<div id="canvas">
 	        	</div>
+			</div>
+			<div style="padding: 1rem;">
+				<small>
+					Position 
+					x: <span id="selPositionX" style="width: 3rem; display: inline-block;"></span>
+					y: <span id="selPositionY" style="width: 3rem; display: inline-block;"></span>
+				</small>
 			</div>
     	</div>
 
 		<!-- configuration -->
 		<div id="modalConfiguration" class="modal bottom-sheet">
 			<div class="modal-content">
-				<h4>Connect to the data canvas as ... </h4>
-				<form>
-					<div class="row">
-						<div class="input-field col s6">
-							<input id="oocsi_client" type="text" pattern="[A-Za-z0-9-_]+" class="validate">
-							<label for="oocsi_client">OOCSI client ID</label>
-							<span class="helper-text" data-error="cannot contain spaces and special characters" data-success="good to go!"></span>
-						</div>
-						<div class="input-field col s3">
-							<input id="xpos" type="number" class="validate">
-							<label for="xpos">x position on canvas</label>
-						</div>
-						<div class="input-field col s3">
-							<input id="ypos" type="number" class="validate">
-							<label for="ypos">Y position on canvas</label>
-						</div>
+				<div class="row">
+					<div class="col s12">
+						<h4>Discover events from the OOCSI client... </h4>
 					</div>
-				</form>
-			</div>
-			<div class="modal-footer">
-				<a href="#!" class="modal-close btn">Close</a>
+					<div class="input-field col s6">
+						<input id="oocsi_client" type="text" pattern="[A-Za-z0-9-_]+" class="validate">
+						<label for="oocsi_client">OOCSI client ID</label>
+						<span class="helper-text" data-error="cannot contain spaces and special characters" data-success="good to go!"></span>
+						<a href="#!" class="modal-close btn">Go!</a>
+					</div>
+				</div>
 			</div>
 		</div>
 
@@ -84,10 +117,12 @@
 				var EXTRUSION = 1;
 
 				const s = p => {
+				  let BASEPLATE_WIDTH = 600 * 1.333;
+				  let BASEPLATE_HEIGHT = 428 * 1.333;
 				  let myself = {
-					text: 'click "configure" above',
-					x: 0,
-					y: 0
+					text: 'click "discover clients" to start',
+					x: BASEPLATE_WIDTH/2,
+					y: BASEPLATE_HEIGHT/2
 				  };
 				  let clients = [myself];
 				  let channels = [];
@@ -95,158 +130,227 @@
 				  let labelSubscriptions = {};
 				  let externalLabels = [];
 				  var events = [];
-				  let BASEPLATE_WIDTH = 600 * 1.333;
-				  let BASEPLATE_HEIGHT = 428 * 1.333;
 				  let svg;
 				  let font;
 				  var mx;
 				  var my;
 				  var rotX = 0;
 				  var rotZ = 0;
+				  var rotZDrift = 0;
+				  var zoom = 0;
 				  var frameCounter = 0;
 
 				  p.preload = function() {
 					svg = p.loadImage("/assets/images/sandbox_gs_f.svg");
-					font = p.loadFont('assets/font/sourcesans/SourceSansPro-Regular.otf');
+					font = p.loadFont('/assets/font/sourcesans/SourceSansPro-Regular.otf');
 				  };
 
 				  p.setup = function() {
-				    p.createCanvas(1200, 700, p.WEBGL);
+				    p.createCanvas(p.windowWidth, 700, p.WEBGL);
 				    p.textFont(font);
 				    p.rectMode(p.CENTER);
 				    p.ellipseMode(p.CENTER);
 					p.imageMode(p.CENTER);
+
+					// pre-render the large svg to save memory
+					pg = p.createGraphics(BASEPLATE_WIDTH, BASEPLATE_HEIGHT)
+					pg.image(svg, 0, 0, BASEPLATE_WIDTH, BASEPLATE_HEIGHT)
+					svg = pg;
 				  };
+				  
+				  p.windowResized = function() {
+  					p.resizeCanvas(p.windowWidth, 700)
+  				  }
 
 				  p.draw = function() {
-				  	frameCounter++;
+
+					let offsetWidth = (p.width - BASEPLATE_WIDTH)/2;
+					let offsetHeight = (p.height - BASEPLATE_HEIGHT)/2;
 				    p.background(255);
 
-				    // global rotation
+				    // global rotation --------------------------------------------------------------------------------
 				    if(configuration.play) {
+				    	var cameraZ = ((p.height/2.0) / p.tan(p.PI*60.0/360.0))
+				    	p.perspective(p.PI/3.0, p.width/p.height, cameraZ/10.0, cameraZ*10.0) 
+					    p.translate(0, 0, zoom * 10);
 						rotX += (p.radians(p.map(p.mouseY, 0, p.height, 40, 60)) - rotX)/20;
-					    rotZ += (p.radians((frameCounter/80.) % 360) - rotZ)/20;
+						rotZDrift -= rotZDrift/10.;
+					    rotZ += p.radians((5/80.) % 360) + rotZDrift;
 					} else {
-						rotX += (p.radians(p.map(p.mouseY, 0, p.height, -5, 5)) - rotX)/20;
-						rotZ += (-rotZ)/20;
+						p.ortho(-p.width/2, p.width/2, -p.height/2, p.height/2);
+						p.translate(0, 0, 120);
+						rotX -= rotX/20;
+						rotZ += (rotZ > p.PI) ? (p.TWO_PI - rotZ)/20 : (-rotZ)/20;
+					}
+
+					if(rotZ > p.TWO_PI) {
+						rotZ -= p.TWO_PI;
+					} else if(rotZ < 0) {
+						rotZ += p.TWO_PI;
 					}
 
 					p.rotateX(rotX);
 					p.rotateZ(rotZ);
 
-					// base plate
+					// base plate / mural -----------------------------------------------------------------------------
 					p.push();
 					p.fill(245);
+				    p.rectMode(p.CENTER);
 					p.rect(0, 0, BASEPLATE_WIDTH, BASEPLATE_HEIGHT);
-					p.translate(0, 0, 1);
-					p.fill(180);
-					p.text(Math.round(p.mouseX) + "x" + Math.round(p.mouseY), -BASEPLATE_WIDTH/2 + 10, -p.height/2 + BASEPLATE_HEIGHT + 50);
 					p.pop();
 
-					// mural
 					p.translate(0, 0, 1);
 					p.push();
 					p.rotate(p.radians(90));
-					for(var i = 0; i < EXTRUSION; i++) {
+					// for(var i = 0; i < EXTRUSION; i++) {
 						p.image(svg, 0, 0, BASEPLATE_HEIGHT, BASEPLATE_WIDTH);
-						p.translate(0, 0, 10);
-					}
+						// p.translate(0, 0, 10);
+					// }
 					p.pop();
 
-					// compute cursoe
-					mx = p.map(p.mouseX, 0, p.width, -BASEPLATE_WIDTH/2, BASEPLATE_WIDTH/2);
-					my = p.map(p.mouseY, 0, p.height, -BASEPLATE_HEIGHT/2, BASEPLATE_HEIGHT/2);
+					// cursor -----------------------------------------------------------------------------------------
+				    p.translate(-p.width/2, -p.height/2, 0);
+				    p.translate(offsetWidth, offsetHeight, 0);
+					if(!configuration.play) {
+						// compute cursor
+						mx = p.constrain((p.mouseX-offsetWidth), -1, BASEPLATE_WIDTH + 1);
+						my = p.constrain((p.mouseY-offsetHeight), -1, BASEPLATE_HEIGHT + 1);
 
-					// show cursor
-					p.push();
-					p.translate(mx, my, 1);
-					p.fill(120); 
-					p.noStroke();
-					p.ellipse(0, 0, 10, 10);
-					p.pop();
-
-					labels.forEach(function(d, i) {
+						// show cursor
 						p.push();
-						p.translate(d.x, d.y, 1);
-						p.ellipse(0, 0, 5, 5);
-						p.stroke(110);
-						p.line(0, 0, 0, 0, 0, 20);
-						p.translate(0, 0, 30);
-						p.rotateText();
-						if(d.min != d.max && d.ttl-- > 0) {
-							p.rectMode(p.CORNER);
-							p.noStroke();
-							p.fill(120);
-							p.rect(0, 7, 100, 1);
-							p.fill(255-p.map(d.val, d.min, d.max, 140, 0), 0, 255-p.map(d.val, d.min, d.max, 0, 140));
-							p.rect(0, 4, p.map(d.val, d.min, d.max, 1, 100), 3);
-						}
-						p.fill(10);
-						p.stroke(110);
-						p.text(d.text, 0, 0);
+						p.translate(mx, my, 1);
+						p.fill(120); 
+						p.noStroke();
+						p.ellipse(0, 0, 10, 10);
 						p.pop();
-					});
-					externalLabels.forEach(function(d, i) {
-						d.ttl--;
-						if(d.ttl > 0) {
+
+						selPositionX.innerText = p.round(mx)
+						selPositionY.innerText = p.round(my)
+					}
+
+					// draw labels ------------------------------------------------------------------------------------
+					if(configuration.showLabels) {
+						labels.forEach(function(d, i) {
 							p.push();
 							p.translate(d.x, d.y, 1);
-							p.fill(150, 150, 80);
-							p.stroke(150, 150, 80);
+							p.fill(110);
 							p.ellipse(0, 0, 5, 5);
-							p.line(0, 0, 0, 0, 0, 20);
-							p.translate(0, 0, 30);
+							if(configuration.play) {
+								p.stroke(110);
+								p.line(0, 0, 0, 0, 0, 20);
+								p.translate(0, 0, 30);
+							}
+							p.rotateText();
+							if(d.min != d.max && d.ttl-- > 0) {
+								p.rectMode(p.CORNER);
+								p.noStroke();
+								p.fill(120);
+								p.rect(0, 7, 100, 1);
+								p.fill(255-p.map(d.val, d.min, d.max, 140, 0), 0, 255-p.map(d.val, d.min, d.max, 0, 140));
+								p.rect(0, 4, p.map(d.val, d.min, d.max, 1, 100), 3);
+							}
+							p.fill(10);
+							p.stroke(110);
+							p.text(d.text, 0, 0);
+							p.pop();
+						});
+						externalLabels.forEach(function(d, i) {
+							d.ttl--;
+							if(d.ttl > 0) {
+								p.push();
+								p.translate(d.x, d.y, 1);
+								p.fill(150, 150, 80);
+								p.stroke(150, 150, 80);
+								p.ellipse(0, 0, 5, 5);
+								if(configuration.play) {
+									p.line(0, 0, 0, 0, 0, 20);
+									p.translate(0, 0, 30);
+								}
+								p.rotateText();
+								p.text(d.text, 0, 0);
+								p.pop();
+							}
+						});
+					}
+					
+					// draw clients -----------------------------------------------------------------------------------
+					clients.forEach(function(d, i) {
+						p.push()
+						p.translate(d.x, d.y, 1)
+						p.fill(200, 0, 0)
+						p.stroke(200, 0, 0)
+						p.ellipse(0, 0, 5, 5)
+						if(configuration.play) {
+							if(d.heyOOCSI) {
+								p.noStroke()
+								p.fill(200, 0, 0, 30)
+								p.ellipse(0, 0, 20, 20)
+								p.stroke(200, 0, 0)
+							}
+							p.line(0, 0, 0, 0, 0, 50)
+							p.translate(0, 0, 60)
+						}
+						p.fill(200, 0, 0)
+						p.rotateText()
+						if(d.heyOOCSI && d.svgIcon && configuration.showHeyOOCSI) {
+							if(configuration.showClientNames) {
+								p.text(d.screenName || d.text, 0, 0)
+							}
+							p.image(d.svgIcon, 6, 12, 12, 12)
+							if((d.value && d.value != 'false') || d.value == 'true') {
+								p.fill(240, 220, 0, 120)
+								p.push()
+								p.translate(0, 0, 1)
+								p.ellipse(6, 12, 12, 12)
+								p.pop()
+							}
+							p.fill(180)
+							p.text(d.value, 15, 15)
+						} else if(configuration.showClientNames) {
+							p.text(d.text, 0, 0);
+						}
+						p.pop();
+					});
+
+					// draw channels ----------------------------------------------------------------------------------
+					if(configuration.showChannels) {
+						channels.forEach(function(d, i) {
+							// some arrangement
+							channels.forEach(function(e,o) {
+								if(d != e) {
+									if(p.dist(d.x, d.y, e.x, e.y) < 60) {
+										while(p.dist(d.vx, d.vy, e.vx, e.vy) < 0.5) {
+											d.vx = p.random(-2, 2);
+											d.vy = p.random(-2, 2);
+										}
+
+										d.x += d.vx;
+										d.y += d.vy;
+										e.x += e.vx;
+										e.y += e.vy;
+									}
+								}
+							});
+
+							p.push();
+							p.translate(d.x, d.y, 1);
+							p.fill(0, 0, 200, 200);
+							if(configuration.play) {
+								p.stroke(0, 0, 200, 30);
+								p.line(0, 0, 0, 0, 0, 100);
+								p.translate(0, 0, 100);
+								p.ellipse(0, 0, 10, 10);
+								p.translate(0, 0, 10);
+							} else {
+								p.ellipse(0, 0, 10, 10);							
+							}
 							p.rotateText();
 							p.text(d.text, 0, 0);
 							p.pop();
-						}
-					});
-					clients.forEach(function(d, i) {
-						// if(d.x < -1 && d.y < -1) {
-						// 	return;
-						// }
-						p.push();
-						p.translate(d.x, d.y, 1);
-						p.fill(200, 0, 0);
-						p.stroke(200, 0, 0);
-						p.ellipse(0, 0, 5, 5);
-						p.line(0, 0, 0, 0, 0, 50);
-						p.translate(0, 0, 60);
-						p.rotateText();
-						p.text(d.text, 0, 0);
-						p.pop();
-					});
-					channels.forEach(function(d, i) {
-
-						// some physics
-						channels.forEach(function(e,o) {
-							if(d != e) {
-								if(p.dist(d.x, d.y, e.x, e.y) < 60) {
-									while(p.dist(d.vx, d.vy, e.vx, e.vy) < 0.5) {
-										d.vx = p.random(-2, 2);
-										d.vy = p.random(-2, 2);
-									}
-
-									d.x += d.vx;
-									d.y += d.vy;
-									e.x += e.vx;
-									e.y += e.vy;
-								}
-							}
 						});
+					}
 
-						p.push();
-						p.translate(d.x, d.y, 1);
-						p.fill(0, 0, 200, 200);
-						p.stroke(0, 0, 200);
-						p.line(0, 0, 0, 0, 0, 100);
-						p.translate(0, 0, 100);
-						p.ellipse(0, 0, 10, 10);
-						p.translate(0, 0, 10);
-						p.rotateText();
-						p.text(d.text, 0, 0);
-						p.pop();
-					});
+					// draw events ------------------------------------------------------------------------------------
 					let respawnedEvents = [];
 					events.forEach(function(d, i) {
 						d.ttl -= 1;
@@ -259,7 +363,7 @@
 								p.push();
 								let ele = p.map(d.ttl, 200, 100, 0, 100);
 								p.translate(d.x, d.y, ele);
-								p.sphere(6);
+								p.sphere(3);
 								p.pop();
 								// p.stroke(200, 20);
 								// p.line(d.sx, d.sy, 120, d.dx, d.dy, 100);
@@ -271,10 +375,10 @@
 								p.push();
 								let ele = p.map(d.ttl, 100, 0, 100, 0);
 								p.translate(d.x, d.y, ele);
-								p.sphere(4);
+								p.sphere(2);
 								p.pop();
-								// p.stroke(200, 20);
-								// p.line(d.sx, d.sy, 120, d.dx, d.dy, 120);
+								p.stroke(200, 20);
+								p.line(d.sx, d.sy, 120, d.dx, d.dy, 120);
 							} else {								
 								d.x += (d.dx - d.sx)/100;
 								d.y += (d.dy - d.sy)/100;
@@ -283,7 +387,7 @@
 								p.push();
 								let ele = p.map(p.sin(p.map(d.ttl, 0, 100, 0, p.PI)), 0, 1, 0, 60);
 								p.translate(d.x, d.y, ele);
-								p.sphere(4);
+								p.sphere(2);
 								p.pop();
 								// p.stroke(200, 20);
 								//p.line(d.sx, d.sy, 120, d.dx, d.dy, 120);
@@ -295,25 +399,38 @@
 					events = respawnedEvents;
 				  };
 
+				  // --------------------------------------------------------------------------------------------------
+
 				  p.rotateText = function() {
 					if(configuration.play) {
-						p.rotateZ(-p.radians(frameCounter/80.));
+						p.rotateZ(-rotZ);
+						// p.rotateZ(-p.radians(frameCounter/80.));
 						p.rotateX(-p.radians(p.map(p.mouseY, 0, p.height, 40, 60)));
 					} else {
-						p.rotateX(-p.radians(p.map(p.mouseY, 0, p.height, -5, 5)));
+						p.translate(10, 3)
+						// p.rotateX(-p.radians(p.map(p.mouseY, 0, p.height, -5, 5)));
 					}
 				  }
 
+				  // canvas interaction -------------------------------------------------------------------------------
+
 				  p.mouseDragged = function() {
-				  	frameCounter += p.map(p.mouseX-p.pmouseX, 0, 10, 0, 100);
+				  	if(configuration.play) {
+				  		rotZDrift = (p.pmouseX-p.mouseX) * 1/1000.;
+				  		rotZ += p.radians(p.map(p.pmouseX-p.mouseX, 0, 10, 0, 100)/80. % 360)
+				  	}
 				  }
 
-				  p.mousePressed = function() {
+				  p.mouseWheel = function() {
+				  	if(configuration.play) {
+				  		zoom = p.constrain(zoom + event.delta, -100, 40)
+				  	}
+				  }
 
-				  	if(mx < -BASEPLATE_WIDTH/2 || mx > BASEPLATE_WIDTH/2 || my < -BASEPLATE_HEIGHT/2 || my > BASEPLATE_HEIGHT/2) {
+				  p.mouseClicked = function() {
+				  	if(configuration.play || mx < 0 || mx > BASEPLATE_WIDTH || my < 0 || my > BASEPLATE_HEIGHT) {
 				  		return true;
 				  	}
-
 				  	var label = window.prompt("Provide a new label: ");
 				  	if(label) {
 				  		if(/[@@][A-Za-z0-9-_]+[:][A-Za-z0-9-_]+/g.test(label)) {
@@ -353,41 +470,53 @@
 				  	}
 				  };
 
+				  // client handling ----------------------------------------------------------------------------------
+
+				  p.getClients = function() {
+				  	return clients;
+				  };
+
 				  p.setClient = function(text, x, y) {
 					myself.text = text;
-					myself.x = -p.width/2 + p.map(x, 0, p.width, 0, BASEPLATE_WIDTH);
-					myself.y = -p.height/2 + p.map(y, 0, p.height, 0, BASEPLATE_HEIGHT);
+					myself.x = x
+					myself.y = y
 				  };
 
 				  p.updateClient = function(text, x, y) {
-					if(text == '?') {
+					if(!text || text.length < 2 || text.startsWith("heyOOCSI")) {
 						return;
 					}
 
 					var client = p.findClient(text);
 					if(client) {
 						if(x > -1) {
-							client.x = -p.width/2 + p.map(x, 0, p.width, 0, BASEPLATE_WIDTH);
-							client.y = -p.height/2 + p.map(y, 0, p.height, 0, BASEPLATE_HEIGHT);
+							client.x = x
+							client.y = y
 						}
-						return;
+						return false;
 					}
 
 				  	// if no client found, add new
 				  	clients.push({
 				  		text: text,
-				  		x: -p.width/2 + p.random(330, BASEPLATE_WIDTH),
-						y: -p.height/2 + 100
+				  		x: p.random(200, BASEPLATE_WIDTH - 200),
+						y: 20
 				  	});
+
+				  	return true;
 				  };
 
 				  p.updateChannel = function(text) {
+					if(!text || text.length < 2 || text.startsWith("heyOOCSI")) {
+						return;
+					}
+
 				  	var channel = p.findClient(text, channels);
 					if(!channel) {
 					  	channel = {
 					  		text: text,
-					  		x: 0,
-							y: 0,
+					  		x: BASEPLATE_WIDTH/2,
+							y: BASEPLATE_HEIGHT/2,
 							vx: p.random(-2, 2),
 							vy: p.random(-2, 2)
 					  	};
@@ -407,17 +536,18 @@
 					return undefined;
 				  };
 
+				  // event handling -----------------------------------------------------------------------------------
+
 				  p.addEvent = function(src, dst, ch) {
 				  	if(events.length < 30) {
 					  let source = p.findClient(src);
 					  let destination = p.findClient(dst);
 
-					  if(source && destination) {
-						
+					  if(source && destination) {						
 						// check channel
 						var channel = undefined;
 						if(ch && ch.length > 0) {
-						channel = p.updateChannel(ch);
+							channel = p.updateChannel(ch);
 						}
 
 					  	events.push({
@@ -431,9 +561,19 @@
 					  		dy: destination.y,
 					  		ttl: channel ? 200 : 100
 					  	});
+
+					  	// refresh src or dst randomly
+					  	if(Math.random() < 0.1) {
+							OOCSI.send("heyOOCSIClient", {clientHandle: src})
+					  	}
+					  	if(Math.random() < 0.1) {
+							OOCSI.send("heyOOCSIClient", {clientHandle: dst})
+					  	}
 					  }
 				  	}
 				  };
+
+				  // label handling -----------------------------------------------------------------------------------
 
 				  p.getLabels = function() {
 				  	return labels;
@@ -462,94 +602,148 @@
 
 				let visualisation = new p5(s, 'canvas');
 
-				///////////////////////////////////////////////////////////////////
+				// page interaction -----------------------------------------------------------------------------------
 
 				var configuration = {
 					client: "",
 					x : 0,
 					y: 0,
 					play: false,
-					speed: 3600
+					speed: 3600,
+					showLabels: true,
+					showChannels: true,
+					showClientNames: true,
+					showHeyOOCSI: true
 				};
 
-				$('#oocsi_client,#xpos,#ypos').change(function() {
+				$('#oocsi_client').change(function() {
 					let client = $('#oocsi_client').val();
-					let x = $('#xpos').val();
-					let y = $('#ypos').val();
-
-					if(client.length > 0 && x.length == 0 & y.length == 0) {
-						visualisation.updateClient(client, -1, -1);
-					} else {
-						visualisation.setClient(client, x, y);
-						configuration.client = client;
-						configuration.x = x;
-						configuration.y = y;
+					if(client.length > 0) {
+						visualisation.setClient(client, visualisation.BASEPLATE_WIDTH/2, visualisation.BASEPLATE_HEIGHT/2);
 					}
+
+					visualisation.updateClient(client, 1, 1);
+					configuration.client = client;
 				});
 
 				$('.modal').modal();
 
-				$('#playBtn').click(function() {
-					configuration.play = true;
-				});
-				$('#pauseBtn').click(function() {
-					configuration.play = false;
-				});
+				$('#showLabels span').click(function() {
+					configuration.showLabels = !$('#showLabels input').prop('checked')
+				})
+				$('#showChannels span').click(function() {
+					configuration.showChannels = !$('#showChannels input').prop('checked')
+				})
+				$('#showClientNames span').click(function() {
+					configuration.showClientNames = !$('#showClientNames input').prop('checked')
+				})
+				$('#showHeyOOCSI span').click(function() {
+					configuration.showHeyOOCSI = !$('#showHeyOOCSI input').prop('checked')
+				})
+
+				$('#viewSwitchLabels').click(function() {
+					configuration.play = $('#viewSwitchLabels input').prop('checked')
+					selPositionX.innerText = ''
+					selPositionY.innerText = ''
+				})
 
 				$('#resetLabelsBtn').click(function() {
 					visualisation.getLabels().length = 0;
 				});
 
-				// connect to OOCSI server
-				OOCSI.connect((window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws');
-				
+				// networking -----------------------------------------------------------------------------------------
+
+				let subscriptions = {}
+				OOCSI.connect((window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws', undefined, function(msg) {
+					let client = visualisation.findClient(msg.data.clientHandle)
+					if(client && Object.values(msg.data.location).length > 0) {
+						client.x = Object.values(msg.data.location)[0][0]
+						client.y = Object.values(msg.data.location)[0][1]
+						client.heyOOCSI = true
+						let keys = Object.keys(msg.data.components)
+						if(keys.length > 0) {
+							let component = msg.data.components[keys[0]]
+							client.type = component.type
+							client.screenName = keys[0]
+							client.defaultValue = component.default_value
+							// request icon
+							if(component.icon && client.icon != component.icon) {
+								client.icon = component.icon
+								client.svgIcon = visualisation.loadImage("/icons/" + client.icon + ".svg")
+							}
+							// subscribe to data updates
+							if(component.channel_name && client.channel != component.channel_name) {
+								client.channel = component.channel_name;
+								if(!subscriptions[client.channel]) {
+									subscriptions[client.channel] = [client]
+									OOCSI.subscribe(client.channel, function(msg) {
+										subscriptions[client.channel].forEach(function(d) {
+											if(d.screenName == msg.data.component) {
+												d.value = msg.data.value
+											}
+										})
+									})
+								} else {
+									subscriptions[client.channel].push(client)
+								}
+							}
+						}
+					}
+				});
+
 				setTimeout(subscribe, 200);
-				
 				function subscribe() {
 					
+					// try to connect
 					if (!OOCSI.isConnected()) {
 						setTimeout(subscribe, 200);
 						return;		
 					}
-
 					$('.progress').hide();
 
+					// subscribe to events
 					OOCSI.subscribe("OOCSI_events", function(msg) {
 						if(visualisation.findClient(msg.data.PUB)) {
-							visualisation.updateClient(msg.data.SUB, -1, -1);
+							if(visualisation.updateClient(msg.data.SUB, -1, -1)) {
+								OOCSI.send("heyOOCSIClient", {clientHandle: msg.data.SUB})
+							}
 						}
 						if(visualisation.findClient(msg.data.SUB)) {
-							visualisation.updateClient(msg.data.PUB, -1, -1);
+							if(visualisation.updateClient(msg.data.PUB, -1, -1)) {
+								OOCSI.send("heyOOCSIClient", {clientHandle: msg.data.PUB})
+							}
 						}
 
 						visualisation.addEvent(msg.data.PUB, msg.data.SUB, msg.data.CHANNEL);
 					});
 
+					// subscribe to data canvas messages (other clients and labels)
 					OOCSI.subscribe("@token", function(msg) {
-						if(msg.data.client && msg.data.client != configuration.client && msg.data.x && msg.data.y) {
-							if(visualisation.findClient(msg.data.client)) {
-								visualisation.updateClient(msg.data.client, msg.data.x, msg.data.y);
+						if(msg.data.client) {
+							if(!visualisation.findClient(msg.data.client)) {
+								visualisation.updateClient(msg.data.client);
 							}
 						} else if(msg.data.label && msg.data.x && msg.data.y) {
 							visualisation.addLabel(msg.data.label, msg.data.x, msg.data.y);
 						}
 					});
 
+					// braodcast my labels
 					setInterval(function() {
-						if(configuration.x > -1 && configuration.y > -1) {
-							OOCSI.send("@token", {client: configuration.client, x: configuration.x, y: configuration.y});
+						// send a random client name out to other canvas clients
+						let clients = visualisation.getClients();
+						if(clients.length > 0) {
+							let index = visualisation.round(visualisation.random(0, clients.length - 1));
+							OOCSI.send("@token", {client: clients[index].text});
 						}
-					}, 1000);
 
-					setInterval(function() {
+						// send my labels out to other canvas clients
 						let labels = visualisation.getLabels();
 						if(labels.length > 0) {
 							let index = visualisation.round(visualisation.random(0, labels.length - 1));
 							OOCSI.send("@token", {label: labels[index].text, x: labels[index].x, y: labels[index].y});
 						}
 					}, 2300);
-
-					$('#connectionBtn').click();
 				}
 
 			});

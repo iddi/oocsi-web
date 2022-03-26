@@ -1,4 +1,4 @@
-@(message: String, title: String, address: String) 
+@(message: String, title: String) 
 
 <!DOCTYPE html>
 <html lang="en">
@@ -27,7 +27,7 @@
 		        	<br>
 		        </div>
 		        <div class="col s12">
-		        	<form action="@address" method="GET">
+		        	<form action="@controllers.routes.Tools.datacanvas("")" method="GET">
 						<div class="row">
 							<div class="input-field col s8">
 								<i class="material-icons prefix">cake</i>
@@ -36,10 +36,10 @@
 								<span class="helper-text" data-error="cannot contain spaces or special characters" data-success="good to go!"></span>
 							</div>
 							<div class="input-field col s4">
-								<button type="submit" class="btn blue"><i class="material-icons">play_arrow</i> Proceed</button>
+								<button type="submit" class="btn blue"><i class="material-icons left">play_arrow</i> Proceed</button>
 							</div>
  						</div>
-					</form>		        	
+					</form>
 		        </div>
 	        	<br>
 		    </div>
