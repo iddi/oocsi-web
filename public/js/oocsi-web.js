@@ -212,6 +212,9 @@ var OOCSI = (function() {
 		isConnected: function() {
 			return internalConnected();
 		},
+		handle: function() {
+			return username;
+		},
 		close: function() {
 			waitForSocket(function() {
 				internalClose();

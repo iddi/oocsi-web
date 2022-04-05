@@ -1,4 +1,4 @@
-@(message: String, token: String)
+ @(message: String, token: String)
 
 <!DOCTYPE html>
 <html lang="en">
@@ -119,12 +119,7 @@
 				const s = p => {
 				  let BASEPLATE_WIDTH = 600 * 1.333;
 				  let BASEPLATE_HEIGHT = 428 * 1.333;
-				  let myself = {
-					text: 'click "discover clients" to start',
-					x: BASEPLATE_WIDTH/2,
-					y: BASEPLATE_HEIGHT/2
-				  };
-				  let clients = [myself];
+				  let clients = [];
 				  let channels = [];
 				  let labels = [];
 				  let labelSubscriptions = {};
@@ -476,34 +471,23 @@
 				  	return clients;
 				  };
 
-				  p.setClient = function(text, x, y) {
-					myself.text = text;
-					myself.x = x
-					myself.y = y
-				  };
-
-				  p.updateClient = function(text, x, y) {
-					if(!text || text.length < 2 || text.startsWith("heyOOCSI")) {
+				  p.updateClient = function(text) {
+					if(!text || text.length < 2 || text.startsWith("heyOOCSI") || text.startsWith('dcc_')) {
 						return;
 					}
 
-					var client = p.findClient(text);
-					if(client) {
-						if(x > -1) {
-							client.x = x
-							client.y = y
-						}
+					if(p.findClient(text) !== undefined) {
+						// client is already present
 						return false;
-					}
-
-				  	// if no client found, add new
-				  	clients.push({
-				  		text: text,
-				  		x: p.random(200, BASEPLATE_WIDTH - 200),
-						y: 20
-				  	});
-
-				  	return true;
+					} else {
+					  	// if no client found, add new
+					  	clients.push({
+					  		text: text,
+					  		x: p.random(200, BASEPLATE_WIDTH - 200),
+							y: 20
+					  	});
+					  	return true;
+				  	}
 				  };
 
 				  p.updateChannel = function(text) {
@@ -539,28 +523,50 @@
 				  // event handling -----------------------------------------------------------------------------------
 
 				  p.addEvent = function(src, dst, ch) {
+
+				  	// don't add the token channel on canvas
+				  	if(ch == '@token' || src.startsWith('dcc_') || dst.startsWith('dcc_')) { return; }
+
+				  	// don't add more than 30 events on canvas at the same time
 				  	if(events.length < 30) {
 					  let source = p.findClient(src);
 					  let destination = p.findClient(dst);
 
-					  if(source && destination) {						
+					  if(source && source != destination) {						
 						// check channel
 						var channel = undefined;
 						if(ch && ch.length > 0) {
 							channel = p.updateChannel(ch);
 						}
 
-					  	events.push({
-					  		x: source.x,
-					  		y: source.y,
-					  		sx: source.x,
-					  		sy: source.y,
-					  		cx: channel ? channel.x : -1,
-					  		cy: channel ? channel.y : -1,
-					  		dx: destination.x,
-					  		dy: destination.y,
-					  		ttl: channel ? 200 : 100
-					  	});
+						if(channel !== undefined && destination === undefined) {
+							// undefined destination --> just draw event to channel
+						  	events.push({
+						  		x: source.x,
+						  		y: source.y,
+						  		sx: source.x,
+						  		sy: source.y,
+						  		cx: channel.x,
+						  		cy: channel.y,
+						  		dx: destination.x,
+						  		dy: destination.y,
+						  		ttl: 100
+						  	});
+						} else if (destination !== undefined) {
+							// destination defined --> draw event directly or via channel
+						  	events.push({
+						  		x: source.x,
+						  		y: source.y,
+						  		sx: source.x,
+						  		sy: source.y,
+						  		cx: channel ? channel.x : -1,
+						  		cy: channel ? channel.y : -1,
+						  		dx: destination.x,
+						  		dy: destination.y,
+						  		ttl: channel ? 200 : 100
+						  	});
+
+					  	}
 
 					  	// refresh src or dst randomly
 					  	if(Math.random() < 0.1) {
@@ -605,9 +611,6 @@
 				// page interaction -----------------------------------------------------------------------------------
 
 				var configuration = {
-					client: "",
-					x : 0,
-					y: 0,
 					play: false,
 					speed: 3600,
 					showLabels: true,
@@ -618,12 +621,7 @@
 
 				$('#oocsi_client').change(function() {
 					let client = $('#oocsi_client').val();
-					if(client.length > 0) {
-						visualisation.setClient(client, visualisation.BASEPLATE_WIDTH/2, visualisation.BASEPLATE_HEIGHT/2);
-					}
-
-					visualisation.updateClient(client, 1, 1);
-					configuration.client = client;
+					visualisation.updateClient(client);
 				});
 
 				$('.modal').modal();
@@ -654,7 +652,7 @@
 				// networking -----------------------------------------------------------------------------------------
 
 				let subscriptions = {}
-				OOCSI.connect((window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws', undefined, function(msg) {
+				OOCSI.connect((window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws', "dcc_" + +(new Date()), function(msg) {
 					let client = visualisation.findClient(msg.data.clientHandle)
 					if(client && Object.values(msg.data.location).length > 0) {
 						client.x = Object.values(msg.data.location)[0][0]
@@ -704,12 +702,12 @@
 					// subscribe to events
 					OOCSI.subscribe("OOCSI_events", function(msg) {
 						if(visualisation.findClient(msg.data.PUB)) {
-							if(visualisation.updateClient(msg.data.SUB, -1, -1)) {
+							if(visualisation.updateClient(msg.data.SUB)) {
 								OOCSI.send("heyOOCSIClient", {clientHandle: msg.data.SUB})
 							}
 						}
 						if(visualisation.findClient(msg.data.SUB)) {
-							if(visualisation.updateClient(msg.data.PUB, -1, -1)) {
+							if(visualisation.updateClient(msg.data.PUB)) {
 								OOCSI.send("heyOOCSIClient", {clientHandle: msg.data.PUB})
 							}
 						}

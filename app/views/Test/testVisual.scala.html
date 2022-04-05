@@ -9,7 +9,7 @@
 	<div class="row">
 		<div class="col s12">
 			<p>
-				Test OOCSI for Web code on this server directly with a client.
+				Test OOCSI for Web code on this server directly with a client<span id="clientName"></span>.
 			</p>
 		</div>
 
@@ -60,6 +60,10 @@
 	OOCSI.connect((window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws', undefined, function(e) {
 			$('#c2_results').append('<p>' + JSON.stringify(e.data) + '</p>');
 	});
+
+	setTimeout(function(){
+		clientName.innerHTML = ", connected as <code>" + OOCSI.handle() + "</code>"
+	}, 500);
 
 	$('#c1_subscribe').click(function(e) {
 		let channelName = $('#c1_channel').val();

@@ -152,6 +152,23 @@ public class HeyOOCSIClient extends Client {
 					// could not parse the coordinates or distance
 					// do nothing
 				}
+			} else if (event.data.containsKey("location")) {
+				String location = ((String) event.data.get("location")).trim();
+				Set<String> clientNames = new HashSet<>();
+				clients.values().stream().forEach(od -> {
+					od.locations.keySet().forEach(loc -> {
+						if (loc.equalsIgnoreCase(location)) {
+							clientNames.add(od.deviceId);
+						}
+					});
+				});
+
+				// assemble the clients within given location and send back
+				Client c = server.getClient(event.sender);
+				if (c != null) {
+					c.send(new Message(token, event.sender).addData("location", location).addData("clients",
+					        clientNames.toArray(new String[] {})));
+				}
 			}
 		}
 	}
