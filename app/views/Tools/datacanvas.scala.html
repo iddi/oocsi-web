@@ -678,7 +678,7 @@
 									subscriptions[client.channel] = [client]
 									OOCSI.subscribe(client.channel, function(msg) {
 										subscriptions[client.channel].forEach(function(d) {
-											if(d.screenName == msg.data.component) {
+											if(d.screenName == msg.data.component && msg.data.value !== undefined) {
 												d.value = msg.data.value
 											}
 										})

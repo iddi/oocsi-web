@@ -1,9 +1,11 @@
 package model.clients;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -121,6 +123,35 @@ public class HeyOOCSIClient extends Client {
 						        .addData("components", od.serializeComponents()));
 					}
 				}
+			} else if (event.data.containsKey("x") && event.data.containsKey("y")
+			        && event.data.containsKey("distance")) {
+				try {
+					float x = ((Number) event.data.get("x")).floatValue();
+					float y = ((Number) event.data.get("y")).floatValue();
+					float distance = ((Number) event.data.get("distance")).floatValue();
+
+					Set<String> clientNames = new HashSet<>();
+					clients.values().stream().forEach(od -> {
+						od.locations.entrySet().forEach(loc -> {
+							Float[] location = loc.getValue();
+							double dist = Math.hypot(Math.abs(location[0] - x), Math.abs(location[1] - y));
+							if (dist < distance) {
+								clientNames.add(od.deviceId);
+							}
+						});
+					});
+
+					// assemble the clients within distance from reference point and send back
+					Client c = server.getClient(event.sender);
+					if (c != null) {
+						c.send(new Message(token, event.sender).addData("x", x).addData("y", y)
+						        .addData("distance", distance)
+						        .addData("clients", clientNames.toArray(new String[] {})));
+					}
+				} catch (NumberFormatException e) {
+					// could not parse the coordinates or distance
+					// do nothing
+				}
 			}
 		}
 	}
@@ -196,7 +227,7 @@ public class HeyOOCSIClient extends Client {
 				ObjectNode on = locs.putObject(de.name);
 				on.put("channel_name", de.channel);
 				on.put("default_value", de.value);
-				on.put("type	", de.type);
+				on.put("type", de.type);
 				on.put("icon", de.icon);
 			});
 			return locs;
