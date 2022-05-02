@@ -67,7 +67,14 @@ public class HTTPRequestClient extends Client {
 		// extract message data
 		final String url;
 		if (event.data.containsKey("url")) {
-			url = ((String) event.data.get("url")).trim();
+			String temp = ((String) event.data.get("url")).trim();
+
+			// check for protocol, add if missing
+			if (!temp.startsWith("http")) {
+				temp = "https://" + temp;
+			}
+
+			url = temp;
 		} else {
 			url = "";
 		}
@@ -93,13 +100,21 @@ public class HTTPRequestClient extends Client {
 			postJson = "";
 		}
 
+		final String channel;
+		if (event.data.containsKey("channel")) {
+			channel = ((String) event.data.get("channel")).trim();
+		} else {
+			channel = event.sender;
+		}
+
 		// abort if key data is missing
 		if (url.isEmpty()) {
 			return;
 		}
 
 		// log and make the call
-		logger.info("Calling http-web-request for URL " + url + " with method " + method + " by " + event.sender);
+		logger.info("Calling http-web-request for URL " + url + " with method " + method + " for " + channel + " by "
+		        + event.sender);
 		try {
 			WSRequest request = wsClient.url(url);
 			final CompletionStage<WSResponse> wsResponse;
@@ -114,7 +129,7 @@ public class HTTPRequestClient extends Client {
 			}
 			wsResponse.thenAccept(response -> {
 				if (validate(event.recipient)) {
-					Message m = new Message("http-web-request", event.sender);
+					Message m = new Message("http-web-request", channel);
 					m.data.putAll(event.data);
 					m.data.put("result-status", response.getStatus());
 					m.data.put("result-body", response.getBody());
@@ -123,34 +138,35 @@ public class HTTPRequestClient extends Client {
 						m.data.put(OOCSICall.MESSAGE_ID, event.data.get(OOCSICall.MESSAGE_ID));
 					}
 
-					Channel c = server.getChannel(event.sender);
+					Channel c = server.getChannel(channel);
 					if (c != null) {
 						c.send(m);
 
 						// log access
-						OOCSIServer.logEvent(token, "", event.sender, event.data, event.timestamp);
+						OOCSIServer.logEvent(token, "", channel, event.data, event.timestamp);
 					}
 				}
 			}).exceptionally(e -> {
-				logger.error("Problem calling http-web-request for URL " + url + " with method " + method + " by "
-				        + event.sender + ": " + e.getLocalizedMessage());
+				logger.error("Problem calling http-web-request for URL " + url + " with method " + method + " for "
+				        + channel + " by " + event.sender + ": " + e.getLocalizedMessage());
 				return null;
 			});
 		} catch (Exception e) {
-			logger.error("Problem calling http-web-request for URL " + url + " with method " + method + " by "
-			        + event.sender + ": " + e.getLocalizedMessage());
+			logger.error("Problem calling http-web-request for URL " + url + " with method " + method + " for "
+			        + channel + " by " + event.sender + ": " + e.getLocalizedMessage());
 			if (validate(event.recipient)) {
-				Message m = new Message("http-web-request", event.sender);
+				Message m = new Message("http-web-request", channel);
 				m.data.putAll(event.data);
 				m.data.put("result-status", 404);
 				m.data.put("result-body", "The URL seems to be malformed.");
 				m.data.put("result-content-type", "");
-				Channel c = server.getChannel(event.sender);
+
+				Channel c = server.getChannel(channel);
 				if (c != null) {
 					c.send(m);
 
 					// log access
-					OOCSIServer.logEvent(token, "", event.sender, event.data, event.timestamp);
+					OOCSIServer.logEvent(token, "", channel, event.data, event.timestamp);
 				}
 			}
 		}
