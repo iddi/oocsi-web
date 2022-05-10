@@ -34,7 +34,7 @@ GET		/icons/*file					controllers.Assets.at(path="/public/images/icons", file)
 
 # REST API
 GET		/channels						controllers.Application.channels()
-GET 	/send/:channel/:data			controllers.Application.sendData(channel: String, data: String)
+GET 	/send/:channel/:data				controllers.Application.sendData(request: Request, channel: String, data: String)
 GET 	/track/:channel/:data			controllers.Application.track(request: Request, channel: String, data: String)
 POST	/send							controllers.Application.send(request: Request, channel: String ?= "")
 POST	/send/							controllers.Application.send(request: Request, channel: String ?= "")

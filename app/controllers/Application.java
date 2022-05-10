@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -42,6 +43,8 @@ import play.inject.ApplicationLifecycle;
 import play.libs.Json;
 import play.libs.streams.ActorFlow;
 import play.mvc.Controller;
+import play.mvc.Http.Cookie;
+import play.mvc.Http.Cookie.SameSite;
 import play.mvc.Http.Request;
 import play.mvc.Result;
 import play.mvc.WebSocket;
@@ -266,6 +269,8 @@ public class Application extends Controller {
 		return ok(server.getChannelList());
 	}
 
+	// ----------------------------------------------------------------------------------------------------------------
+
 	/**
 	 * handle GET request to send a message to a channel
 	 * 
@@ -273,7 +278,11 @@ public class Application extends Controller {
 	 * @param data
 	 * @return
 	 */
-	public Result sendData(String channel, String data) {
+	public Result sendData(Request request, String channel, String data) {
+
+		// extract user id if provided
+		String userId = extractUserId(request);
+
 		if (channel == null || channel.trim().length() == 0) {
 			return badRequest("ERROR: channel missing");
 		} else if (server.getChannel(channel) == null) {
@@ -281,9 +290,10 @@ public class Application extends Controller {
 		} else {
 			Message m = new Message("WEB-REQUEST", channel);
 			m.addData("parameter", data);
+			m.addData("userId", userId);
 			server.getChannel(channel).send(m);
 
-			return ok();
+			return ok("").withCookies(createUserIdCookie(request, userId));
 		}
 	}
 
@@ -295,6 +305,10 @@ public class Application extends Controller {
 	 * @return
 	 */
 	public Result track(Request request, String channel, String data) {
+
+		// extract user id if provided
+		String userId = extractUserId(request);
+
 		if (channel == null || channel.trim().length() == 0) {
 			return badRequest("ERROR: channel missing");
 		} else if (server.getChannel(channel) == null) {
@@ -305,10 +319,11 @@ public class Application extends Controller {
 			m.addData("User-Agent", request.header("User-Agent").orElse(""));
 			m.addData("Referer", request.header("Referer").orElse(""));
 			m.addData("Origin", request.header("Origin").orElse(""));
+			m.addData("userId", userId);
 
 			server.getChannel(channel).send(m);
 
-			return ok();
+			return ok("").withCookies(createUserIdCookie(request, userId));
 		}
 	}
 
@@ -319,6 +334,9 @@ public class Application extends Controller {
 	 * @return
 	 */
 	public Result send(Request request, String channel) {
+
+		// extract user id if provided
+		String userId = extractUserId(request);
 
 		// // check channel available
 		if (channel == null || channel.trim().isEmpty()) {
@@ -341,7 +359,7 @@ public class Application extends Controller {
 				map.put(i.getKey(), i.getValue().asText());
 			});
 
-			return internalSend(sender, channel, map);
+			return internalSend(sender, channel, userId, map).withCookies(createUserIdCookie(request, userId));
 		} else {
 			DynamicForm dynamicForm = formFactory.form().bindFromRequest(request);
 
@@ -351,7 +369,8 @@ public class Application extends Controller {
 				return badRequest("ERROR: sender missing");
 			}
 
-			return internalSend(sender, channel, dynamicForm.rawData());
+			return internalSend(sender, channel, userId, dynamicForm.rawData())
+			        .withCookies(createUserIdCookie(request, userId));
 		}
 
 	}
@@ -364,7 +383,7 @@ public class Application extends Controller {
 	 * @param messageData
 	 * @return
 	 */
-	private Result internalSend(String sender, String channel, Map<String, String> messageData) {
+	private Result internalSend(String sender, String channel, String userId, Map<String, String> messageData) {
 		// check whether there is another client with same name (-> abort)
 		Client serverClient = server.getClient(sender);
 		if (serverClient != null) {
@@ -384,6 +403,7 @@ public class Application extends Controller {
 					message.addData(key, messageData.get(key));
 				}
 			}
+			message.addData("userId", userId);
 
 			// send message
 			serverChannel.send(message);
@@ -393,6 +413,30 @@ public class Application extends Controller {
 
 		return ok("Message delivered to " + channel);
 	}
+
+	/**
+	 * extract the value of a userId cookie set on the given request, if not present create a new userId based on UUID
+	 * 
+	 * @param request
+	 * @return
+	 */
+	private String extractUserId(Request request) {
+		return request.getCookie("userId").map(c -> c.value().toString()).orElse(UUID.randomUUID().toString());
+	}
+
+	/**
+	 * creates a cookie for the given userId based on the request
+	 * 
+	 * @param request
+	 * @param userId
+	 * @return
+	 */
+	private Cookie createUserIdCookie(Request request, String userId) {
+		return new Cookie("userId", userId, 24 * 3600, "/",
+		        (request.host().startsWith("localhost") ? null : request.host()), request.secure(), true, SameSite.LAX);
+	}
+
+	// ----------------------------------------------------------------------------------------------------------------
 
 	/**
 	 * respond to service check
