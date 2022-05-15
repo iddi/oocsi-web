@@ -104,7 +104,7 @@ public class HTTPRequestClient extends Client {
 		if (event.data.containsKey("channel")) {
 			channel = ((String) event.data.get("channel")).trim();
 		} else {
-			channel = event.sender;
+			channel = event.getSender();
 		}
 
 		// abort if key data is missing
@@ -114,7 +114,7 @@ public class HTTPRequestClient extends Client {
 
 		// log and make the call
 		logger.info("Calling http-web-request for URL " + url + " with method " + method + " for " + channel + " by "
-		        + event.sender);
+		        + event.getSender());
 		try {
 			WSRequest request = wsClient.url(url);
 			final CompletionStage<WSResponse> wsResponse;
@@ -128,7 +128,7 @@ public class HTTPRequestClient extends Client {
 				wsResponse = request.get();
 			}
 			wsResponse.thenAccept(response -> {
-				if (validate(event.recipient)) {
+				if (validate(event.getRecipient())) {
 					Message m = new Message("http-web-request", channel);
 					m.data.putAll(event.data);
 					m.data.put("result-status", response.getStatus());
@@ -143,18 +143,18 @@ public class HTTPRequestClient extends Client {
 						c.send(m);
 
 						// log access
-						OOCSIServer.logEvent(token, "", channel, event.data, event.timestamp);
+						OOCSIServer.logEvent(token, "", channel, event.data, event.getTimestamp());
 					}
 				}
 			}).exceptionally(e -> {
 				logger.error("Problem calling http-web-request for URL " + url + " with method " + method + " for "
-				        + channel + " by " + event.sender + ": " + e.getLocalizedMessage());
+				        + channel + " by " + event.getSender() + ": " + e.getLocalizedMessage());
 				return null;
 			});
 		} catch (Exception e) {
 			logger.error("Problem calling http-web-request for URL " + url + " with method " + method + " for "
-			        + channel + " by " + event.sender + ": " + e.getLocalizedMessage());
-			if (validate(event.recipient)) {
+			        + channel + " by " + event.getSender() + ": " + e.getLocalizedMessage());
+			if (validate(event.getRecipient())) {
 				Message m = new Message("http-web-request", channel);
 				m.data.putAll(event.data);
 				m.data.put("result-status", 404);
@@ -166,7 +166,7 @@ public class HTTPRequestClient extends Client {
 					c.send(m);
 
 					// log access
-					OOCSIServer.logEvent(token, "", channel, event.data, event.timestamp);
+					OOCSIServer.logEvent(token, "", channel, event.data, event.getTimestamp());
 				}
 			}
 		}

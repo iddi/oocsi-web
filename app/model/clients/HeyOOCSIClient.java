@@ -70,7 +70,7 @@ public class HeyOOCSIClient extends Client {
 	@Override
 	public void send(Message event) {
 		// read and parse heyOOCSI message
-		if (event.recipient.equals("heyOOCSI!")) {
+		if (event.getRecipient().equals("heyOOCSI!")) {
 			synchronized (clients) {
 				event.data.forEach((k, v) -> {
 					if (v instanceof ObjectNode) {
@@ -116,9 +116,9 @@ public class HeyOOCSIClient extends Client {
 				String clientHandle = (String) event.data.get("clientHandle");
 				if (clients.containsKey(clientHandle)) {
 					OOCSIDevice od = clients.get(clientHandle);
-					Client c = server.getClient(event.sender);
+					Client c = server.getClient(event.getSender());
 					if (c != null) {
-						c.send(new Message(token, event.sender).addData("clientHandle", clientHandle)
+						c.send(new Message(token, event.getSender()).addData("clientHandle", clientHandle)
 						        .addData("location", od.serializeLocations())
 						        .addData("components", od.serializeComponents()));
 					}
@@ -142,9 +142,9 @@ public class HeyOOCSIClient extends Client {
 					});
 
 					// assemble the clients within distance from reference point and send back
-					Client c = server.getClient(event.sender);
+					Client c = server.getClient(event.getSender());
 					if (c != null) {
-						c.send(new Message(token, event.sender).addData("x", x).addData("y", y)
+						c.send(new Message(token, event.getSender()).addData("x", x).addData("y", y)
 						        .addData("distance", distance)
 						        .addData("clients", clientNames.toArray(new String[] {})));
 					}
@@ -164,9 +164,9 @@ public class HeyOOCSIClient extends Client {
 				});
 
 				// assemble the clients within given location and send back
-				Client c = server.getClient(event.sender);
+				Client c = server.getClient(event.getSender());
 				if (c != null) {
-					c.send(new Message(token, event.sender).addData("location", location).addData("clients",
+					c.send(new Message(token, event.getSender()).addData("location", location).addData("clients",
 					        clientNames.toArray(new String[] {})));
 				}
 			}

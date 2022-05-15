@@ -14,7 +14,7 @@ public class ServiceRequestClient extends Client {
 
 	@Override
 	public void send(Message message) {
-		if (validate(message.recipient)) {
+		if (validate(message.getRecipient())) {
 			completedMessage = message;
 		}
 	}

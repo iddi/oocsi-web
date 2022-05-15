@@ -5,9 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -22,7 +19,7 @@ import play.libs.Json;
 public class WebSocketClient extends Client {
 
 	private static final ObjectMapper JSON_SERIALIZER = new ObjectMapper();
-	private static final Logger logger = LoggerFactory.getLogger(WebSocketClient.class);
+//	private static final Logger logger = LoggerFactory.getLogger(WebSocketClient.class);
 
 	private OOCSIServer server;
 	private WebSocketClientActor output;
@@ -135,9 +132,9 @@ public class WebSocketClient extends Client {
 		ObjectNode je = Json.newObject();
 
 		// add OOCSI properties
-		je.put("recipient", m.recipient);
-		je.put("timestamp", m.timestamp.getTime());
-		je.put("sender", m.sender);
+		je.put("recipient", m.getRecipient());
+		je.put("timestamp", m.getTimestamp().getTime());
+		je.put("sender", m.getSender());
 
 		je.set("data", JSON_SERIALIZER.valueToTree(m.data));
 
