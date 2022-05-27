@@ -92,6 +92,7 @@ public class Application extends Controller {
 		// register shutdown hook
 		lifecycle.addStopHook(() -> {
 			server.stop();
+			Thread.sleep(1000);
 			return CompletableFuture.completedFuture(null);
 		});
 	}

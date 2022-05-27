@@ -1,7 +1,7 @@
 package utils;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import javax.inject.Singleton;
@@ -23,7 +23,7 @@ public class SummarizingLogger {
 
 	public void logSummary() {
 		if (logStatements == null) {
-			logStatements = new HashMap<>();
+			logStatements = new ConcurrentHashMap<>();
 			logger.info("-------------------------------------------------");
 			logger.info("-- Starting the summarizing log                --");
 			logger.info("-------------------------------------------------");

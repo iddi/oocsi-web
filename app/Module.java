@@ -18,6 +18,7 @@ public class Module extends AbstractModule {
 			// debug restart
 			OOCSIServer os = OOCSIServer.getInstance();
 			if (os != null) {
+				os.stop();
 				os.destroyInstance();
 			}
 

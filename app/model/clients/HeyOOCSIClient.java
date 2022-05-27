@@ -103,6 +103,9 @@ public class HeyOOCSIClient extends Client {
 								od.locations.put(e.getKey(), locationComponents);
 							}
 						});
+						on.at("/properties").fields().forEachRemaining(e -> {
+							od.properties.put(e.getKey(), e.getValue().asText());
+						});
 
 						// check contents of device
 
@@ -120,37 +123,49 @@ public class HeyOOCSIClient extends Client {
 					if (c != null) {
 						c.send(new Message(token, event.getSender()).addData("clientHandle", clientHandle)
 						        .addData("location", od.serializeLocations())
-						        .addData("components", od.serializeComponents()));
+						        .addData("components", od.serializeComponents())
+						        .addData("properties", od.serializeProperties()));
 					}
 				}
 			} else if (event.data.containsKey("x") && event.data.containsKey("y")
 			        && event.data.containsKey("distance")) {
 				try {
-					float x = ((Number) event.data.get("x")).floatValue();
-					float y = ((Number) event.data.get("y")).floatValue();
-					float distance = ((Number) event.data.get("distance")).floatValue();
+					final float x = ((Number) event.data.get("x")).floatValue();
+					final float y = ((Number) event.data.get("y")).floatValue();
+					final float distance = ((Number) event.data.get("distance")).floatValue();
 
-					Set<String> clientNames = new HashSet<>();
+					// check if we need to truncate the client list, according to the "n closest clients"
+					final int closest;
+					if (event.data.containsKey("closest")) {
+						closest = ((Number) event.data.get("closest")).intValue();
+					} else {
+						closest = 100;
+					}
+
+					// build list of all client within given distance
+					Map<Double, String> clientNames = new HashMap<>();
 					clients.values().stream().forEach(od -> {
 						od.locations.entrySet().forEach(loc -> {
 							Float[] location = loc.getValue();
 							double dist = Math.hypot(Math.abs(location[0] - x), Math.abs(location[1] - y));
 							if (dist < distance) {
-								clientNames.add(od.deviceId);
+								clientNames.put(dist, od.deviceId);
 							}
 						});
 					});
+
+					// create sorted list of clients, potentially truncated by "closest"
+					List<String> cns = clientNames.entrySet().stream().sorted(Map.Entry.comparingByKey()).limit(closest)
+					        .map(e -> e.getValue()).collect(Collectors.toList());
 
 					// assemble the clients within distance from reference point and send back
 					Client c = server.getClient(event.getSender());
 					if (c != null) {
 						c.send(new Message(token, event.getSender()).addData("x", x).addData("y", y)
-						        .addData("distance", distance)
-						        .addData("clients", clientNames.toArray(new String[] {})));
+						        .addData("distance", distance).addData("clients", cns.toArray(new String[] {})));
 					}
-				} catch (NumberFormatException e) {
-					// could not parse the coordinates or distance
-					// do nothing
+				} catch (NumberFormatException | ClassCastException e) {
+					// could not parse the coordinates or distance, do nothing
 				}
 			} else if (event.data.containsKey("location")) {
 				String location = ((String) event.data.get("location")).trim();
@@ -213,6 +228,7 @@ public class HeyOOCSIClient extends Client {
 		public String deviceId;
 		public Map<String, Float[]> locations = new HashMap<>();
 		public List<DeviceEntity> components = new LinkedList<>();
+		public Map<String, String> properties = new HashMap<>();
 		public String icon;
 		private long purgeTimestamp = -1;
 
@@ -248,6 +264,14 @@ public class HeyOOCSIClient extends Client {
 				on.put("icon", de.icon);
 			});
 			return locs;
+		}
+
+		public ObjectNode serializeProperties() {
+			ObjectNode props = Json.newObject();
+			properties.entrySet().stream().forEach(de -> {
+				props.put(de.getKey(), de.getValue());
+			});
+			return props;
 		}
 	}
 
