@@ -299,6 +299,33 @@ public class Application extends Controller {
 	}
 
 	/**
+	 * handle GET request to send a message to a channel and auto-close the window or tab, even if there is an error
+	 * message (bad request, not found)
+	 * 
+	 * @param channel
+	 * @param data
+	 * @return
+	 */
+	public Result sendDataAndClose(Request request, String channel, String data) {
+
+		// extract user id if provided
+		String userId = extractUserId(request);
+
+		if (channel == null || channel.trim().length() == 0) {
+			return badRequest(views.html.Application.sendAndClose.render());
+		} else if (server.getChannel(channel) == null) {
+			return notFound(views.html.Application.sendAndClose.render());
+		} else {
+			Message m = new Message("WEB-REQUEST", channel);
+			m.addData("parameter", data);
+			m.addData("userId", userId);
+			server.getChannel(channel).send(m);
+
+			return ok(views.html.Application.sendAndClose.render()).withCookies(createUserIdCookie(request, userId));
+		}
+	}
+
+	/**
 	 * track GET request to send a message to a channel
 	 * 
 	 * @param channel
