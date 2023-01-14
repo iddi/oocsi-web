@@ -97,7 +97,7 @@
 						<div class="row">
 							<div class="input-field col s6">
 								<input id="oocsi_channel" type="text" class="validate">
-								<label for="oocsi_channel">OOCSI Channel</label>
+								<label for="oocsi_channel" class="active">OOCSI Channel</label>
 							</div>
 							<div class="col s6">
 								<br>
@@ -255,6 +255,7 @@
 					// }
 
 					$('#oocsi_channel').val(configuration.channel);
+					$('#oocsi_channel').parent().find('label').addClass('active')
 					$('#minValue').val(control.min);
 					$('#maxValue').val(control.max);
 					$('#speedValue').val(control.speed);
@@ -310,7 +311,7 @@
 
 						var compressedJSON = JSONC.pack(configuration, true);
 
-						var fullLink = 'http://' + window.location.host + window.location.pathname + "?" + encodeURIComponent(JSON.stringify(compressedJSON));
+						var fullLink = window.location.protocol + window.location.host + window.location.pathname + "?" + encodeURIComponent(JSON.stringify(compressedJSON));
 						var qrcode = new QRCode("qrcode", {
 						    text: fullLink,
 						    width: 256,

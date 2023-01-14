@@ -1,0 +1,196 @@
+@(message: String, title: String, address: String)
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+  		<meta charset="utf-8">
+        <title>OOCSI Dashboard</title>
+        <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")"/>
+
+		<!--Let browser know website is optimized for mobile-->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		
+        <link rel="stylesheet" media="screen,projection" type="text/css" href="@routes.Assets.versioned("stylesheets/main.css")"/>
+        
+        <script src="@routes.Assets.versioned("js/oocsi-web.min.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.versioned("js/materialize.min.js")" type="text/javascript"></script>
+        <style type="text/css">
+			body {
+				font-family: sans-serif;
+			}
+
+			#charts > div {
+				padding-bottom: 1rem;
+				border-bottom: 1px dotted lightgray;
+				clear: both;
+			}
+
+			#charts .tile {
+				width: 10%;
+				min-width:  6rem;
+				height: 5rem;
+				float: left;
+				margin-right: 2%;
+				font-size: 2rem;
+				text-align: center;
+			}
+
+			#charts .tile span {
+				display: block;
+				margin: 0 auto;
+				color: black;
+			}
+
+			#charts .tile label {
+				display: block;
+				font-size: 1rem;
+				color: grey;
+			}
+			#charts .tile div {
+				font-size: 0.5rem;
+				color: grey;
+			}
+		</style>
+    </head>
+    <body>
+
+		@elements.navigation("tools")
+
+		<div class="container">
+			<div class="row" id="charts">
+			</div>
+			<div class="row" style="margin-top: 2rem; border-top: #efefef solid 1px;">
+				<div class="col s12">
+		    		<a class="btn" id="addChannelBtn" href="#">add channel</a>
+		    	</div>
+			</div>
+		</div>
+		<script type="text/javascript">
+
+			document.addEventListener("DOMContentLoaded", function() {
+
+				const ticks = ['▁','▂','▃','▄','▅','▆','▇','█']
+				let channels = []
+				let values = {}
+				let charts = document.getElementById('charts')
+				// let html = ''
+
+				// connect to OOCSI server
+				OOCSI.connect((window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws');
+
+				// add charts
+				var json = readCookie('channels');
+				channelLoader = JSON.parse(json);
+				if(channelLoader !== null && channelLoader !== undefined && channelLoader.length > 0) {
+					for(let channel of channelLoader) {
+						addChannel(channel)
+					}
+				} else {
+					addChannel("testchannel");
+				}
+
+				// add add handler
+				document.getElementById('addChannelBtn').addEventListener('click', function() {
+					let channel = prompt("Enter name for channel to be added:")
+					if(channel !== undefined && channel !== "") {
+						addChannel(channel)
+					}
+				})
+
+		    	createCookie('channels', JSON.stringify(channels));
+
+				function processData(e) {
+					for(const key in e.data) {
+						const channel = e.recipient
+						const handle = channel+key
+						if(values[handle] === undefined) {
+							addTile(channel, key)
+							values[handle] = { min: 100000, current: 0, max: 0, ticks: [] }
+						}
+
+						// check for number
+						let value = e.data[key]
+						if(Math.abs(value) !== NaN) {
+							value = Math.round(value * 10) / 10
+						}
+						values[handle].current = value
+						values[handle].min = Math.min(value, values[handle].min)
+						values[handle].max = Math.max(value, values[handle].max)
+						document.getElementById(`${e.recipient}_${key}`).innerText = values[handle].current
+						if(values[handle].max > 0) {
+							let s = (values[handle].current - values[handle].min) / (values[handle].max - values[handle].min)
+							s = Math.round(s * 7)
+							if(s !== NaN) {
+								if(values[handle].ticks.length > 10) { values[handle].ticks.shift(); }
+								values[handle].ticks.push(ticks[s])
+								document.getElementById(`${channel}_${key}_sl`).innerText = values[handle].ticks.join('')
+							}
+						}
+					}
+				}
+
+				function addChannel(channel) {
+					let elem = document.createElement('div')
+					charts.append(elem)
+					elem.innerHTML = `<div class="col s12" id="channel-${channel}">
+							<h3>
+								${channel} <small><a href="#" id="delete-${channel}" title="delete this channel">🚮</a></small>
+							</h3>
+							<div class="tiles" id="${channel}"></div>
+						</div>`
+					OOCSI.subscribe(channel, processData)
+					channels.push(channel);
+			    	createCookie('channels', JSON.stringify(channels))
+
+					document.getElementById('delete-' + channel).addEventListener('click', function() {
+						OOCSI.unsubscribe(channel)
+						channels.splice(channels.indexOf(channel), 2)
+						document.getElementById('channel-' + channel).remove()
+				    	createCookie('channels', JSON.stringify(channels))
+					})
+				}
+
+				function addTile(channel, key) {
+					var newEl = document.createElement('div')
+					newEl.className = 'tile';
+					newEl.innerHTML = 
+						`<span id="${channel}_${key}">0</span>
+						<label>${key}</label>
+						<div id="${channel}_${key}_sl"></div>`;
+					document.getElementById(channel).append(newEl)
+				}
+
+				/******************************************************************/
+
+				function createCookie(name, value, days) {
+				    var expires;
+
+				    if (days) {
+				        var date = new Date();
+				        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+				        expires = "; expires=" + date.toGMTString();
+				    } else {
+				        expires = "";
+				    }
+				    document.cookie = name + "=" + value + expires + "; path=/";
+				}
+
+				function readCookie(name) {
+				    var nameEQ = name + "=";
+				    var ca = document.cookie.split(';');
+				    for (var i = 0; i < ca.length; i++) {
+				        var c = ca[i];
+				        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+				        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+				    }
+				    return null;
+				}
+
+				function eraseCookie(name) {
+				    createCookie(name, "", -1);
+				}
+			});
+
+		</script>
+
+	</body>
+</html>

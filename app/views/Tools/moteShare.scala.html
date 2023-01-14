@@ -58,7 +58,7 @@
 						<div class="row">
 							<div class="input-field col s6">
 								<input id="oocsi_channel" type="text" class="validate">
-								<label for="oocsi_channel">OOCSI Channel</label>
+								<label for="oocsi_channel" class="active">OOCSI Channel</label>
 							</div>
 							<div class="col s6">
 								<br>
@@ -114,6 +114,7 @@
 					}
 
 					$('#oocsi_channel').val(configuration.channel);
+					$('#oocsi_channel').parent().find('label').addClass('active')
 					configuration.controls.forEach(function(d, i) {
 						if(d.type=="trigger") {
 							addTrigger(d, i);

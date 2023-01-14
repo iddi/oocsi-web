@@ -38,7 +38,16 @@ public class Tools extends Controller {
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * action to show a page to make your own dashboard
+	 * action to show a page to inspect all values sent over selected channels
+	 * 
+	 * @return
+	 */
+	public Result datatiles(Request request) {
+		return ok(views.html.Tools.datatiles.render("datatiles", "", request.host()));
+	}
+
+	/**
+	 * action to show a page to make your own charts based on selected data from channels
 	 * 
 	 * @return
 	 */
