@@ -41,6 +41,7 @@ public class TimeChannelGenerator {
 		m.addData("y", cal.get(Calendar.YEAR));
 		m.addData("M", cal.get(Calendar.MONTH));
 		m.addData("d", cal.get(Calendar.DAY_OF_MONTH));
+		m.addData("dw", cal.get(Calendar.DAY_OF_WEEK));
 		m.addData("h", cal.get(Calendar.HOUR_OF_DAY));
 		m.addData("m", cal.get(Calendar.MINUTE));
 		m.addData("s", cal.get(Calendar.SECOND));
