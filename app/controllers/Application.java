@@ -456,7 +456,7 @@ public class Application extends Controller {
 	 * @return
 	 */
 	private String extractUserId(Request request) {
-		return request.getCookie("userId").map(c -> c.value().toString()).orElse(UUID.randomUUID().toString());
+		return request.cookie("userId").map(c -> c.value().toString()).orElse(UUID.randomUUID().toString());
 	}
 
 	/**

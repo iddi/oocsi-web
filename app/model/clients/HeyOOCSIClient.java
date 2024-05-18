@@ -98,8 +98,10 @@ public class HeyOOCSIClient extends Client {
 						on.at("/location").fields().forEachRemaining(e -> {
 							if (e.getValue().isArray()) {
 								Float[] locationComponents = new Float[2];
-								locationComponents[0] = new Float(((ArrayNode) e.getValue()).get(0).asDouble());
-								locationComponents[1] = new Float(((ArrayNode) e.getValue()).get(1).asDouble());
+								locationComponents[0] = Float
+								        .valueOf((float) ((ArrayNode) e.getValue()).get(0).asDouble());
+								locationComponents[1] = Float
+								        .valueOf((float) ((ArrayNode) e.getValue()).get(1).asDouble());
 								od.locations.put(e.getKey(), locationComponents);
 							}
 						});
