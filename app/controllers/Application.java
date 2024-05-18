@@ -2,6 +2,8 @@ package controllers;
 
 import static akka.pattern.Patterns.ask;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.HashMap;
@@ -25,8 +27,11 @@ import com.typesafe.config.Config;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
+import akka.actor.Cancellable;
 import akka.actor.PoisonPill;
 import akka.stream.Materializer;
+import akka.stream.javadsl.Source;
+import model.actors.SSEChannelClient;
 import model.actors.ServiceClientActor;
 import model.actors.WebSocketClientActor;
 import model.clients.HeyOOCSIClient;
@@ -40,9 +45,11 @@ import play.Environment;
 import play.data.DynamicForm;
 import play.data.FormFactory;
 import play.inject.ApplicationLifecycle;
+import play.libs.EventSource;
 import play.libs.Json;
 import play.libs.streams.ActorFlow;
 import play.mvc.Controller;
+import play.mvc.Http;
 import play.mvc.Http.Cookie;
 import play.mvc.Http.Cookie.SameSite;
 import play.mvc.Http.Request;
@@ -510,6 +517,48 @@ public class Application extends Controller {
 			return CompletableFuture.completedFuture(notFound(service + " not found"));
 		}
 	}
+
+	/**
+	 * implements an OOCSI subscription via SSE. this makes some applications much easier to implement
+	 * 
+	 * @param request
+	 * @param channelName
+	 * @return
+	 */
+	public Result subscribe(Request request, String channelName) {
+		final EventSource.Event empty = new EventSource.Event(null, null, null);
+
+		String decodedChannelName = URLDecoder.decode(channelName, StandardCharsets.UTF_8);
+
+		// compose flow with a special OOCSI client
+		final SSEChannelClient channelClient = new SSEChannelClient(decodedChannelName);
+		Source<EventSource.Event, Cancellable> eventSource = Source.tick(Duration.ZERO, Duration.ofMillis(100), "")
+		        .map(tick -> {
+			        if (!channelClient.isEmpty()) {
+				        // don't use .withName here because that would complicate the EventSource subscription on the
+				        // client
+				        return EventSource.Event.event(channelClient.poll());
+			        }
+			        return empty;
+		        }).filter(event -> event != empty).watchTermination((prevMatValue, completionStage) -> {
+			        completionStage.whenComplete((done, exc) -> {
+				        server.unsubscribe(channelClient, decodedChannelName);
+				        server.removeClient(channelClient);
+			        });
+			        return prevMatValue;
+		        });
+
+		// connect client
+		server.addClient(channelClient);
+		server.subscribe(channelClient, decodedChannelName);
+
+//		logger.info("");
+
+		// return response with flow management
+		return ok().chunked(eventSource.via(EventSource.flow())).as(Http.MimeTypes.EVENT_STREAM);
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * internal dispatch for the incoming calls
