@@ -16,7 +16,7 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>OOCSI_SERVER</name>
+			<name>oocsi-server</name>
 			<type>2</type>
 			<locationURI>OOCSI_SERVER</locationURI>
 		</link>

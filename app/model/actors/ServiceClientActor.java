@@ -3,10 +3,11 @@ package model.actors;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.pekko.actor.AbstractActor;
+import org.apache.pekko.actor.Props;
+
 import com.google.inject.Inject;
 
-import akka.actor.AbstractActor;
-import akka.actor.Props;
 import model.clients.ServiceRequestClient;
 import nl.tue.id.oocsi.client.services.OOCSICall;
 import nl.tue.id.oocsi.server.OOCSIServer;

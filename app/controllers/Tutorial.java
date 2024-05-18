@@ -1,9 +1,10 @@
 package controllers;
 
+import org.apache.pekko.actor.ActorSystem;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import akka.actor.ActorSystem;
 import model.clients.EchoClient;
 import model.clients.HTTPRequestClient;
 import model.clients.HeyOOCSIClient;

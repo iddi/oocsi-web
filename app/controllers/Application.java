@@ -1,6 +1,6 @@
 package controllers;
 
-import static akka.pattern.Patterns.ask;
+import static org.apache.pekko.pattern.Patterns.ask;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -14,6 +14,13 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+import org.apache.pekko.actor.ActorRef;
+import org.apache.pekko.actor.ActorSystem;
+import org.apache.pekko.actor.Cancellable;
+import org.apache.pekko.actor.PoisonPill;
+import org.apache.pekko.stream.Materializer;
+import org.apache.pekko.stream.javadsl.Source;
+import org.apache.pekko.util.FutureConverters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,12 +32,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.typesafe.config.Config;
 
-import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
-import akka.actor.Cancellable;
-import akka.actor.PoisonPill;
-import akka.stream.Materializer;
-import akka.stream.javadsl.Source;
 import model.actors.SSEChannelClient;
 import model.actors.ServiceClientActor;
 import model.actors.WebSocketClientActor;
@@ -55,7 +56,6 @@ import play.mvc.Http.Cookie.SameSite;
 import play.mvc.Http.Request;
 import play.mvc.Result;
 import play.mvc.WebSocket;
-import scala.compat.java8.FutureConverters;
 import scala.concurrent.ExecutionContext;
 import utils.SummarizingLogger;
 
@@ -531,7 +531,7 @@ public class Application extends Controller {
 		String decodedChannelName = URLDecoder.decode(channelName, StandardCharsets.UTF_8);
 
 		// compose flow with a special OOCSI client
-		final SSEChannelClient channelClient = new SSEChannelClient(decodedChannelName);
+		final SSEChannelClient channelClient = new SSEChannelClient("HTTP-SSE-Client-" + System.currentTimeMillis());
 		Source<EventSource.Event, Cancellable> eventSource = Source.tick(Duration.ZERO, Duration.ofMillis(100), "")
 		        .map(tick -> {
 			        if (!channelClient.isEmpty()) {
@@ -571,7 +571,7 @@ public class Application extends Controller {
 	private CompletionStage<Result> internalServiceCall(String service, String call, String data) {
 		final ActorRef a = system.actorOf(ServiceClientActor.props(server));
 		CompletionStage<Result> prom = FutureConverters
-		        .toJava(ask(a, new ServiceClientActor.ServiceRequest(service, call, data), 5000))
+		        .asJava(ask(a, new ServiceClientActor.ServiceRequest(service, call, data), 5000))
 		        .thenApply(response -> {
 
 			        // kill actor

@@ -2,7 +2,8 @@ package model.generators;
 
 import java.util.concurrent.TimeUnit;
 
-import akka.actor.ActorSystem;
+import org.apache.pekko.actor.ActorSystem;
+
 import nl.tue.id.oocsi.server.OOCSIServer;
 import nl.tue.id.oocsi.server.model.Channel;
 import nl.tue.id.oocsi.server.protocol.Message;
