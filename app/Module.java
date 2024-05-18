@@ -1,16 +1,11 @@
 import java.io.IOException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.inject.AbstractModule;
 
 import nl.tue.id.oocsi.server.OOCSIServer;
 import utils.SummarizingLogger;
 
 public class Module extends AbstractModule {
-
-	private static final Logger logger = LoggerFactory.getLogger(Module.class);
 
 	@Override
 	protected void configure() {
@@ -23,7 +18,7 @@ public class Module extends AbstractModule {
 			}
 
 			// create logger
-			SummarizingLogger sl = new SummarizingLogger(logger);
+			SummarizingLogger sl = new SummarizingLogger();
 			bind(SummarizingLogger.class).toInstance(sl);
 
 			// create OOCSI server

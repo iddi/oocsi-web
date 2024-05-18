@@ -7,21 +7,18 @@ import java.util.stream.Collectors;
 import javax.inject.Singleton;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 public class SummarizingLogger {
 
-	private final Logger logger;
+	private static final Logger logger = LoggerFactory.getLogger(SummarizingLogger.class);
 
 	// initialize with null
 	private Map<String, Integer> logStatements = null;
 	private boolean dirty = false;
 
-	public SummarizingLogger(Logger logger) {
-		this.logger = logger;
-	}
-
-	public void logSummary() {
+	public synchronized void logSummary() {
 		if (logStatements == null) {
 			logStatements = new ConcurrentHashMap<>();
 			logger.info("-------------------------------------------------");
@@ -47,11 +44,15 @@ public class SummarizingLogger {
 	}
 
 	public synchronized void log(String message) {
-		if (logStatements != null) {
-			logStatements.merge(message, 1, (a, b) -> a + b);
-			dirty = true;
-		} else {
-			logger.info(message);
+		try {
+			if (logStatements != null) {
+				logStatements.merge(message, 1, (a, b) -> a + b);
+				dirty = true;
+			} else {
+				logger.info(message);
+			}
+		} catch (Exception e) {
+			logger.error("logging issue", e);
 		}
 	}
 }
