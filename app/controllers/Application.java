@@ -160,28 +160,52 @@ public class Application extends Controller {
 		serverNode.put("group", 0);
 		nodes.add(serverNode);
 
-		for (Channel c : server.getChannels()) {
-			if (!c.isPrivate() && !c.getName().startsWith("OOCSI_")) {
-				ObjectNode node = Json.newObject();
-				node.put("id", c.getName());
-				node.put("group", c instanceof Client ? 2 : 1);
-				node.put("value", c.getChannels().size());
-				nodes.add(node);
+		{
+			Set<String> nodesCreated = new HashSet<>();
+			Set<String> nodesInUse = new HashSet<>();
+			for (Channel c : server.getChannels()) {
+				String channelName = c.getName();
+				// don't allow for private nodes and node names with a space
+				if (!c.isPrivate() && !channelName.startsWith("OOCSI_") && !channelName.contains(" ")) {
+					ObjectNode node = Json.newObject();
+					node.put("id", channelName);
+					node.put("group", c instanceof Client ? 2 : 1);
+					node.put("value", c.getChannels().size());
+					nodes.add(node);
+					nodesCreated.add(channelName);
 
-				ObjectNode link = Json.newObject();
-				link.put("source", "OOCSI Server");
-				link.put("target", c.getName());
-				link.put("value", (c instanceof Client ? 5 : 1) + c.getChannels().size());
-				links.add(link);
+					ObjectNode link = Json.newObject();
+					link.put("source", "OOCSI Server");
+					link.put("target", channelName);
+					link.put("value", (c instanceof Client ? 5 : 1) + c.getChannels().size());
+					links.add(link);
+					nodesInUse.add(channelName);
 
-				for (Channel c1 : c.getChannels()) {
-					ObjectNode link1 = Json.newObject();
-					link1.put("source", c.getName());
-					link1.put("target", c1.getName());
-					link1.put("value", 1 + c1.getChannels().size());
-					links.add(link1);
+					for (Channel c1 : c.getChannels()) {
+						String targetChannelName = c1.getName();
+						// don't allow for private nodes and node names with a space
+						if (!c1.isPrivate() && !targetChannelName.startsWith("OOCSI_")
+						        && !targetChannelName.contains(" ")) {
+							ObjectNode link1 = Json.newObject();
+							link1.put("source", channelName);
+							link1.put("target", targetChannelName);
+							link1.put("value", 1 + c1.getChannels().size());
+							links.add(link1);
+							nodesInUse.add(targetChannelName);
+						}
+					}
 				}
 			}
+
+			// add remaining nodes
+			nodesInUse.removeAll(nodesCreated);
+			nodesInUse.stream().forEach(s -> {
+				ObjectNode node = Json.newObject();
+				node.put("id", s);
+				node.put("group", 1);
+				node.put("value", 1);
+				nodes.add(node);
+			});
 		}
 
 		{
@@ -240,7 +264,8 @@ public class Application extends Controller {
 					// add OOCSI entities for this location
 					for (DeviceEntity dc : od.components) {
 						ObjectNode entityNode = Json.newObject();
-						entityNode.put("id", od.name + "_" + dc.name);
+						String componentId = od.name + "_" + dc.name;
+						entityNode.put("id", componentId);
 						entityNode.put("label", dc.toString());
 						entityNode.put("value", 2);
 						entityNode.put("group", 5);
@@ -248,7 +273,7 @@ public class Application extends Controller {
 
 						ObjectNode link = Json.newObject();
 						link.put("source", deviceName);
-						link.put("target", od.name + "_" + dc.name);
+						link.put("target", componentId);
 						links.add(link);
 					}
 				}
