@@ -14,7 +14,7 @@ First, include the JavaScript source (either as the [full library](https://githu
 
 Then connect to an OOCSI server running a websockets adapter:
 ````javascript
-OOCSI.connect("ws://_SERVER_ADDRESS_/ws");
+OOCSI.connect("wss://_SERVER_ADDRESS_/ws");
 ````
 
 You can send data to a channel or individual client (here: "John"):
@@ -28,7 +28,7 @@ OOCSI.send("John", data);
 
 You can subscribe to a channel with a handler to handle messages:
 ````javascript
-OOCSI.subscribe(“testchannel", function(msg) {
+OOCSI.subscribe(“testchannel", (msg) => {
   // handle message from “test channel"
   var position = msg.data.position;
   var color = msg.data.color;

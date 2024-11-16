@@ -25,7 +25,7 @@
 			}
 
 			#charts .tile {
-				width: 10%;
+				width: 15%;
 				min-width:  6rem;
 				height: 5rem;
 				float: left;
@@ -36,6 +36,9 @@
 
 			#charts .tile span {
 				display: block;
+				overflow: hidden;
+				white-space: nowrap;
+				text-overflow: ellipsis;
 				margin: 0 auto;
 				color: black;
 			}
@@ -109,21 +112,25 @@
 
 						// check for number
 						let value = e.data[key]
-						if(Math.abs(value) !== NaN) {
+						if(!isNaN(Math.abs(value))) {
 							value = Math.round(value * 10) / 10
-						}
-						values[handle].current = value
-						values[handle].min = Math.min(value, values[handle].min)
-						values[handle].max = Math.max(value, values[handle].max)
-						document.getElementById(`${e.recipient}_${key}`).innerText = values[handle].current
-						if(values[handle].max > 0) {
-							let s = (values[handle].current - values[handle].min) / (values[handle].max - values[handle].min)
-							s = Math.round(s * 7)
-							if(s !== NaN) {
-								if(values[handle].ticks.length > 10) { values[handle].ticks.shift(); }
-								values[handle].ticks.push(ticks[s])
-								document.getElementById(`${channel}_${key}_sl`).innerText = values[handle].ticks.join('')
+							values[handle].current = value
+							values[handle].min = Math.min(value, values[handle].min)
+							values[handle].max = Math.max(value, values[handle].max)
+							document.getElementById(`${e.recipient}_${key}`).innerText = values[handle].current
+							document.getElementById(`${e.recipient}_${key}`).title = values[handle].current
+							if(values[handle].max > 0) {
+								let s = (values[handle].current - values[handle].min) / (values[handle].max - values[handle].min)
+								s = Math.round(s * 7)
+								if(s !== NaN) {
+									if(values[handle].ticks.length > 10) { values[handle].ticks.shift(); }
+									values[handle].ticks.push(ticks[s])
+									document.getElementById(`${channel}_${key}_sl`).innerText = values[handle].ticks.join('')
+								}
 							}
+						} else {
+							document.getElementById(`${e.recipient}_${key}`).innerText = value
+							document.getElementById(`${e.recipient}_${key}`).title = value
 						}
 					}
 				}
