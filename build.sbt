@@ -5,7 +5,7 @@ version := "0.3.42"
 
 maintainer := "m.funk@tue.nl"
 
-scalaVersion := "2.13.6"
+scalaVersion := "2.13.13"
 
 libraryDependencies ++= Seq(
   guice,

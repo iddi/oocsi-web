@@ -9,7 +9,8 @@ addSbtPlugin("org.playframework" % "sbt-plugin" % "3.0.5")
 //addSbtPlugin("com.typesafe.sbt" % "sbt-digest" % "1.1.0")
 //addSbtPlugin("com.typesafe.sbt" % "sbt-mocha" % "1.1.0")
 
-addSbtPlugin("org.irundaia.sbt" % "sbt-sassify" % "1.4.12")
+// SASS
+addSbtPlugin("io.github.irundaia" % "sbt-sassify" % "1.5.2")
 
 addSbtPlugin("com.github.sbt" % "sbt-eclipse" % "6.2.0")
 addSbtPlugin("com.github.sbt" % "sbt-native-packager" % "1.10.0")
