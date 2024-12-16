@@ -156,7 +156,8 @@ var OOCSI = (function() {
   return {
     connect: function(server, clientName, fn) {
       wsUri = server;
-      username = clientName && clientName.length > 0 ? clientName : "webclient_" + +(new Date());
+      username = clientName && clientName.length > 0 ? clientName : "webclient_####";
+      username = username.replace(/#/g, () => Math.floor(Math.random() * 10));
       handlers[username] = [fn];
       init();
       setInterval(internalReconnect, 1000);

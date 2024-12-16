@@ -252,7 +252,7 @@
 
 					function connect() {
 						// connect to OOCSI server
-						OOCSI.connect((window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws');
+						OOCSI.connect((window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws', 'OOCSI/tools/motemobile_####');
 
 						setTimeout(function() {
 							$('#progress').hide();

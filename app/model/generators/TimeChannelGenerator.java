@@ -36,7 +36,7 @@ public class TimeChannelGenerator {
 	}
 
 	private void publish() {
-		Message m = new Message("SERVER", CHANNEL);
+		Message m = new Message("OOCSI/tools/timechannel-gen", CHANNEL);
 
 		final Calendar cal = new GregorianCalendar();
 		m.addData("y", cal.get(Calendar.YEAR));

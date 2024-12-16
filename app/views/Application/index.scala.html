@@ -1,23 +1,105 @@
 @(message: String, title: String, address: String, clients: String, channels: String) 
 
 @main("Welcome to OOCSI") {
-
-	<script src="@routes.Assets.versioned("js/d3.v4.min.js")" type="text/javascript"></script>
-
+	<script src="@routes.Assets.versioned("js/d3.v7.min.js")" type="text/javascript"></script>
+	<script src="@routes.Assets.versioned("js/oocsi-graphvis.min.js")" type="text/javascript"></script>
 	<style>
-		.links line {
-			stroke: #999;
-			stroke-opacity: 0.6;
-		}
-		.nodes circle {
-			stroke: #fff;
-			stroke-width: 1.5px;
-		}
-		text {
-			font-family: sans-serif;
-			font-size: 10px;
-		}
-	</style>
+        #oocsi-graphvis {
+            font-family: sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            background: #fafafa;
+            box-sizing: content-box;
+        }
+        #oocsi-graphvis .node {
+            fill: white;
+            stroke: black;
+            stroke-width: 1.5px;
+        }
+        #oocsi-graphvis .node.channel {
+            fill: rgb(200, 205, 255);
+        }
+        #oocsi-graphvis .node.client {
+            fill: rgb(255, 200, 205);
+        }
+        #oocsi-graphvis .link {
+            stroke: rgba(0, 0, 0, 0.7);
+            stroke-dasharray: 1,0;
+        }
+        #oocsi-graphvis .link.client {
+            stroke: rgba(0, 0, 0, 0.9);
+            stroke-dasharray: 4,4;
+        }
+        #oocsi-graphvis .link.channel {
+            stroke: rgba(0, 0, 0, 0.9);
+            stroke-dasharray: 1,0;
+        }
+        #oocsi-graphvis .link.subscription {
+            stroke: rgba(0, 0, 0, 0.5);
+            stroke-dasharray: 1,3;
+        }
+        #oocsi-graphvis .moving-dot {
+            fill: black;
+        }
+        #oocsi-graphvis .moving-dot.shadow {
+            fill: #999;
+            opacity: 0.5;
+        }
+        #oocsi-graphvis .moving-dot.generated {
+            fill: #9c9;
+            opacity: 0.5;
+        }
+        #oocsi-graphvis .label {
+            font-size: 12px;
+            fill: black;
+            text-anchor: right;
+        }
+
+        #oocsi-graphvis .widget {
+            position: fixed;
+            width: 300px;
+            height: 85px;
+            background: rgba(200, 200, 205, 0.3);
+            padding: 0.5rem;
+        }
+        #oocsi-graphvis .widget .text {
+            font-size: 12px;
+            color: rgb(50, 50, 100);
+        }
+        #oocsi-graphvis .sparkline {
+            margin: 0.5rem 0 0;
+        }
+        #oocsi-graphvis .messages {
+            top: 100px;
+            left: 50px;
+        }
+        #oocsi-graphvis .search {
+            top: 220px;
+            left: 50px;
+            height: unset;
+        }
+        #oocsi-graphvis .search input {
+            width: 100%;
+            padding: 0.5rem 0 0;
+            font-size: 1rem;
+            font-weight: 200;
+            border: 0;
+            border-bottom: 1px solid #ccc;
+            background: transparent;
+            outline: none;
+        }
+        #oocsi-graphvis .search input:focus {
+            border-bottom: 1px solid black;
+        }
+        #oocsi-graphvis .clients {
+            top: 100px;
+            right: 50px;
+        }
+        #oocsi-graphvis .subscriptions {
+            top: 220px;
+            right: 50px;
+        }
+    </style>
 
 	@elements.navigation("")
   
@@ -28,25 +110,14 @@
 			</div>
 		</div>
 		<div class="row">
-			<div class="col m6 s12">
+			<div class="col xl7 m6 s12">
 				<p>
 					<b>
 						What it is
 					</b>
 				</p>
 				<p>
-					A prototyping middleware for design education and research designed and developed at the Industrial Design department of Eindhoven University of Technology. OOCSI is completely open-source and published under a permissive license. Consider contributing on <a href="https://github.com/iddi/oocsi">GitHub</a>.
-				</p>
-
-				<hr>
-
-				<p>
-					<b>
-						How to learn more?
-					</b>
-				</p>	
-				<p>
-					We are currently preparing some more information material about OOCSI and a series of short video lectures. In the meanwhile, you can read more about OOCSI on the <a href="https://github.com/iddi/oocsi/wiki">wiki</a>.
+					A prototyping middleware for design education and research designed and developed at the Industrial Design department of Eindhoven University of Technology. OOCSI is completely open-source and published under a permissive license. Consider contributing on <a href="https://github.com/iddi/oocsi">GitHub</a>. Read <a href="https://oocsi.net" target="_blank">more about OOCSI</a>, how to get started, how to use and teach OOCSI in design.
 				</p>
 
 				<hr>
@@ -58,13 +129,25 @@
 						What is going on right now
 					</b>
 				</p>
+
 				<p>
 					An OOCSI server can be busy at times; currently, this is happening:
-					<br>
-					<i><span id="livemetrics">loading...</span></i>
-					<br>
-					More <a href="/metrics">metrics.</a>
 				</p>
+
+				<div id="oocsi-graphvis" style="width: 100%; height: 50vh;"></div>
+				<a href="/network">bigger version</a><br>
+				<small>
+					(Your client does not have any emoji? Well, check <a href="/heyOOCSI">heyOOCSI</a> how to add one.)
+				</small>
+
+				<script type="text/javascript">
+					
+			  		document.addEventListener('DOMContentLoaded', () => {
+			            oocsiGraphVis('#oocsi-graphvis', (window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws');
+			        })
+
+				</script>
+
 				<p>
 					@if(clients.length() > 0) {
 						The following <em>clients</em> are currently connected (refresh page to update):
@@ -86,15 +169,8 @@
 					}
 				</p>
 
-				<svg width="100%" height="500"></svg>
-				<br>
-				<a href="/network">bigger version</a><br>
-				<small>
-					(Your client does not have any emoji? Well, check <a href="/heyOOCSI">heyOOCSI</a> how to add one.)
-				</small>
-
 			</div>
-			<div class="col m5 offset-m1 s12">
+			<div class="col xl4 offset-xl1 m5 offset-m1 s12">
 
 				<div class="col s12 card" style="padding: 1rem;">
 					<b>IMPORTANT NOTE</b>
@@ -102,9 +178,11 @@
 					This is a public server that allows open connectivity.
 					Please use it responsibly and be aware that all data is in principle visible to all other users.
 					Do NOT send confidential, personal or secret information. Fair use applies.
-					<br><br>
-					The server will not store any information.
-					Log files may contain OOCSI-specific connection meta-data, but no personally identifiable information such as IP addresses, email addresses etc.  
+					<br>
+					<small>
+						The server will not store any information.
+						Log files may contain OOCSI-specific connection meta-data, but no personally identifiable information such as IP addresses, email addresses etc.  
+					</small>
 				</div>
 
 				<!-- WHAT YOU CAN DO -->
@@ -124,10 +202,7 @@
 							- Try some examples
 						</li>
 					</ul>
-					<p>How to do that? Check out the connection options below.</p>
 				</p>
-
-				<hr>			
 
 				<!-- HOW TO CONNECT -->
 
@@ -218,110 +293,97 @@
 	   		$('blockquote').each(function() {
 	   			$(this).html($(this).html().replace("ADDRESS", window.location.hostname));
 	   		});
-
-			// connect to OOCSI server
-			OOCSI.connect((window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws');
-
-			OOCSI.subscribe("OOCSI_metrics", function(e) {
-				$("#livemetrics")
-					.html(
-						"Clients: " + e.data.clients + 
-						", Channels: " + e.data.channels + 
-						", Messages: " + e.data.messagesTotal + 
-						", Messages/sec: " + e.data.messages);
-			});
-
   		});
-        	
+
 	</script>
 
 	<script>
 
-		// mostly stolen from: https://bl.ocks.org/heybignick/3faf257bbbbc7743bb72310d03b86ee8
+		// // mostly stolen from: https://bl.ocks.org/heybignick/3faf257bbbbc7743bb72310d03b86ee8
 
-		var svg = d3.select("svg");
-		var width = $('svg').width();
-		var height = +svg.attr("height");
-		$('svg').css("border", "1px #ddd solid")
+		// var svg = d3.select("svg");
+		// var width = $('svg').width();
+		// var height = +svg.attr("height");
+		// $('svg').css("border", "1px #ddd solid")
 
-		var color = d3.scaleOrdinal(["#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#66a61e", "#e6ab02", "#a6761d", "#666666"]);
+		// var color = d3.scaleOrdinal(["#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#66a61e", "#e6ab02", "#a6761d", "#666666"]);
 
-		var simulation = d3.forceSimulation()
-		    .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(height/5).strength(0.4))
-		    .force("charge", d3.forceManyBody())
-		    .force("center", d3.forceCenter(width / 2, height / 2));
+		// var simulation = d3.forceSimulation()
+		//     .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(height/5).strength(0.4))
+		//     .force("charge", d3.forceManyBody())
+		//     .force("center", d3.forceCenter(width / 2, height / 2));
 
-		d3.json("network.json", function(error, graph) {
-		  if (error) throw error;
+		// d3.json("network.json", function(error, graph) {
+		//   if (error) throw error;
 
-		  var link = svg.append("g")
-		      .attr("class", "links")
-		    .selectAll("line")
-		    .data(graph.links)
-		    .enter().append("line")
-		      .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
+		//   var link = svg.append("g")
+		//       .attr("class", "links")
+		//     .selectAll("line")
+		//     .data(graph.links)
+		//     .enter().append("line")
+		//       .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
 
-		  var node = svg.append("g")
-		      .attr("class", "nodes")
-		    .selectAll("g")
-		    .data(graph.nodes)
-		    .enter().append("g")
+		//   var node = svg.append("g")
+		//       .attr("class", "nodes")
+		//     .selectAll("g")
+		//     .data(graph.nodes)
+		//     .enter().append("g")
 		    
-		  var circles = node.append("circle")
-		      .attr("r", function(d) { return Math.max(5, d.value*2); })
-		      .attr("fill", function(d) { return color(d.group); })
-		      .call(d3.drag()
-		          .on("start", dragstarted)
-		          .on("drag", dragged)
-		          .on("end", dragended));
+		//   var circles = node.append("circle")
+		//       .attr("r", function(d) { return Math.max(5, d.value*2); })
+		//       .attr("fill", function(d) { return color(d.group); })
+		//       .call(d3.drag()
+		//           .on("start", dragstarted)
+		//           .on("drag", dragged)
+		//           .on("end", dragended));
 
-		  var labels = node.append("text")
-		      .text(function(d) {
-		        return d.label ? d.label : d.id;
-		      })
-		      .attr('x', 6)
-		      .attr('y', 3);
+		//   var labels = node.append("text")
+		//       .text(function(d) {
+		//         return d.label ? d.label : d.id;
+		//       })
+		//       .attr('x', 6)
+		//       .attr('y', 3);
 
-		  node.append("title")
-		      .text(function(d) { return d.id; });
+		//   node.append("title")
+		//       .text(function(d) { return d.id; });
 
-		  simulation
-		      .nodes(graph.nodes)
-		      .on("tick", ticked);
+		//   simulation
+		//       .nodes(graph.nodes)
+		//       .on("tick", ticked);
 
-		  simulation.force("link")
-		      .links(graph.links);
+		//   simulation.force("link")
+		//       .links(graph.links);
 
-		  function ticked() {
-		    link
-		        .attr("x1", function(d) { return d.source.x; })
-		        .attr("y1", function(d) { return d.source.y; })
-		        .attr("x2", function(d) { return d.target.x; })
-		        .attr("y2", function(d) { return d.target.y; });
+		//   function ticked() {
+		//     link
+		//         .attr("x1", function(d) { return d.source.x; })
+		//         .attr("y1", function(d) { return d.source.y; })
+		//         .attr("x2", function(d) { return d.target.x; })
+		//         .attr("y2", function(d) { return d.target.y; });
 
-		    node
-		        .attr("transform", function(d) {
-		          return "translate(" + d.x + "," + d.y + ")";
-		        })
-		  }
-		});
+		//     node
+		//         .attr("transform", function(d) {
+		//           return "translate(" + d.x + "," + d.y + ")";
+		//         })
+		//   }
+		// });
 
-		function dragstarted(d) {
-		  if (!d3.event.active) simulation.alphaTarget(0.8).restart();
-		  d.fx = d.x;
-		  d.fy = d.y;
-		}
+		// function dragstarted(d) {
+		//   if (!d3.event.active) simulation.alphaTarget(0.8).restart();
+		//   d.fx = d.x;
+		//   d.fy = d.y;
+		// }
 
-		function dragged(d) {
-		  d.fx = d3.event.x;
-		  d.fy = d3.event.y;
-		}
+		// function dragged(d) {
+		//   d.fx = d3.event.x;
+		//   d.fy = d3.event.y;
+		// }
 
-		function dragended(d) {
-		  if (!d3.event.active) simulation.alphaTarget(0);
-		  d.fx = null;
-		  d.fy = null;
-		}
+		// function dragended(d) {
+		//   if (!d3.event.active) simulation.alphaTarget(0);
+		//   d.fx = null;
+		//   d.fy = null;
+		// }
 
 	</script>
 }

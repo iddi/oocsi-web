@@ -34,7 +34,7 @@ public class TestChannelGenerator {
 	}
 
 	private void publish() {
-		Message m = new Message("SERVER", CHANNEL);
+		Message m = new Message("OOCSI/tools/testchannel-gen", CHANNEL);
 
 		m.addData("color", 90 + Math.round(Math.sin(frameCount / 20.) * 70));
 		m.addData("position", 90 + Math.round(Math.cos(frameCount / 25.) * 70));

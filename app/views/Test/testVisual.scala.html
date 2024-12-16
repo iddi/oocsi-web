@@ -57,7 +57,7 @@
 	// setup
 	// --------------------------------------------------------------------
 	// connect to OOCSI server running on IP
-	OOCSI.connect((window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws', undefined, function(e) {
+	OOCSI.connect((window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws', 'OOCSI/test/visual_####', function(e) {
 			$('#c2_results').append('<p>' + JSON.stringify(e.data) + '</p>');
 	});
 

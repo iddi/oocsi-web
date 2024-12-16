@@ -78,7 +78,7 @@
 				// let html = ''
 
 				// connect to OOCSI server
-				OOCSI.connect((window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws');
+				OOCSI.connect((window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws', 'OOCSI/tools/datatiles_####');
 
 				// add charts
 				var json = readCookie('channels');
