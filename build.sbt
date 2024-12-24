@@ -1,7 +1,7 @@
 name := """oocsi-web"""
 organization := "IndustrialDesign"
 
-version := "0.3.43"
+version := "0.4.0"
 
 maintainer := "m.funk@tue.nl"
 
