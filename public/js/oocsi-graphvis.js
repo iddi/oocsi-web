@@ -1,9 +1,10 @@
-;function oocsiGraphVis(element, oocsiWS) {
+;function oocsiGraphVis(element, oocsiWS, channelFilter = '') {
 
     const container = document.querySelector(element);
     if(!container) { return; }
 
-    let filterExpression = '';
+    let clientFilterExpression = '';
+    let channelFilterExpression = channelFilter;
 
     const svg = d3.select(element).append('svg')
             .attr('class', 'graph')
@@ -117,12 +118,12 @@
 
     // test if edge is visible
     function isLinkFiltered(d) {
-        return filterExpression.length == 0 || (isNodeFiltered(d.source) && isNodeFiltered(d.target))
+        return clientFilterExpression.length == 0 || (isNodeFiltered(d.source) && isNodeFiltered(d.target))
     }
 
     // test if node is visible
     function isNodeFiltered(d) {
-        return filterExpression.length == 0 || (d.type !== 'client' || d.chains.some(c => c.toLowerCase().includes(filterExpression)))
+        return clientFilterExpression.length == 0 || (d.type !== 'client' || d.chains.some(c => c.toLowerCase().includes(clientFilterExpression)))
     }
 
     function dragstarted(event, d) {
@@ -233,6 +234,11 @@
 
     function sendMessage(client, channel, subscribers = []) {
         subscribers = Array.isArray(subscribers) ? subscribers : [subscribers]
+
+        if(channelFilterExpression.length != 0 && !channel.toLowerCase().includes(channelFilterExpression)) {
+            return;
+        }
+
         reqsCounter++;
         let source = findNode('clients/' + client)
         if(!source) {
@@ -366,7 +372,7 @@
                 <br>
                 <input type="search">`)
         d3.select(element + " .search input").on("input", () => {
-            filterExpression = d3.select(element + " .search input").property("value").toLowerCase();
+            clientFilterExpression = d3.select(element + " .search input").property("value").toLowerCase();
             update()
         });
     })();
