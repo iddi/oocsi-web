@@ -68,7 +68,7 @@ public class HeyOOCSIClient extends Client {
 	 *
 	 */
 	@Override
-	public void send(Message event) {
+	public boolean send(Message event) {
 		// read and parse heyOOCSI message
 		if (event.getRecipient().equals("heyOOCSI!")) {
 			synchronized (clients) {
@@ -116,6 +116,8 @@ public class HeyOOCSIClient extends Client {
 					}
 				});
 			}
+
+			return true;
 		} else {
 			if (event.data.containsKey("clientHandle")) {
 				String clientHandle = (String) event.data.get("clientHandle");
@@ -128,6 +130,8 @@ public class HeyOOCSIClient extends Client {
 						        .addData("components", od.serializeComponents())
 						        .addData("properties", od.serializeProperties()));
 					}
+
+					return true;
 				}
 			} else if (event.data.containsKey("x") && event.data.containsKey("y")
 			        && event.data.containsKey("distance")) {
@@ -168,7 +172,10 @@ public class HeyOOCSIClient extends Client {
 					}
 				} catch (NumberFormatException | ClassCastException e) {
 					// could not parse the coordinates or distance, do nothing
+					return false;
 				}
+
+				return true;
 			} else if (event.data.containsKey("location")) {
 				String location = ((String) event.data.get("location")).trim();
 				Set<String> clientNames = new HashSet<>();
@@ -186,8 +193,12 @@ public class HeyOOCSIClient extends Client {
 					c.send(new Message(token, event.getSender()).addData("location", location).addData("clients",
 					        clientNames.toArray(new String[] {})));
 				}
+
+				return true;
 			}
 		}
+
+		return false;
 	}
 
 	/**

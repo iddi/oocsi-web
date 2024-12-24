@@ -13,10 +13,13 @@ public class ServiceRequestClient extends Client {
 	}
 
 	@Override
-	public void send(Message message) {
-		if (validate(message.getRecipient())) {
-			completedMessage = message;
+	public boolean send(Message message) {
+		if (!validate(message.getRecipient())) {
+			return false;
 		}
+
+		completedMessage = message;
+		return true;
 	}
 
 	@Override

@@ -56,11 +56,11 @@ public class HTTPRequestClient extends Client {
 	}
 
 	@Override
-	public void send(Message event) {
+	public boolean send(Message event) {
 
 		// throttle to 5 requests per second
 		if (lastExternalRequest > System.currentTimeMillis() - 500) {
-			return;
+			return false;
 		}
 		lastExternalRequest = System.currentTimeMillis();
 
@@ -109,7 +109,7 @@ public class HTTPRequestClient extends Client {
 
 		// abort if key data is missing
 		if (url.isEmpty()) {
-			return;
+			return false;
 		}
 
 		// log and make the call
@@ -151,26 +151,30 @@ public class HTTPRequestClient extends Client {
 				        + channel + " by " + event.getSender() + ": " + e.getLocalizedMessage());
 				return null;
 			});
+
+			return true;
 		} catch (Exception e) {
 			logger.error("Problem calling http-web-request for URL " + url + " with method " + method + " for "
 			        + channel + " by " + event.getSender() + ": " + e.getLocalizedMessage());
-			if (validate(event.getRecipient())) {
-				Message m = new Message("http-web-request", channel);
-				m.data.putAll(event.data);
-				m.data.put("result-status", 404);
-				m.data.put("result-body", "The URL seems to be malformed.");
-				m.data.put("result-content-type", "");
-
-				Channel c = server.getChannel(channel);
-				if (c != null) {
-					c.send(m);
-
-					// log access
-					OOCSIServer.logEvent(token, "", channel, event.data, event.getTimestamp());
-				}
+			if (!validate(event.getRecipient())) {
+				return false;
 			}
+
+			Message m = new Message("http-web-request", channel);
+			m.data.putAll(event.data);
+			m.data.put("result-status", 404);
+			m.data.put("result-body", "The URL seems to be malformed.");
+			m.data.put("result-content-type", "");
+
+			Channel c = server.getChannel(channel);
+			if (c != null) {
+				c.send(m);
+
+				// log access
+				OOCSIServer.logEvent(token, "", channel, event.data, event.getTimestamp());
+			}
+
+			return true;
 		}
-
 	}
-
 }

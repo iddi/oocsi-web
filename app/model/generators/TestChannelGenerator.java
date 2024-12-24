@@ -30,14 +30,14 @@ public class TestChannelGenerator {
 
 	private void initialize() {
 		this.actorSystem.scheduler().scheduleAtFixedRate(Duration.create(2, TimeUnit.SECONDS),
-		        Duration.create(100, TimeUnit.MILLISECONDS), () -> publish(), this.executionContext);
+		        Duration.create(333, TimeUnit.MILLISECONDS), () -> publish(), this.executionContext);
 	}
 
 	private void publish() {
 		Message m = new Message("OOCSI/tools/testchannel-gen", CHANNEL);
 
-		m.addData("color", 90 + Math.round(Math.sin(frameCount / 20.) * 70));
-		m.addData("position", 90 + Math.round(Math.cos(frameCount / 25.) * 70));
+		m.addData("color", 90 + Math.round(Math.sin(frameCount / 7.) * 70));
+		m.addData("position", 90 + Math.round(Math.cos(frameCount / 8.) * 70));
 
 		Channel channel = server.getChannel(CHANNEL);
 		if (channel != null) {

@@ -18,8 +18,8 @@ public class SSEChannelClient extends Client {
 	}
 
 	@Override
-	public void send(Message message) {
-		events.offer(Json.toJson(message.data));
+	public boolean send(Message message) {
+		return events.offer(Json.toJson(message.data));
 	}
 
 	@Override

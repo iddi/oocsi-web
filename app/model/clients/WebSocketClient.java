@@ -38,10 +38,13 @@ public class WebSocketClient extends Client {
 	 * @see nl.tue.id.oocsi.server.model.Client#send(nl.tue.id.oocsi.server.protocol.Message)
 	 */
 	@Override
-	public void send(Message message) {
-		if (output != null) {
-			output.tell(toJson(message));
+	public boolean send(Message message) {
+		if (output == null) {
+			return false;
 		}
+
+		output.tell(toJson(message));
+		return true;
 	}
 
 	/**

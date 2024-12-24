@@ -42,18 +42,22 @@ public class EchoClient extends Client {
 	}
 
 	@Override
-	public void send(Message event) {
-		if (validate(event.getRecipient())) {
-			Message m = new Message("echo", event.getSender());
-			m.data.putAll(event.data);
-			Channel c = server.getChannel(event.getSender());
-			if (c != null) {
-				c.send(m);
-
-				// log access
-				OOCSIServer.logEvent(token, "", event.getSender(), event.data, event.getTimestamp());
-			}
+	public boolean send(Message event) {
+		// check event
+		if (!validate(event.getRecipient())) {
+			return false;
 		}
+
+		Message m = new Message("echo", event.getSender());
+		m.data.putAll(event.data);
+		Channel c = server.getChannel(event.getSender());
+		if (c != null) {
+			c.send(m);
+
+			// log access
+			OOCSIServer.logEvent(token, "", event.getSender(), event.data, event.getTimestamp());
+		}
+		return true;
 	}
 
 }
