@@ -104,7 +104,7 @@
 				function processData(e) {
 					for(const key in e.data) {
 						const channel = e.recipient
-						const handle = channel+key
+						const handle = channel+"___"+key
 						if(values[handle] === undefined) {
 							addTile(channel, key)
 							values[handle] = { min: 100000, current: 0, max: 0, ticks: [] }
@@ -117,20 +117,20 @@
 							values[handle].current = value
 							values[handle].min = Math.min(value, values[handle].min)
 							values[handle].max = Math.max(value, values[handle].max)
-							document.getElementById(`${e.recipient}_${key}`).innerText = values[handle].current
-							document.getElementById(`${e.recipient}_${key}`).title = values[handle].current
+							document.getElementById(`${e.recipient}___${key}`).innerText = values[handle].current
+							document.getElementById(`${e.recipient}___${key}`).title = values[handle].current
 							if(values[handle].max > 0) {
 								let s = (values[handle].current - values[handle].min) / (values[handle].max - values[handle].min)
 								s = Math.round(s * 7)
 								if(s !== NaN) {
 									if(values[handle].ticks.length > 10) { values[handle].ticks.shift(); }
 									values[handle].ticks.push(ticks[s])
-									document.getElementById(`${channel}_${key}_sl`).innerText = values[handle].ticks.join('')
+									document.getElementById(`${channel}___${key}_sl`).innerText = values[handle].ticks.join('')
 								}
 							}
 						} else {
-							document.getElementById(`${e.recipient}_${key}`).innerText = value
-							document.getElementById(`${e.recipient}_${key}`).title = value
+							document.getElementById(`${e.recipient}___${key}`).innerText = value
+							document.getElementById(`${e.recipient}___${key}`).title = value
 						}
 					}
 				}
@@ -151,18 +151,24 @@
 					document.getElementById('delete-' + channel).addEventListener('click', function() {
 						OOCSI.unsubscribe(channel)
 						channels.splice(channels.indexOf(channel), 2)
-						document.getElementById('channel-' + channel).remove()
+						document.getElementById('channel-' + channel).parentNode.remove()
+						for(v in values) {
+							if(v.startsWith(channel+"___")) {
+								delete values[v];
+							}
+						}
 				    	createCookie('channels', JSON.stringify(channels))
 					})
 				}
 
 				function addTile(channel, key) {
-					var newEl = document.createElement('div')
+					const handle = channel+"___"+key
+					const newEl = document.createElement('div')
 					newEl.className = 'tile';
 					newEl.innerHTML = 
-						`<span id="${channel}_${key}">0</span>
+						`<span id="${handle}">0</span>
 						<label>${key}</label>
-						<div id="${channel}_${key}_sl"></div>`;
+						<div id="${handle}_sl"></div>`;
 					document.getElementById(channel).append(newEl)
 				}
 
@@ -172,7 +178,7 @@
 				    var expires;
 
 				    if (days) {
-				        var date = new Date();
+				        let date = new Date();
 				        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
 				        expires = "; expires=" + date.toGMTString();
 				    } else {

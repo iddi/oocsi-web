@@ -13,7 +13,7 @@
 			</p>
 		</div>
 
-		<div class="col s12 m5">
+		<div class="col s12 m7">
 			<div class="col s12 card">
 				<h6>Subscribe and receive data</h6>
 				<div class="input-field">
@@ -30,7 +30,7 @@
 			</small>
 		</div>
 
-		<div class="col s12 m5 offset-m1 card">
+		<div class="col s12 m5 card">
 			<h6>Send data</h6>
 			<div class="input-field">
 				<input id="c2_channel" type="text" name="c2_channel">
@@ -63,42 +63,52 @@
 
 	setTimeout(function(){
 		clientName.innerHTML = ", connected as <code>" + OOCSI.handle() + "</code>"
+		let subscription = readCookie('subscription');
+		if(subscription && subscription.length > 0) {
+			$('#c1_channel').val(subscription)
+		}
 	}, 500);
 
 	$('#c1_subscribe').click(function(e) {
+		e.preventDefault();
+
 		let channelName = $('#c1_channel').val();
+		if(channelName.length == 0) { return false; }
+
+		createCookie('subscription', channelName);
 		OOCSI.subscribe(channelName, function(e) {
 			$('#c1_results').append('<p>' + JSON.stringify(e.data) + '</p>');
 		});
-
-		e.preventDefault();
 		return false;
 	});
 
 	$('#c1_unsubscribe').click(function(e) {
+		e.preventDefault();
+
 		let channelName = $('#c1_channel').val();
 		channelName = channelName.split("[")[0];
+		if(channelName.length == 0) { return false; }
 		OOCSI.unsubscribe(channelName);
-
-		e.preventDefault();
 		return false;
 	});
 
 	$('#c1_clear').click(function(e) {
-		$('#c1_results').empty();
-
 		e.preventDefault();
+
+		$('#c1_results').empty();
 		return false;
 	});
 	
 	$('#c2_clear').click(function(e) {
-		$('#c2_results').empty();
-
 		e.preventDefault();
+
+		$('#c2_results').empty();
 		return false;
 	});
 	
 	$('#c2_send').click(function(e) {
+		e.preventDefault();
+
 		let channelName = $('#c2_channel').val();
 		let data = $('#c2_data').val();
 
@@ -111,11 +121,39 @@
 				$('#c2_results').append('<p>' + JSON.stringify(data) + '</p>');
 			});
 		}
-
-		e.preventDefault();
 		return false;
+
 	});
+
+	/******************************************************************/
+
+	function createCookie(name, value, days) {
+	    var expires;
+
+	    if (days) {
+	        let date = new Date();
+	        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+	        expires = "; expires=" + date.toGMTString();
+	    } else {
+	        expires = "";
+	    }
+	    document.cookie = name + "=" + value + expires + "; path=/";
+	}
+
+	function readCookie(name) {
+	    var nameEQ = name + "=";
+	    var ca = document.cookie.split(';');
+	    for (var i = 0; i < ca.length; i++) {
+	        var c = ca[i];
+	        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+	        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+	    }
+	    return null;
+	}
+
+	function eraseCookie(name) {
+	    createCookie(name, "", -1);
+	}
+
 </script>
-
-
 }
