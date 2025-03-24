@@ -1,7 +1,7 @@
 name := """oocsi-web"""
 organization := "IndustrialDesign"
 
-version := "0.4.2"
+version := "0.4.3"
 
 maintainer := "m.funk@tue.nl"
 
@@ -11,7 +11,7 @@ libraryDependencies ++= Seq(
   guice,
   javaWs,
 
-  "com.udojava" % "EvalEx" % "2.7"
+  "com.ezylang" % "EvalEx" % "3.4.0"
 )
 
 lazy val root = (project in file(".")).enablePlugins(PlayJava, LauncherJarPlugin, JavaAppPackaging)
@@ -36,11 +36,11 @@ dockerPermissionStrategy := DockerPermissionStrategy.CopyChown
 
 Docker / maintainer := "m.funk@tue.nl"
 Docker / packageName := "matsfunk/oocsi-server"
-Docker / version := sys.env.getOrElse("BUILD_NUMBER", "0.3.40")
+Docker / version := sys.env.getOrElse("BUILD_NUMBER", "0.4.3")
 Docker / daemonUserUid  := None
 Docker / daemonUser := "daemon"
 dockerExposedPorts := Seq(9000,4444)
-dockerBaseImage := "openjdk:11.0.11-jre-slim"
+dockerBaseImage := "eclipse-temurin:17-jre-ubi9-minimal"
 dockerRepository := sys.env.get("ecr_repo")
 dockerUpdateLatest := true
 
