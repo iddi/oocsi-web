@@ -102,6 +102,20 @@ public class WebSocketClientActor extends AbstractActor {
 		}).build();
 	}
 
+	private String replaceHashesWithDigits(String input) {
+		StringBuilder result = new StringBuilder(input.length());
+		Random RAND = new Random();
+		for (int i = 0; i < input.length(); i++) {
+			char c = input.charAt(i);
+			if (c == '#') {
+				result.append(RAND.nextInt(10));
+			} else {
+				result.append(c);
+			}
+		}
+		return result.toString();
+	}
+
 	/**
 	 * terminate this websocket client (and connection)
 	 * 
@@ -131,19 +145,4 @@ public class WebSocketClientActor extends AbstractActor {
 		}
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	private String replaceHashesWithDigits(String input) {
-		StringBuilder result = new StringBuilder(input.length());
-		Random RAND = new Random();
-		for (int i = 0; i < input.length(); i++) {
-			char c = input.charAt(i);
-			if (c == '#') {
-				result.append(RAND.nextInt(10));
-			} else {
-				result.append(c);
-			}
-		}
-		return result.toString();
-	}
 }

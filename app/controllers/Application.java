@@ -85,7 +85,7 @@ public class Application extends Controller {
 		if (configuration.hasPath("oocsi.clients")) {
 			try {
 				int clients = configuration.getInt("oocsi.clients");
-				OOCSIServer.getInstance().setMaxClients(clients);
+				this.server.setMaxClients(clients);
 			} catch (Exception e) {
 				logger.warn("Property 'oocsi.clients' not readable or parseable in configuration");
 			}
@@ -111,7 +111,7 @@ public class Application extends Controller {
 	 */
 	public Result index(Request request) {
 		String channels = server.getChannelList().replace("OOCSI_connections,", "").replace("OOCSI_clients,", "")
-		        .replace("OOCSI_events,", "").replace("OOCSI_metrics,", "").replace("OSC,", "");
+		        .replace("OOCSI_events,", "").replace("OOCSI_metrics,", "");
 		if (channels.length() > 160) {
 			channels = channels.substring(0, 160) + "...";
 		}

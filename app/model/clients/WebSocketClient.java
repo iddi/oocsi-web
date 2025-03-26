@@ -5,7 +5,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import model.actors.WebSocketClientActor;
@@ -18,7 +22,7 @@ import play.libs.Json;
 
 public class WebSocketClient extends Client {
 
-	private static final ObjectMapper JSON_SERIALIZER = new ObjectMapper();
+	private final ObjectMapper JSON_OBJECT_MAPPER;
 //	private static final Logger logger = LoggerFactory.getLogger(WebSocketClient.class);
 
 	private OOCSIServer server;
@@ -30,6 +34,10 @@ public class WebSocketClient extends Client {
 
 		this.server = server;
 		this.output = out;
+
+		this.JSON_OBJECT_MAPPER = JsonMapper.builder().configure(MapperFeature.SORT_CREATOR_PROPERTIES_FIRST, false)
+		        .configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true)
+		        .configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true).build();
 	}
 
 	/*
@@ -138,9 +146,14 @@ public class WebSocketClient extends Client {
 		je.put("timestamp", m.getTimestamp().getTime());
 		je.put("sender", m.getSender());
 
-		je.set("data", JSON_SERIALIZER.valueToTree(m.data));
+		je.set("data", JSON_OBJECT_MAPPER.valueToTree(m.data));
 
-		// serialize
-		return je.toString();
+		// serialize message
+		try {
+			return JSON_OBJECT_MAPPER.writeValueAsString(je);
+		} catch (JsonProcessingException e) {
+			// fall back to normal toString
+			return je.toString();
+		}
 	}
 }

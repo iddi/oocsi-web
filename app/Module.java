@@ -10,13 +10,6 @@ public class Module extends AbstractModule {
 	@Override
 	protected void configure() {
 		try {
-			// debug restart
-			OOCSIServer os = OOCSIServer.getInstance();
-			if (os != null) {
-				os.stop();
-				os.destroyInstance();
-			}
-
 			// create logger
 			SummarizingLogger sl = new SummarizingLogger();
 			bind(SummarizingLogger.class).toInstance(sl);
