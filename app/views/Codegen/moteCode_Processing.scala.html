@@ -22,8 +22,8 @@ void setup() {
   size(200, 200);
   noStroke();
 
-  // connect to OOCSI server
-  OOCSI oocsi = new OOCSI(this, "OOCSIname", "@server");
+  // connect to OOCSI server (we use 3 # characters for a randomly assign handle)
+  OOCSI oocsi = new OOCSI(this, "OOCSImote_receiver_###", "@server");
   oocsi.subscribe("@channel", "handleEvent");
 }
 

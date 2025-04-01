@@ -15,10 +15,8 @@ import play.mvc.Result;
 
 public class Codegen extends Controller {
 
-	// @BodyParser.Of(BodyParser.Json.class)
 	public Result generateOOCSIMoteCode(Request request) {
 
-		// Map<String, String[]> items = request().body().asFormUrlEncoded();
 		JsonNode jn = request.body().asJson();
 		if (jn == null || !jn.isObject()) {
 			return badRequest();
@@ -60,5 +58,4 @@ public class Codegen extends Controller {
 			return badRequest();
 		}
 	}
-
 }

@@ -22,6 +22,8 @@ GET 	/heyOOCSI/:route					controllers.Tools.heyOOCSI(request: Request, route: St
 GET 	/datacanvas						controllers.Tools.datacanvas(request: Request, token : String ?= "")
 GET 	/datacanvas/:token				controllers.Tools.datacanvas(request: Request, token: String)
 GET 	/animoocsi						controllers.Tools.animate(request: Request)
+
++nocsrf
 POST 	/generateMoteCode				controllers.Codegen.generateOOCSIMoteCode(request: Request)
 
 # Test
@@ -39,8 +41,11 @@ GET		/channels						controllers.Application.channels()
 GET 	/send/:channel/:data				controllers.Application.sendData(request: Request, channel: String, data: String)
 GET 	/sendAndClose/:channel/:data		controllers.Application.sendData(request: Request, channel: String, data: String)
 GET 	/track/:channel/:data			controllers.Application.track(request: Request, channel: String, data: String)
++nocsrf
 POST	/send							controllers.Application.send(request: Request, channel: String ?= "")
++nocsrf
 POST	/send/							controllers.Application.send(request: Request, channel: String ?= "")
++nocsrf
 POST	/send/:channel					controllers.Application.send(request: Request, channel)
 
 #tutorial pages
@@ -54,4 +59,5 @@ GET 	/:service						controllers.Application.serviceIndex(service)
 GET 	/:service/						controllers.Application.serviceIndex(service)
 GET		/:service/:call					controllers.Application.serviceCall(service, call, data: String ?= "")
 GET		/:service/:call/:data			controllers.Application.serviceCall(service, call, data)
++nocsrf
 POST	/:service/:call					controllers.Application.serviceCallPost(request: Request, service, call)
