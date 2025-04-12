@@ -1,4 +1,4 @@
-;function oocsiGraphVis(element, oocsiWS, channelFilter = '') {
+;function oocsiGraphVis(element, channelFilter = '') {
 
     const container = document.querySelector(element);
     if(!container) { return; }
@@ -353,11 +353,14 @@
 
     // ----------------------------------------------------------------------------------------------
 
-    // connect to OOCSI and subscribe to all events
-    OOCSI.connect(oocsiWS, 'OOCSI/tools/oocsiGraphVis_####');
-    OOCSI.subscribe("OOCSI_events", e => {
-        sendMessage(e.data['PUB'], e.data['CHANNEL'], e.data['SUB'])
-    });
+    // subscribe to all OOCSI events
+    const eventSource = new EventSource("/subscribe/OOCSI_events");
+
+    // Set up an event listener for messages
+    eventSource.onmessage = function(event) {
+        let e = JSON.parse(event.data)
+        e && sendMessage(e['PUB'], e['CHANNEL'], e['SUB'])
+    };
 
     // ----------------------------------------------------------------------------------------------
 

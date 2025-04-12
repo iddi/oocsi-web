@@ -556,10 +556,12 @@ public class Application extends Controller {
 		String decodedChannelName = URLDecoder.decode(channelName, StandardCharsets.UTF_8);
 
 		// compose flow with a special OOCSI client
-		final SSEChannelClient channelClient = new SSEChannelClient("HTTP-SSE-Client-" + System.currentTimeMillis());
+		final SSEChannelClient channelClient = new SSEChannelClient("Events-" + System.currentTimeMillis());
 		Source<EventSource.Event, Cancellable> eventSource = Source.tick(Duration.ZERO, Duration.ofMillis(100), "")
 		        .map(tick -> {
 			        if (!channelClient.isEmpty()) {
+				        // ensure that the client stay live
+				        channelClient.touch();
 				        // don't use .withName here because that would complicate the EventSource subscription on the
 				        // client
 				        return EventSource.Event.event(channelClient.poll());
@@ -576,8 +578,6 @@ public class Application extends Controller {
 		// connect client
 		server.addClient(channelClient);
 		server.subscribe(channelClient, decodedChannelName);
-
-//		logger.info("");
 
 		// return response with flow management
 		return ok().chunked(eventSource.via(EventSource.flow())).as(Http.MimeTypes.EVENT_STREAM);

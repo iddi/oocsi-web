@@ -8,7 +8,6 @@ GET		/ws								controllers.Application.ws()
 GET 	/metrics						controllers.Application.metrics(request: Request)
 GET 	/network.json					controllers.Application.netJson()
 GET 	/network						controllers.Application.network(request: Request)
-GET 	/subscribe/*id					controllers.Application.subscribe(request: Request, id: String)
 
 # Tools
 GET 	/tools							controllers.Tools.index(request: Request)
@@ -38,6 +37,7 @@ GET		/icons/*file					controllers.Assets.at(path="/public/images/icons", file)
 
 # REST API
 GET		/channels						controllers.Application.channels()
+GET 	/subscribe/*id					controllers.Application.subscribe(request: Request, id: String)
 GET 	/send/:channel/:data				controllers.Application.sendData(request: Request, channel: String, data: String)
 GET 	/sendAndClose/:channel/:data		controllers.Application.sendData(request: Request, channel: String, data: String)
 GET 	/track/:channel/:data			controllers.Application.track(request: Request, channel: String, data: String)
