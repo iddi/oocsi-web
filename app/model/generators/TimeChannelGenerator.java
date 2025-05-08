@@ -36,9 +36,9 @@ public class TimeChannelGenerator {
 	}
 
 	private void publish() {
-		Message m = new Message("OOCSI/tools/timechannel-gen", CHANNEL);
-
 		final Calendar cal = new GregorianCalendar();
+
+		Message m = new Message("OOCSI/tools/timechannel-gen", CHANNEL);
 		m.addData("y", cal.get(Calendar.YEAR));
 		m.addData("M", cal.get(Calendar.MONTH));
 		m.addData("d", cal.get(Calendar.DAY_OF_MONTH));
@@ -49,9 +49,13 @@ public class TimeChannelGenerator {
 		m.addData("timestamp", cal.getTimeInMillis());
 		m.addData("datetime", sdf.format(cal.getTime()));
 
-		Channel channel = server.getChannel(CHANNEL);
-		if (channel != null) {
-			channel.send(m);
+		try {
+			Channel channel = server.getChannel(CHANNEL);
+			if (channel != null) {
+				channel.send(m);
+			}
+		} catch (Exception e) {
+			// do nothing
 		}
 	}
 }

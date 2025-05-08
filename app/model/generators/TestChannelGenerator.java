@@ -35,13 +35,16 @@ public class TestChannelGenerator {
 
 	private void publish() {
 		Message m = new Message("OOCSI/tools/testchannel-gen", CHANNEL);
-
 		m.addData("color", 90 + Math.round(Math.sin(frameCount / 7.) * 70));
 		m.addData("position", 90 + Math.round(Math.cos(frameCount / 8.) * 70));
 
-		Channel channel = server.getChannel(CHANNEL);
-		if (channel != null) {
-			channel.send(m);
+		try {
+			Channel channel = server.getChannel(CHANNEL);
+			if (channel != null) {
+				channel.send(m);
+			}
+		} catch (Exception e) {
+			// do nothing
 		}
 
 		frameCount++;
