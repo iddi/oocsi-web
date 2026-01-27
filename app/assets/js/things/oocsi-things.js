@@ -48,7 +48,7 @@ window.addEventListener('DOMContentLoaded', () => {
   // otherwise, we select one via UI: create and open dialog
   document.querySelector('#canvasContainer').innerHTML = 
     `<dialog id="team-modal" open><article>
-      <h2><a href="index.html" style="color: var(--pico-h2-color); text-decoration: none;">Fantastic 🌟</a></h2>
+      <h2><a href="index.html" style="color: var(--pico-h2-color); text-decoration: none;">OOCSI Things 🌟</a></h2>
       <label for="team-choice">Choose a team:</label>
       <form>
         <fieldset role="group">
@@ -146,7 +146,7 @@ window.fantasticThings = (() => {
     register: (name, slug, inVars, outVars) => {
 
       // set title
-      document.title = 'Fantastic Things: ' + name;
+      document.title = 'OOCSI Things: ' + name;
 
       // choose and connect to the right OOCSI server
       const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';

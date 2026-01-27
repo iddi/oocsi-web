@@ -1,10 +1,12 @@
 @(message: String) 
-@main("Welcome to OOCSI") {
+@main("OOCSI Things Overview") {
 
-	@elements.navigation("")
+  @elements.navigation("")
 
   <!-- Embedded content from public/html/things/index.html -->
+  @*
   <link rel="stylesheet" type="text/css" href="https://data.id.tue.nl/assets/stylesheets/picoCSS/pico.indigo.min.css">
+  *@
   <style type="text/css">
     /* Scoping the pico grid and article styles if possible, but for now apply globally as per static file */
     article {
@@ -30,7 +32,7 @@
 
     <nav>
         <ul>
-        <li><a href="/things" class="contrast"><strong>🌟 Fantastic Things 🌟</strong></a></li>
+        <li><a href="/things" class="contrast"><strong>🌟 OOCSI Things 🌟</strong></a></li>
         </ul>
         <ul>
         <li><a href="/things/reference.html" target="_blank">Reference</a></li>
