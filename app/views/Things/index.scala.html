@@ -2,193 +2,336 @@
 @main("Welcome to OOCSI") {
 
 	@elements.navigation("")
+
+  <!-- Embedded content from public/html/things/index.html -->
+  <link rel="stylesheet" type="text/css" href="https://data.id.tue.nl/assets/stylesheets/picoCSS/pico.indigo.min.css">
+  <style type="text/css">
+    /* Scoping the pico grid and article styles if possible, but for now apply globally as per static file */
+    article {
+      cursor: pointer;
+    }
+
+    article h2 {
+      white-space: nowrap;
+    }
+
+    code {
+      font-size: 0.8rem;
+      padding: 0.25rem;
+    }
+    
+    /* Ensure the container doesn't clash too much with main layout if necessary */
+    .things-container {
+        padding: 2rem;
+    }
+  </style>
+
+  <div class="container things-container">
+
+    <nav>
+        <ul>
+        <li><a href="/things" class="contrast"><strong>🌟 Fantastic Things 🌟</strong></a></li>
+        </ul>
+        <ul>
+        <li><a href="/things/reference.html" target="_blank">Reference</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <div>
+        <!-- app choice -->
+        <div class="grid">
+            <article data="lampo.html">
+            <b>
+                Lampo 🪔
+            </b>
+            <br>
+            A friendly lamp on your screen.
+            <br>
+            Shares
+            <code>toggle</code>
+            <br>
+            Uses
+            <code>toggle</code>
+            <code>dim</code> 
+            from 🫵🐔🐿️📣🤩👹
+            </article>
+            <article data="touchee.html">
+            <b>
+                Touch-ee 🫵
+            </b>
+            <br>
+            Touch and drag me in all directions.
+            <br>
+            Shares
+            <code>x</code>
+            <code>y</code>
+            </article>
+            <article data="windee.html">
+            <b>
+                Windee 💨
+            </b>
+            <br>
+            See the wind blowing through the digital window.
+            <br>
+            Uses
+            <code>x</code>
+            <code>color_r</code> 
+            <code>color_g</code> 
+            <code>color_b</code> 
+            from 🫵🐈🤩
+            </article>
+        </div>
+        <div class="grid">
+            <article data="mr-kip.html">
+            <b>
+                Mr. Kip 🐔
+            </b>
+            <br>
+            Tilt and tilt and tilt your device. Shake.
+            <br>
+            Shares
+            <code>toggle</code>
+            <code>d1</code>
+            <code>d2</code> 
+            <code>d3</code>
+            </article>
+            <article data="chuck.html">
+            <b>
+                Chuck 🐿️
+            </b>
+            <br>
+            Chuck Chuck to see some chuck data.
+            <br>
+            Shares
+            <code>toggle</code>
+            <code>d1</code>
+            <code>d2</code> 
+            <code>d3</code>
+            </article>
+            <article data="cats-cradle.html">
+            <b>
+                Cats Cradle 🐈‍
+            </b>
+            <br>
+            One touch, two touch, three touch!
+            <br>
+            Shares
+            <code>d1</code>
+            <code>d2</code> 
+            <code>d3</code>
+            </article>
+        </div>
+        <div class="grid">
+            <article data="voluma.html">
+            <b>
+                Voluma 📣
+            </b>
+            <br>
+            Silent and loud, you must be very proud.
+            <br>
+            Shares
+            <code>volume</code>
+            </article>
+            <article data="colorado-cam.html">
+            <b>
+                Colorado Cam 🤩
+            </b>
+            <br>
+            Seeing the world in a single color.
+            <br>
+            Shares
+            <code>color_r</code> 
+            <code>color_g</code> 
+            <code>color_b</code>
+            </article>
+            <article data="sitgrid.html">
+            <b>
+                Situational Grid 👏
+            </b>
+            <br>
+            Read the room, change the game.
+            <br>
+            Shares
+            <code>situation</code>
+            </article>
+        </div>
+        <div class="grid">
+            <article data="dua-lampo.html">
+            <b>
+                Dua-Lampo 💡💡
+            </b>
+            <br>
+            Two is better than one? You decide!
+            <br>
+            Uses
+            <code>x</code>
+            <code>y</code> 
+            from 🫵, 
+            <code>d1</code>
+            <code>d2</code> 
+            from 🐔🐿️
+            </article>
+            <article data="k0bolt.html">
+            <b>
+                K0bolt 👹
+            </b>
+            <br>
+            You don't know mee, and I will drive you crazee.
+            <br>
+            Shares 
+            <code>toggle</code>
+            <br>
+            Uses
+            <code>toggle</code>
+            from 🪔
+            </article>
+            <article data="textdisplay.html">
+            <b>
+                Text Display 💯
+            </b>
+            <br>
+            Show some text. Make it big.
+            <br>
+            Uses 
+            <code>situation</code>
+            from 👏
+            </article>
+        </div>
+        <div class="grid">
+            <article data="soun.html">
+            <b>
+                Soun 📻
+            </b>
+            <br>
+            OG sound player.
+            <br>
+            Uses
+            <code>toggle</code>
+            from 🪔👹🐔🐿️,
+            <code>situation</code>
+            from 👏
+            </article>
+            <article data="toktik.html">
+            <b>
+                Toktik ⏲️
+            </b>
+            <br>
+            Tock tick, times is running out. Actually, not.
+            <br>
+            Shares
+            <code>tick</code>
+            <br>
+            Uses
+            <code>toggle</code>
+            from 🪔👹🐔🐿️
+            </article>
+            <article data="skidule.html">
+            <b>
+                Skidule 🌵
+            </b>
+            <br>
+            One by one, going through the values, then repeat.
+            <br>
+            Shares
+            <code>d1</code>
+            <code>d1</code>
+            <br>
+            Uses
+            <code>toggle</code>
+            <code>tick</code>
+            from 🪔👹🐔🐿️
+            </article>
+        </div>
+        <div class="grid">
+            <article data="flash.html">
+            <b>
+                Flash 👨‍🎤
+            </b>
+            <br>
+            Show off. An image or video, of course.
+            <br>
+            Uses
+            <code>situation</code>
+            from 👏
+            </article>
+            <article data="count.html">
+            <b>
+                Count 🧛
+            </b>
+            <br>
+            Shares
+            <code>complete</code>
+            <br>
+            Just counting...
+            <br>
+            Uses
+            <code>toggle</code>
+            from 🪔👹🐔🐿️
+            </article>
+            <article data="utol2.html">
+            <b>
+                Utol 🧠
+            </b>
+            <br>
+            Collect, collect some more and check.
+            <br>
+            Shares
+            <code>complete</code>
+            <br>
+            Uses
+            <code>toggle</code>
+            <code>situation</code>
+            from 🪔👹👏
+            </article>
+        </div>
+        <div class="grid">
+            <article data="rada.html">
+            <b>
+                Rada 🛸
+            </b>
+            <br>
+            On my radar, on my mind.
+            <br>
+            Sees and uses all connected devices.
+            </article>
+            <article data="lineate.html">
+            <b>
+                Lineate 🤌
+            </b>
+            <br>
+            Lines, colorful lines.
+            <br>
+            <br>
+            Uses 
+            <code>x</code>
+            <code>y</code>
+            <code>dim</code>
+            <code>toggle</code>
+            <code>color_r</code>
+            <code>color_g</code>
+            <code>color_b</code>
+            <code>situation</code>
+            <code>d1</code>
+            <code>d2</code>
+            <code>d3</code>
+            from all connected devices.
+            </article>
+        </div>
+        </div>
+    </main>
+  </div>
+
+  <script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('article').forEach(d => {
+        d.addEventListener('click', () => {
+          // Play route needs the full path if not relative. 
+          // Current page is /things, so relative "lampo.html" becomes /things/lampo.html which is correct.
+          window.location.href = "/things/" + d.attributes.data.value;
+        })
+      })
+    })
+  </script>
   
-	<div class="container">
-		<div class="row" style="margin-top: 1em">
-			<div class="col s12">
-				<h3>OOCSI Things</h3>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col xl7 m6 s12">
-				<p>
-					<b>
-						What it is
-					</b>
-				</p>
-				<p>
-					A prototyping middleware for design education and research designed and developed at the Industrial Design department of Eindhoven University of Technology. OOCSI is completely open-source and published under a permissive license. Consider contributing on <a href="https://github.com/iddi/oocsi">GitHub</a>. Read <a href="https://oocsi.net" target="_blank">more about OOCSI</a>, how to get started, how to use and teach OOCSI in design.
-				</p>
-
-				<hr>
-
-				<!-- WHATS GOING ON NOW -->
-
-				<p>
-					<b>
-						What is going on right now
-					</b>
-				</p>
-
-				<p>
-					An OOCSI server can be busy at times; currently, this is happening:
-				</p>
-
-				<div id="oocsi-graphvis" style="width: 100%; height: 50vh;"></div>
-				<a href="/network">bigger version</a><br>
-				<small>
-					(Your client does not have any emoji? Well, check <a href="/heyOOCSI">heyOOCSI</a> how to add one.)
-				</small>
-
-				<script type="text/javascript">
-			  		document.addEventListener('DOMContentLoaded', () => {
-			            oocsiGraphVis('#oocsi-graphvis');
-			        })
-				</script>
-
-				<p>
-					@if(clients.length() > 0) {
-						The following <em>clients</em> are currently connected (refresh page to update):
-						<code class="blue-text" style="font-size: 0.9em;">
-							@clients.replace(",", ", ")
-						</code>
-					} else {
-						no clients are currently connected
-					}
-				</p>
-				<p>
-					@if(channels.length() > 0) {
-						The following <em>channels</em> are currently open (refresh page to update):
-						<code class="blue-text" style="font-size: 0.9em;">
-							@channels.replace(",", ", ")
-						</code>
-					} else {
-						no open channels at the moment
-					}
-				</p>
-
-			</div>
-			<div class="col xl4 offset-xl1 m5 offset-m1 s12">
-
-				<div class="col s12 card" style="padding: 1rem;">
-					<b>IMPORTANT NOTE</b>
-					<br>
-					This is a public server that allows open connectivity.
-					Please use it responsibly and be aware that all data is in principle visible to all other users.
-					Do NOT send confidential, personal or secret information. Fair use applies.
-					<br>
-					<small>
-						The server will not store any information.
-						Log files may contain OOCSI-specific connection meta-data, but no personally identifiable information such as IP addresses, email addresses etc.  
-					</small>
-				</div>
-
-				<!-- WHAT YOU CAN DO -->
-
-				<p>
-					<b>
-						What you can do here (on this server)
-					</b>
-					<ul>
-						<li>
-							- Build and test prototypes that need	connectivity
-						</li>
-						<li>
-							- Test and evaluate OOCSI for your use-case
-						</li>
-						<li>
-							- Try some examples
-						</li>
-					</ul>
-				</p>
-
-				<!-- HOW TO CONNECT -->
-
-				<p>
-					<b>
-						How to connect
-					</b>
-				</p>
-				<p>
-					OOCSI can be used by many different platforms and has libraries or bindings for different programming languages. See below for some options:
-				</p>
-				<ul class="collapsible">
-					<li>
-						<div class="collapsible-header">Processing</div>
-						<div class="collapsible-body" style="padding: 1rem;">
-								Connect to this OOCSI server:
-								<blockquote>
-									OOCSI myOocsi = new OOCSI(this, "my_unique_handle", "ADDRESS");
-								</blockquote>
-								More information: <a href="https://github.com/iddi/oocsi-processing" target="_blank">setup & use</a>.
-						</div>
-					</li>
-					<li>
-						<div class="collapsible-header">Arduino / ESP (C/C++)</div>
-						<div class="collapsible-body" style="padding: 1rem;">
-								Connect to this OOCSI server:
-								<blockquote>
-									OOCSI oocsi = OOCSI();
-									oocsi.connect(OOCSIName, hostserver, ssid, password, processOOCSI);
-								</blockquote>
-								More information: <a href="https://github.com/iddi/oocsi-esp" target="_blank">setup & use</a>.
-						</div>
-					</li>
-					<li>
-						<div class="collapsible-header">Python/Micropython</div>
-						<div class="collapsible-body" style="padding: 1rem;">
-								Connect to this OOCSI server:
-								<blockquote>
-									oocsi = OOCSI('my_unique_handle', 'ADDRESS')
-								</blockquote>
-								More information: <a href="https://github.com/iddi/oocsi-python" target="_blank">setup & use</a>.
-						</div>
-					</li>
-					<li>
-						<div class="collapsible-header">Websocket (Javascript)</div>
-						<div class="collapsible-body" style="padding: 1rem;">
-								Connect to this OOCSI server:
-								<blockquote>
-									OOCSI.connect('wss://ADDRESS/ws')
-								</blockquote>
-								More information: <a href="https://github.com/iddi/oocsi-websocket" target="_blank">setup & use</a>.
-						</div>
-					</li>
-					<li>
-						<div class="collapsible-header">Java/Android</div>
-						<div class="collapsible-body" style="padding: 1rem;">
-								Connect to this OOCSI server:
-								<blockquote>
-									OOCSICommunicator oc = new OOCSICommunicator(this, "my_unique_handle");
-									oc.setReconnect(true);
-									oc.connect("ADDRESS", 4444);
-								</blockquote>
-								More information: <a href="https://github.com/iddi/oocsi#oocsi-client" target="_blank">setup & use</a>.
-						</div>
-					</li>
-					<li>
-						<div class="collapsible-header">Command line</div>
-						<div class="collapsible-body" style="padding: 1rem;">
-								Send message to a channel on this server:
-								<blockquote>
-									curl -X POST https://ADDRESS/send/testchannel -d "sender=myhandle&amp;param1=1.6&amp;param2=text"
-								</blockquote>
-						</div>
-					</li>
-				</ul>
-				<p>
-					With these different languages OOCSI can be accessed on most popular platforms on desktop (Windows, Mac, Linux), mobile (iOS, Android) and embedded (Raspberry Pi, ESP, ...).
-				</p>
-			</div>
-		</div>
-	</div>
-
-	<script type="text/javascript">
-	   	$(document).ready(function(){
-			$('.collapsible').collapsible();
-	   		$('blockquote').each(function() {
-	   			$(this).html($(this).html().replace("ADDRESS", window.location.hostname));
-	   		});
-  		});
-	</script>
 }

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="/assets/css/pico.indigo.min.css">
+  <script type="text/javascript" src="/assets/js/p5.min.js"></script>
+  <script type="text/javascript" src="/assets/js/p5.sound.min.js"></script>
+  <script type="text/javascript" src="/assets/js/oocsi-web.js"></script>
+  <script type="text/javascript" src="/assets/js/things/oocsi-things.min.js"></script>
+  <style type="text/css">    
+    body { 
+      touch-action: none;
+    }
+  </style>
+</head>
+<body></body>
+<script type="text/javascript">
+
+  // define your teamspace
+  fantasticThingsConfig = {
+    // enter your team name, or leave empty for team selection dialog
+    teamspace: ""
+  };
+
+  // define own shared data
+  let d = [];
+
+  // define thing
+  function thing() {
+
+    // register this thing with the name 'CatsCradle' and data path 'catscradle';
+    // no input, output is 'd1', 'd2', 'd3'
+    fantasticThings.register('Cats Cradle 🐈‍', 'catscradle', [], ['d1', 'd2', 'd3'])
+
+    // define own shared data
+    d.push(fantasticThings.data('d1'))
+    d.push(fantasticThings.data('d2'))
+    d.push(fantasticThings.data('d3'))
+  }
+
+  function setup() {
+      let canvas = createCanvas(windowWidth, windowHeight);
+      canvas.parent('canvasContainer');
+      frameRate(10)
+  }
+
+  function draw() {
+    background(0);
+    noFill()
+      
+    // store previous touch points here
+    let previousPoints = [];
+    let distanceIndex = 0;
+
+    // go through all touch points
+    for (let touch of touches) {
+      stroke(255)
+      strokeWeight(2)
+      ellipse(touch.x, touch.y, 100, 100)
+
+      // draw lines to all previous points
+      for (let previousTouch of previousPoints) {
+        stroke(255)
+        strokeWeight(1)
+        line(previousTouch.x, previousTouch.y, touch.x, touch.y)
+        let distance = constrain(map(dist(previousTouch.x, previousTouch.y, touch.x, touch.y), width/2, height/2, 0, 1), 0, 1)
+        if(distanceIndex < 3) {
+          d[distanceIndex](distance);
+          distanceIndex++;
+        }
+      }
+
+      // store touch point in previous points array
+      previousPoints.push(createVector(touch.x, touch.y))
+    }
+
+    if(touches.length > 0) {
+      fantasticThings.activity();
+    }
+  }
+
+</script>
+</html>

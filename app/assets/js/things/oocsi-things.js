@@ -1,15 +1,13 @@
 /*!
- * Fantastic Things - a collection of connected high-level design prototyping building blocks, using the OOCSI design middleware.
+ * OOCSI Things - a collection of connected high-level design prototyping building blocks, using the OOCSI design middleware.
  * 
- * Copyright (c) 2024-2025 Mathias Funk, Industrial Design dept., Eindhoven University of Technology
+ * Copyright (c) 2024-2026 Mathias Funk, Industrial Design dept., Eindhoven University of Technology
  */
 let globalSettings = {}
 
 // set namespace for OOCSI communication and visualization
-
-const getSrcOrigin = () => new URL(document.currentScript.src).origin;
-const server = getSrcOrigin(); //"oocsi.id.tue.nl";
-const namespace = "DCE2025";
+const server = (() => new URL(document.currentScript.src).host)()
+const namespace = "OOCSI-things";
 
 // disable auto-init of P5
 window.mocha = true;
@@ -87,7 +85,8 @@ window.addEventListener('DOMContentLoaded', () => {
     </article></dialog>`
 
   // set team saved in cookie
-  let teamName = document.cookie.split("; ").find((row) => row.startsWith("ft_teamName="))?.split("=")[1] 
+  let teamCookie = document.cookie.split("; ").find((row) => row.startsWith("ft_teamName="));
+  let teamName = teamCookie ? teamCookie.split("=")[1] : undefined;
   document.querySelector('#team-choice').value = teamName !== undefined ? decodeURIComponent(teamName): '';
 
   // install button handler
@@ -137,7 +136,8 @@ window.fantasticThings = (() => {
       document.title = 'Fantastic Things: ' + name;
 
       // choose and connect to the right OOCSI server
-      OOCSI.connect('wss://' + server + '/ws', globalSettings.channel + '/' + slug + '_##'); 
+      const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+      OOCSI.connect(protocol + server + '/ws', globalSettings.channel + '/' + slug + '_##'); 
       //OOCSI.connect('ws://localhost:9000/ws');
 
       // app settings

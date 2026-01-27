@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="/assets/css/pico.indigo.min.css">
+  <script type="text/javascript" src="/assets/js/p5.min.js"></script>
+  <script type="text/javascript" src="/assets/js/oocsi-web.js"></script>
+  <script type="text/javascript" src="/assets/js/things/oocsi-things.min.js"></script>
+</head>
+<body></body>
+<script type="text/javascript">
+
+  // define your teamspace
+  fantasticThingsConfig = {
+    // enter your team name, or leave empty for team selection dialog
+    teamspace: ""
+  };
+
+  // define thing
+  function thing() {
+    // register...
+    fantasticThings.register('Rada 🛸', 'rada', [], [])
+  }
+
+  // define internal data
+  let devices = {};
+  let rotationAngle = 0;
+
+  function setup() {
+    let canvas = createCanvas(windowWidth, windowHeight);
+    canvas.parent('canvasContainer');
+  }
+
+  function draw() {
+    // refresh the list of devices
+    if(frameCount % 20 == 0) {
+      devices = fantasticThings.devices();
+    }
+
+    background(0);
+    fill(255)
+    stroke(155)
+    strokeWeight(1)
+
+    translate(width/2, height/2)
+    rotate(radians(rotationAngle++))
+
+    let entryCount = Object.entries(devices).length;
+
+    // draw curtain of 20 different lines
+    for (const [key, value] of Object.entries(devices)) {
+      push()
+      translate(0, -height/5)
+      line(0, 10, 0, height/5)
+      translate(-textWidth(key)/2, 0)
+      fill(255)
+      text(key, 0, 0)
+      for(const val of value.out) {
+        fill(255, 255, 0)
+        translate(0, -16)
+        text(val, 0, 0)
+      }
+      pop()
+      rotate(radians(360/entryCount))
+    }
+  }
+
+</script>
+</html>

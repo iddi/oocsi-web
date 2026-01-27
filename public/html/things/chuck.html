@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="/assets/css/pico.indigo.min.css">
+  <script type="text/javascript" src="/assets/js/p5.min.js"></script>
+  <script type="text/javascript" src="/assets/js/p5.sound.min.js"></script>
+  <script type="text/javascript" src="/assets/js/oocsi-web.js"></script>
+  <script type="text/javascript" src="/assets/js/things/oocsi-things.min.js"></script>
+</head>
+<body></body>
+<script type="text/javascript">
+
+  // define your teamspace
+  fantasticThingsConfig = {
+    // enter your team name, or leave empty for team selection dialog
+    teamspace: ""
+  };
+
+  // define own shared data
+  let toggle;
+  let d = [];
+
+  // define internal data
+  let deviceMotionSupported;
+
+  // define thing
+  function thing() {
+
+    // register this thing with the name 'Chuck' and data path 'chuck';
+    // no input, output is 'd1', 'd2', 'd3' and 'toggle'
+    fantasticThings.register('Chuck 🐿️', 'chuck', [], ['d1', 'd2', 'd3', 'toggle'])
+
+    // define own shared data
+    toggle = fantasticThings.data('toggle')
+    d.push(fantasticThings.data('d1'))
+    d.push(fantasticThings.data('d2'))
+    d.push(fantasticThings.data('d3'))
+
+    // we need to ask the browser for permission to access sensors
+    deviceMotionSupported = fantasticThings.requestDeviceMotion();
+  }
+
+  function setup() {
+    let canvas = createCanvas(windowWidth, windowHeight, WEBGL);
+    canvas.parent('canvasContainer');
+    rectMode(CENTER);
+  }
+
+  function draw() {
+    background(0);
+    strokeWeight(2);
+
+    // rotate line for x
+    push()
+    stroke(255, 100, 100)
+    translate(0, -height/4)
+    rotateZ(map(accelerationX, 0, 1000, 0, 90))
+    line(-width/2 + 50, 0, width/2 - 50, 0)
+    d[0](map(accelerationX, 0, 1000, 0, 1))
+    pop()
+
+    // rotate line for y
+    push()
+    stroke(100, 255, 100)
+    rotateZ(map(accelerationY, 0, 1000, 0, 90))
+    line(-width/2 + 50, 0, width/2 - 50, 0)
+    d[1](map(accelerationY, 0, 1000, 0, 1))
+    pop()
+
+    // rotate line for z
+    push()
+    stroke(100, 100, 255)
+    translate(0, height/4)
+    rotateZ(map(accelerationZ, 0, 1000, 0, 90))
+    line(-width/2 + 50, 0, width/2 - 50, 0)
+    d[2](map(accelerationZ, 0, 1000, 0, 1))
+    pop()
+
+    fantasticThings.activity();
+  }
+
+  function deviceShaken() {
+    background(255)
+    toggle(true)
+    toggle(false)
+  }
+
+</script>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="/assets/css/pico.indigo.min.css">
+  <script type="text/javascript" src="/assets/js/p5.min.js"></script>
+  <script type="text/javascript" src="/assets/js/oocsi-web.js"></script>
+  <script type="text/javascript" src="/assets/js/things/oocsi-things.min.js"></script>
+</head>
+<body></body>
+<script type="text/javascript">
+
+  // define your teamspace
+  fantasticThingsConfig = {
+    // enter your team name, or leave empty for team selection dialog
+    teamspace: ""
+  };
+
+  // thing variables
+  let toggle, completed;
+
+  // define thing
+  function thing() {
+    
+    // register...
+    fantasticThings.register('Utol 🧠', 'utol', ['toggle'], ['completed'])
+
+    // define own shared data
+    toggle = fantasticThings.data('toggle')
+    toggle(false)
+    completed = fantasticThings.data('completed')
+    completed(false)
+
+    let toggleU1 = fantasticThings.data('toggle-u1')
+    toggleU1(false);
+    let toggleU2 = fantasticThings.data('toggle-u2')
+    toggleU2(false);
+    let toggleU3 = fantasticThings.data('toggle-u3')
+	toggleU2(false);
+
+    // connect external data
+    fantasticThings.connect('lampo', 'toggle', 'toggle-u1')
+    fantasticThings.connect('k0bolt', 'toggle', 'toggle-u2')
+    fantasticThings.connect('sitgrid', 'situation', 'toggle-u3')
+
+    // event logic
+    let eventLogic = (event) => {
+      // check: progress stage 0 and update from first data and data is 'true'
+      if(progress == 0 && event == 1 && toggleU1()) { progress = 1; return; }
+      // check: progress stage 1 and update from second data and data is 'true'
+      if(progress == 1 && event == 2 && toggleU2()) { progress = 2; return; }
+      // check: progress stage 2 and update from third data (value does not matter)
+      if(progress == 2 && event == 3) { 
+        progress = 3; 
+        completed(true); 
+        // set timeout to default for reset
+        resetTimeout = defaultTimeout;
+      }
+    }
+
+    // link event logic to data updates
+    toggleU1.subscribe(() => { eventLogic(1); })
+    toggleU2.subscribe(() => { eventLogic(2); })
+    toggleU3.subscribe(() => { eventLogic(3); })
+  }
+
+  // define internal data
+  let progress = 0;
+  let resetTimeout = 0;
+  let defaultTimeout;
+
+  function setup() {
+    let canvas = createCanvas(windowWidth, windowHeight);
+    canvas.parent('canvasContainer');
+  }
+
+  function draw() {
+    background(0);
+    
+    if(defaultTimeout === undefined) {
+      defaultTimeout = floor(30 * frameRate());
+    }
+
+    // reset timeout
+    if(resetTimeout == 1) {
+      progress = 0;
+      toggleU1(false);
+      toggleU2(false);
+      toggleU3(false);
+      completed(false);
+      fantasticThings.activity();
+    } else if(resetTimeout >= 0) {
+      resetTimeout--;
+    }
+    stroke(50)
+    line(width/4 - 50, height/2, 3*width/4 + 50, height/2)
+    stroke(255)
+    line(width/4 - 50, height/2, 
+      constrain(
+        map(resetTimeout, 0, defaultTimeout, width/4 - 50, 3*width/4 + 50, height/2),
+        width/4 - 50, 3*width/4 + 50),
+      height/2)
+    noStroke()
+
+    // first ball
+    if(progress > 0) {
+      fill(255, 255, 50)
+    } else {
+      fill(50)
+    }
+    ellipse(width/4, height/2, 50, 50)
+
+    // second ball
+    if(progress > 1) {
+      fill(255, 255, 50)
+    } else {
+      fill(50)
+    }
+    ellipse(width/2, height/2, 50, 50)
+
+    // third ball
+    if(progress > 2) {
+      fill(255, 255, 50)
+    } else {
+      fill(50)
+    }
+    ellipse(3*width/4, height/2, 50, 50)
+
+    // trigger button
+    if((touches.length > 0 || mouseIsPressed) && dist(mouseX, mouseY, width/2, height/4) <= 25) {
+      fill(50)
+    } else {
+      fill(120, 255, 100)
+    }
+    ellipse(width/2, height/4, 50, 50)
+
+    // reset button
+    if((touches.length > 0 || mouseIsPressed) && dist(mouseX, mouseY, width/2, 3*height/4) <= 25) {
+      fill(50)
+    } else {
+      fill(255, 100, 100)
+    }
+    ellipse(width/2, 3*height/4, 50, 50)
+  };
+
+  function touchEnded() {
+    // button?
+    if(dist(mouseX, mouseY, width/2, height/4) <= 25) {
+      toggle(!toggle());
+    }
+
+    // reset?
+    if(dist(mouseX, mouseY, width/2, 3*height/4) <= 25) {
+      progress = 0;
+      completed(false);
+    }
+    fantasticThings.activity();
+  }
+
+</script>
+</html>

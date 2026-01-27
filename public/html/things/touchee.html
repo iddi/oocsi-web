@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="/assets/css/pico.indigo.min.css">
+  <script type="text/javascript" src="/assets/js/p5.min.js"></script>
+  <script type="text/javascript" src="/assets/js/oocsi-web.js"></script>
+  <script type="text/javascript" src="/assets/js/things/oocsi-things.min.js"></script>
+  <style type="text/css">
+    body {
+        touch-action: none;
+    }
+  </style>
+</head>
+<body></body>
+<script type="text/javascript">
+
+  // define your teamspace
+  fantasticThingsConfig = {
+    // enter your team name, or leave empty for team selection dialog
+    teamspace: ""
+  };
+
+  // thing variables
+  let x, y;
+
+  // define thing
+  function thing() {
+
+    // register this thing with the name 'Touchee' and data path 'touchee';
+    // no input, output 'x' and 'y'
+    fantasticThings.register('Touch-ee 🫵', 'touchee', [], ['x', 'y'])
+
+    // define own shared data
+    x = fantasticThings.data('x');
+    y = fantasticThings.data('y');
+  }
+
+  // define not-shared data
+  let center = undefined;
+
+  function setup() {
+    let canvas = createCanvas(windowWidth, windowHeight);
+    canvas.parent('canvasContainer');
+    center = createVector(width/2, height/2);
+  }
+
+  function draw() {
+    background(0);
+    if(touches.length == 0 && !mouseIsPressed) {
+      fill(255);
+      ellipse(width/2, height/2, 20, 20);
+    } else {
+      let pv = createVector(mouseX, mouseY);
+      let v = p5.Vector.sub(center, pv);
+      let thickness = map(v.mag(), 0, max(width/2, height/2), 10, 2)
+      strokeWeight(thickness);
+      stroke(map(thickness, 2, 10, 255, 120));
+      line(width/2, height/2, pv.x, pv.y);
+      noStroke();
+      fill(255, 255, 10);
+      ellipse(pv.x, pv.y, 100, 100);
+      fill(0);
+      ellipse(pv.x, pv.y, 80, 80);
+
+      // set the variables and show activity
+      x(map(v.x,-width/2, width/2, -1, 1));
+      y(map(v.y, -height/2, height/2, -1, 1));
+      fantasticThings.activity();
+    }
+  }
+
+</script>
+</html>

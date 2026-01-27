@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="/assets/css/pico.indigo.min.css">
+  <script type="text/javascript" src="/assets/js/oocsi-web.js"></script>
+  <script type="text/javascript" src="/assets/js/things/oocsi-things.min.js"></script>
+  <style type="text/css">
+      html {
+        background: black;
+      }
+
+      body {
+        touch-action: manipulation;
+      }
+      
+      .grid-container {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+          background: black;
+          height: 80vh;
+      }
+
+      .cell {
+          flex: 1 1 calc(33.33% - 5px);
+          min-height: 100px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-size: 1.5rem;
+          color: white;
+          cursor: pointer;
+      }
+  </style>
+</head>
+<body>
+  <div class="grid-container">
+      <div class="cell" data="play">
+        🛝 Play time
+      </div>
+      <div class="cell" data="magic">
+        🪄 Magic moment
+      </div>
+      <div class="cell" data="appreciate">
+        👏 Give it up for...
+      </div>
+      <div class="cell" data="busy">
+        🐝 Oh, so busy...
+      </div>
+      <div class="cell" data="very-busy">
+        🐿️ Busy in a different way
+      </div>
+      <div class="cell" data="coffee">
+        ☕️ Beans. Grind. Hot water.
+      </div>
+  </div>
+</body>
+<script type="text/javascript"> 
+
+  // define your teamspace
+  fantasticThingsConfig = {
+    // enter your team name, or leave empty for team selection dialog
+    teamspace: ""
+  };
+
+  // define thing
+  function thing() {
+
+    // register this thing with the name 'Situational Grid' and data path 'sitgrid';
+    // no input, output is 'situation'
+    fantasticThings.register('Situational Grid 👏', 'sitgrid', [], ['situation'])
+
+    // define own shared data
+    let situation = fantasticThings.data('situation')
+
+    // register grid handlers
+    document.querySelectorAll('.grid-container .cell').forEach(d => {
+      d.addEventListener('click', () => {
+        situation(d.attributes.data.value);
+        fantasticThings.activity();
+      })
+    });
+  }
+
+</script>
+</html>

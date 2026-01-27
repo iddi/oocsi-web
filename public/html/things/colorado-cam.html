@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="/assets/css/pico.indigo.min.css">
+  <script type="text/javascript" src="/assets/js/p5.min.js"></script>
+  <script type="text/javascript" src="/assets/js/oocsi-web.js"></script>
+  <script type="text/javascript" src="/assets/js/things/oocsi-things.min.js"></script>
+</head>
+<body></body>
+<script type="text/javascript">
+
+  // define your teamspace
+  fantasticThingsConfig = {
+    // enter your team name, or leave empty for team selection dialog
+    teamspace: ""
+  };
+
+  // thing variables
+  let brightness, colorR, colorG, colorB;
+
+  // define thing
+  function thing() {
+    // register this thing with the name 'Colorado Cam 🤩' and data path 'coloradocam';
+    // no input, output is 'brightness' and 'color_r', 'color_g', 'color_b'
+    fantasticThings.register('Colorado Cam 🤩', 'coloradocam', ['toggle'], ['brightness', 'color_r', 'color_g', 'color_b'])
+
+    // define own shared data
+    brightness = fantasticThings.data('brightness')
+    color_r = fantasticThings.data('color_r')
+    color_g = fantasticThings.data('color_g')
+    color_b = fantasticThings.data('color_b')
+  }
+
+  // define internal data
+  let capture;
+
+  function setup() {
+    let canvas = createCanvas(windowWidth, windowHeight);
+    canvas.parent('canvasContainer');
+    frameRate(10)
+    background(0);
+    
+    var options = {
+      audio: false,
+      video: {
+        facingMode: {
+          exact: "environment"
+        }
+      }
+    };
+    capture = createCapture(options);
+    capture.size(180, 100);
+    capture.hide();
+  }
+
+  function draw() {
+    // visualize the color
+    image(capture, width/2 - 1, height/2 - 1, 3, 3);
+    loadPixels();
+    let color = get(width/2, height/2);
+    fill(color);
+    ellipse(width/2, height/2, 100, 100);
+
+    // process data
+    brightness(map(brightness(color), 0, 255, 0, 1));
+    color_r(map(red(color), 0, 255, 0, 1));
+    color_g(map(green(color), 0, 255, 0, 1));
+    color_b(map(blue(color), 0, 255, 0, 1));
+    fantasticThings.activity();
+  }
+
+</script>
+</html>

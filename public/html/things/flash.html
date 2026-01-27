@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="/assets/css/pico.indigo.min.css">
+  <script type="text/javascript" src="/assets/js/oocsi-web.js"></script>
+  <script type="text/javascript" src="/assets/js/things/oocsi-things.min.js"></script>
+  <style>
+    .grid-container {
+      background: black;
+      height: 100vh;
+      width: 100%;
+      display: flex;
+      justify-content: center; /* Center horizontally */
+      align-items: center; /* Center vertically */
+    }
+    .grid-container img {
+      transition: opacity 1s;
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-container">
+    <img src="">
+  </div>
+</body>
+<script type="text/javascript"> 
+
+  // define your teamspace
+  fantasticThingsConfig = {
+    // enter your team name, or leave empty for team selection dialog
+    teamspace: ""
+  };
+
+  // define thing
+  function thing() {
+
+    // register...
+    fantasticThings.register('Flash 👨‍🎤', 'flash', [], ['situation'])
+
+    // define own shared data
+    let situation = fantasticThings.data('situation')
+
+    // connect external data
+    fantasticThings.connect('sitgrid', 'situation', 'situation')
+
+    // define internal data
+    let media = {};
+    media['magic'] = 'flash_magic.png';
+    media['appreciate'] = 'flash_appreciate.png';
+    media['coffee'] = 'flash_coffee.png';
+    media['busy'] = 'flash_busy.mp4';
+    media['very-busy'] = 'flash_very_busy.mp4';
+
+    // subscribe to situation update
+    situation.subscribe((value) => {
+      // console.log('using a new image for ' + value)
+      if(media[value] === undefined) {
+        document.querySelector('.grid-container img').style.opacity = 0
+        document.querySelector('.grid-container img').src = ''
+      } else {
+        document.querySelector('.grid-container img').style.opacity = 1.0
+        document.querySelector('.grid-container img').src = media[value]
+      }
+    })
+  }
+
+</script>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="/assets/css/pico.indigo.min.css">
+  <script type="text/javascript" src="/assets/js/p5.min.js"></script>
+  <script type="text/javascript" src="/assets/js/oocsi-web.js"></script>
+  <script type="text/javascript" src="/assets/js/things/oocsi-things.min.js"></script>
+</head>
+<body></body>
+<script type="text/javascript">
+
+  // define your teamspace
+  fantasticThingsConfig = {
+    // enter your team name, or leave empty for team selection dialog
+    teamspace: ""
+  };
+
+  // thing variables
+  let toggle1, toggle2, dim1, dim2;
+
+  // define thing
+  function thing() {
+
+	// register this thing with the name 'Dua-Lampo' and data path 'dua-lampo';
+	// this app uses 'toggle1', 'toggle2', 'dim1' and 'dim2' as input, and 'toggle1' and 'toggle2' as output
+    fantasticThings.register('Dua-Lampo 💡💡', 'dua-lampo', ['toggle1', 'toggle2', 'dim1', 'dim2'], ['toggle1', 'toggle2'])
+
+    // define own shared data
+    toggle1 = fantasticThings.data('toggle1')
+    toggle1(true)
+    toggle2 = fantasticThings.data('toggle2')
+    toggle2(true)
+
+    dim1 = fantasticThings.data('dim1')
+    dim1(0.5)
+    dim2 = fantasticThings.data('dim2')
+    dim2(0.5)
+
+    // connect to external data
+    fantasticThings.connect('touchee', 'x', 'dim1')
+    fantasticThings.connect('touchee', 'y', 'dim2')
+    fantasticThings.connect('mr-kip', 'd1', 'dim1')
+    fantasticThings.connect('mr-kip', 'd2', 'dim2')
+    fantasticThings.connect('chuck', 'd1', 'dim1')
+    fantasticThings.connect('chuck', 'd2', 'dim2')
+  }
+
+  function setup() {
+    let canvas = createCanvas(windowWidth, windowHeight);
+    canvas.parent('canvasContainer');
+  }
+
+  function draw() {
+    background(0);
+
+    // first lampo
+    fill(toggle1() ? map(dim1(), 1, -1, 0, 255) : 50);
+    rect(50, 30, width-100, height/2-50);
+
+    // second lampo
+    fill(toggle2() ? map(dim2(), -1, 1, 0, 255) : 50);
+    rect(50, height/2+25, width-100, height/2-50);
+  }
+
+  function touchEnded() {
+    if(mouseY < height/2) {
+      // toggle first lampo if click upper half
+      toggle1(!toggle1())
+    } else {
+      // toggle first lampo if click in lower half
+      toggle2(!toggle2())
+    }
+    
+    fantasticThings.activity();
+  }
+
+</script>
+</html>

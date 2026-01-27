@@ -22,6 +22,10 @@ GET 	/datacanvas						controllers.Tools.datacanvas(request: Request, token : Str
 GET 	/datacanvas/:token				controllers.Tools.datacanvas(request: Request, token: String)
 GET 	/animoocsi						controllers.Tools.animate(request: Request)
 
+# Toolkit
+GET     /things							controllers.Things.index(request: Request)
+GET     /things/:thingname              controllers.Things.thing(request: Request, thingname: String)
+
 +nocsrf
 POST 	/generateMoteCode				controllers.Codegen.generateOOCSIMoteCode(request: Request)
 

@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OOCSI Things - Reference</title>
+  <link rel="stylesheet" type="text/css" href="/assets/css/pico.indigo.min.css">
+  <style>
+    details summary:hover {
+      outline: palevioletred;
+      outline-width: 2px;
+      outline-offset: 0.5rem;
+      outline-style: dashed;
+    }
+
+    details[open] > div {
+      margin-left: 1rem;
+      padding-left: 1rem;
+      border-left: 1px lightgrey dotted;
+    }
+    details[open] > summary {
+      margin-left: 0;
+    }
+
+  </style>
+</head>
+<body class="container">
+
+  <nav>
+    <ul>
+      <li><a href="." class="contrast"><strong>🌟 OOCSI Things 🌟</strong></a></li>
+    </ul>
+    <ul>
+      <li><a href="reference.html" class="contrast">Reference</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <section>
+      <h2>What are OOCSI Things?</h2>
+
+      <p>
+        Super quick: it's is a collection of small mobile web pages that do each one things well and communicate data via the <a href="https://oocsi.net" target="_blank">OOCSI design middleware</a>. 
+        Each thing has a different specialty; sensing data, allowing for user interaction, playing media, or all of them.
+      </p>
+
+
+      <b>Useful?</b>
+      <p>
+        OOCSI things are great for prototyping connected interactions without coding, so you should get simple interactions going within minutes.
+        Things run on smart phones, tablets and laptops, and you can indeed prototype with these devices by building small enclosures or fixing them to other building blocks.
+      </p>
+
+
+      <b>How it works</b>
+      <p>
+        After connecting to OOCSI, a thing will join a team space (actually an OOCSI channel) and then exchange data with other things over this channel. 
+        The data exchange uses the OOCSI variable abstraction which allows to synchronize the variable values quickly and safely over the OOCSI channel.
+        You can use the variables easily to get and set values as follows: for example, if you need the current value of a variable <code>position</code> you use the name of the variable with parentheses: <code>position()</code>. 
+        To change the variable you fill in the new value (here: "2") into the parentheses: <code>position(2)</code>.
+        Everywhere in the code of the thing, you can use the variables to change the behavior or to share new values with other things.
+      </p>
+    </section>
+
+    <section>
+      <h2>Installation</h2>
+      
+      <b>Quick start</b>
+      <p>
+        To install the OOCSI things package, just download the whole <a href="/assets/code/oocsi-things.zip" download="oocsi-things.zip">OOCSI Things bundle</a> and unpack it into a web-accessible directory of your choice. You can use Data Foundry to do that.
+      </p>
+
+
+      <b>Link library</b>
+      <p>
+        Ensure that a few libraries are loaded in the <code>head</code> of your HTML file:
+        <pre><code class="language-html">
+&lt;link href="https://data.id.tue.nl/assets/stylesheets/picoCSS/pico.indigo.min.css" rel="stylesheet" type="text/css"&gt;
+&lt;script src="https://data.id.tue.nl/assets/javascripts/oocsi-web.js"&gt;&lt;/script&gt;
+&lt;script src="https://data.id.tue.nl/assets/javascripts/things/oocsi-things.min.js"&gt;&lt;/script&gt;
+        </code></pre>
+
+        The first is a stylesheet that ensures that navigation, and especially the team selection dialog look right. 
+        The second and third are scripts, one for OOCSI and the other for the thing features that build on top of OOCSI.
+      </p>
+      
+      <b>Setup a place for <i>thing</i> code</b>
+      <p>
+        The setup of the <i>thing</i> should happen in one go and before the rest of the page starts rendering.
+        Asa convention we use a final function that you define in the beginning of a JavaScript code block in your HTML page.
+
+        <pre><code class="language-html">
+&lt;script&gt;
+    // define thing variables here, so you can use them everywhere
+    let thingsVariable1;
+
+    // this is the entrypoint for your thing
+    function thing() {
+      // all your thing code goes here
+      // ...
+    }
+
+    // other functions go here, such as setup() and draw() if you use P5.js
+&lt;/script&gt;
+        </code></pre>
+
+        Note that before we define varaiables <i>outside</i> this function, otherwise we cannot use them in the rest of our code.
+      </p>
+
+      <b>Select a team space <mark>new!</mark></b>
+      <p>
+        By default, OOCSI Things will pop up a dialog for you to select a team space on every load (for every thing). 
+        It will store the last selection in a cookie on your device, so you don't need to enter the name of the space again and again.
+        The more you get into prototyping, the less this is needed (and quite annoying). 
+        So, you can preset the team space in your things like so:
+
+        <pre><code class="language-html">
+&lt;script&gt;
+    
+    // define your teamspace
+    fantasticThingsConfig = {
+      // enter your team name, or leave empty for team selection dialog
+      teamspace: "team-25"
+    };
+
+    function thing() {
+      // ...
+    }
+&lt;/script&gt;
+        </code></pre>
+      </p>
+
+      <p>
+        This is all we need to do for the setup. Let's see what the different functions inside the <code>thing()</code> function do exactly.
+      </p>
+    </section>
+
+    <hr>
+
+    <section>
+      <h2>Function reference</h2>
+
+      <h4>OOCSI things functions</h4>
+
+      <details>
+        <summary>fantasticThings.register(...)</summary>
+        <div>
+          <strong>Description</strong>
+
+          <p>
+            This is the first function to call in your <i>thing</i> code. This function registers the thing and connects it to the teamspace.
+          </p>
+
+          <strong>Parameters</strong>
+          <ul>
+            <li><em><code>name</code> (string)</em>: screen name of the thing, can include emjois and will be shown in the header of the thing</li>
+            <li><em><code>slug</code> (string)</em>: OOCSI name of the thing, only alphanumerical characters and dashes allowed. This will be used on the OOCSI network.</li>
+            <li><em><code>inVars</code> (array of string)</em>: list of input data variables, just for documentation and showing input indicators in header of the thing.</li>
+            <li><em><code>outVars</code> (array of string)</em>: list of output data variables, just for documentation and showing input indicators in header of the thing.</li>
+          </ul>
+
+          <strong>Example Usage</strong>
+          <pre><code>
+// from the lampo thing
+fantasticThings.register('Lampo 🪔', 'lampo', ['toggle', 'dim'], ['toggle'])
+          </code></pre>
+
+          <p>
+            <i>
+              Note: If you duplicate a thing, for instance, because you need two or more things with the same functionality, 
+              you need to give them different names to ensure that they are not treated same on the OOCSI network. 
+              Even if you give them different names, they can share the same data.
+            </i>
+          </p>
+
+        </div>
+      </details>
+
+      <!-- //------------------------------------------------------------------------------------------------------ -->
+
+      <details>
+        <summary>fantasticThings.data(...)</summary>
+        <div>
+          <strong>Description</strong>
+          <p>
+            The <code>data()</code> function creates the data variables that are synchronized via the OOCSI network.
+          </p>
+
+          <strong>Parameters</strong>
+          <ul>
+            <li>
+              <em><code>name</code> (required):</em> 
+              The name of a data variable on the OOCSI network. 
+              This name can be different than the variable name in your code. Nevertheless, we suggest to keep them same to not lose overview.
+            </li>
+          </ul>
+
+          <strong>Example Usage</strong>
+          <p>
+            Here is an example of how to use the <code>data()</code> function:
+          </p>
+
+          <pre><code>
+// we first define the variable "toggle" outside the thing() function
+let toggle;
+
+// create the variable
+toggle = fantasticThings.data('toggle')
+
+// set the initial value --> true
+toggle(true)
+          </code></pre>
+
+          <p>
+            <i>
+              Note: Don't forget to define the variable in your code _outside_ the thing() function. Otherwise, you cannot access it in other parts of your JavaScript code.
+            </i>
+          </p>
+        </div>        
+      </details>
+
+      <!-- //------------------------------------------------------------------------------------------------------ -->
+
+      <details>
+        <summary>fantasticThings.connect(...)</summary>
+        <div>
+          <strong>Description</strong>
+          <p>
+            The <code>connect()</code> function links <i>different</i> variables and ensures that different types of things can share their data logically.
+          </p>
+
+          <strong>Parameters</strong>
+          <ul>
+            <li><em><code>thing_name</code> (required)</em>: this is the <code>slug</code> of the thing whose data you would like to connect to a local data variable.</li>
+            <li><em><code>data_name</code> (optional)</em>: this is the name of the data that you would like to connect to a local data variable.</li>
+            <li><em><code>own_data_name</code> (required)</em>: this is the name of the local data that receives the data after connecting.</li>
+          </ul>
+
+          <strong>Example Usage</strong>
+          <p>Below is an example of how to use the <code>connect()</code> function:</p>
+          <pre><code>
+// from lampo:
+// connect the "toggle" data from any "kob0lt" thing in the teamspace to the local "toggle" data
+fantasticThings.connect('k0bolt', 'toggle', 'toggle')
+          </code></pre>
+
+          <p>
+            Note: The values of linked variables are not converted automatically, please test carefully.
+          </p>
+        </div>
+      </details>
+
+      <!-- //------------------------------------------------------------------------------------------------------ -->
+
+      <details>
+        <summary>fantasticThings.activity()</summary>
+        <div>
+          <strong>Description</strong>
+          <p>
+            The <code>activity()</code> function just shows dat aexchange activity in the header of the thing. This can be useful for debugging your thing or simply to show activity.
+          </p>
+
+          <strong>Example Usage:</strong>
+          <p>Here is an example of how to use the <code>activity</code> function:</p>
+          <pre><code>
+// some data update has happened
+// ...
+// show activity in user interface
+fantasticThings.activity()
+          </code></pre>
+        </div>
+      </details>
+
+      <!-- //------------------------------------------------------------------------------------------------------ -->
+
+
+      <h4>Data variable functions</h4>
+
+      <p>
+        The functions below apply to all data variables that you have created with <code>fantasticThings.data(...)</code> (see above).
+      </p>
+
+      <details>
+        <summary>subscribe(...)</summary>
+        <div>
+          <strong>Description:</strong>
+          <p>
+            The <code>subscribe()</code> function subscribes to changes in a variable and allows to trigger code on every change. 
+            Is not specific to the fantastic things library. Instead it belongs to each OOCSI variable.
+          </p>
+
+          <strong>Parameters</strong>
+          <ul>
+            <li>
+              <em><code>function</code> (required)</em>: The code to run when a change in the data variable occurs.
+            </li>
+          </ul>
+
+          <strong>Example Usage</strong>
+          <p>
+            Here is an example of how to use the <code>subscribe</code> function:
+          </p>
+          <pre><code>
+// a data variable "toggle"
+let toggle;
+
+// linked to the "toggle" data item on the teamspace
+toggle = fantasticThings.data('toggle')
+
+// subscribe with a function to run on any data change
+toggle.subscribe((newValue) => {
+  // do something with the new value
+  // e.g., log the value on the console
+  console.log(newValue)
+})
+          </code></pre>
+
+          <p>
+            Note: The code will be run on all variable updates, but only if the value changes. This prevents that you run the code multiple times on a single repeated update.
+          </p>
+        </div>
+      </details>
+
+      <!-- //------------------------------------------------------------------------------------------------------ -->
+
+      <details>
+        <summary>Getting values &lt;var&gt;()</summary>
+        <div>
+          <strong>Description</strong> 
+          <p>
+            This function simply returns the current value of the data variable.
+          </p>
+
+          <strong>Parameters</strong>
+          <ul>
+            <li>none</li>
+          </ul>
+
+          <strong>Example Usage</strong>
+          <pre><code>
+// a data variable "toggle"
+let toggle;
+
+// linked to the "toggle" data item on the teamspace
+toggle = fantasticThings.data('toggle')
+
+// ...
+
+// read data variable to display something in a data-driven way:
+// here we check the data value in an if statement
+if(toggle()) {
+  // if true, we use a light fill color (in P5.js)
+  fill(255);
+} else {
+  // if false, we use a dark fill color (in P5.js)
+  fill(0);
+}
+          </code></pre>
+        </div>
+      </details>
+
+      <!-- //------------------------------------------------------------------------------------------------------ -->
+
+      <details>
+        <summary>Setting values &lt;var&gt;(...)</summary>
+        <div>
+          <strong>Description</strong>
+          <p>
+            This function simple sets a new value and the synchronization with other things will be started automatically.
+          </p>
+
+          <strong>Parameters</strong>
+          <ul>
+            <li>
+              <em><code>newValue</code> (required)</em>: The new value for this data variable.
+            </li>
+          </ul>
+
+          <strong>Example Usage</strong>
+          <pre><code>
+// a data variable "toggle"
+let toggle;
+
+// linked to the "toggle" data item on the teamspace
+toggle = fantasticThings.data('toggle')
+
+// ...
+
+// in a P5.js touch handler, we change the value of the toggle variable
+function touchEnded() {
+  // read the current value
+  let current = toggle();
+  // set the inverted value
+  toggle(!current);
+}
+          </code></pre>
+        </div>
+      </details>
+
+    </section>
+
+  </main>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/default.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+  <style type="text/css">
+    pre code.hljs {
+      padding: 0 0.5rem;
+    }
+  </style>
+</body>
+</html>

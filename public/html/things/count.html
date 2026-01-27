@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="/assets/css/pico.indigo.min.css">
+  <script type="text/javascript" src="/assets/js/p5.min.js"></script>
+  <script type="text/javascript" src="/assets/js/oocsi-web.js"></script>
+  <script type="text/javascript" src="/assets/js/things/oocsi-things.min.js"></script>
+</head>
+<body></body>
+<script type="text/javascript">
+
+  // define your teamspace
+  fantasticThingsConfig = {
+    // enter your team name, or leave empty for team selection dialog
+    teamspace: ""
+  };
+
+  // thing variables
+  let toggle, completed;
+
+  // define thing
+  function thing() {
+    
+    // register...
+    fantasticThings.register('Count 🧛', 'count', ['complete'], ['toggle'])
+
+    // define own shared data
+    let toggle = fantasticThings.data('toggle')
+    toggle(false)
+    let completed = fantasticThings.data('complete')
+    completed(false)
+
+    // connect external data
+    fantasticThings.connect('lampo', 'toggle', 'toggle')
+
+    // link event logic to data updates
+    toggle.subscribe((value) => {
+      if(!value) {
+        return;
+      }
+
+      // count to 10, change the number to count differently
+      if(++progress == 10) {
+        progress = 0;
+        completed(false);
+        fantasticThings.activity();
+      }
+    })
+  }
+
+  // define internal data
+  let progress = 0;
+
+  function setup() {
+    let canvas = createCanvas(windowWidth, windowHeight);
+    canvas.parent('canvasContainer');
+  }
+
+  function draw() {
+    background(0);
+    fill(map(progress, 0, 10, 10, 200), 200, 200)
+    circle(width/2, height/2, map(progress, 0, 10, 10, 200))
+  }
+
+  function touchEnded() {
+    // setup progress
+    progress = 0;
+    completed(false);
+    fantasticThings.activity();
+  }
+
+</script>
+</html>

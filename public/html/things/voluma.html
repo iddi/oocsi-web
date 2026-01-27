@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="/assets/css/pico.indigo.min.css">
+  <script type="text/javascript" src="/assets/js/p5.min.js"></script>
+  <script type="text/javascript" src="/assets/js/p5.sound.min.js"></script>
+  <script type="text/javascript" src="/assets/js/oocsi-web.js"></script>
+  <script type="text/javascript" src="/assets/js/things/oocsi-things.min.js"></script>
+</head>
+<body></body>
+<script type="text/javascript">
+
+  // define your teamspace
+  fantasticThingsConfig = {
+    // enter your team name, or leave empty for team selection dialog
+    teamspace: ""
+  };
+
+  // define own shared data
+  let volume;
+
+  // define thing
+  function thing() {
+    // register this thing with the name 'Voluma' and data path 'voluma';
+    // no input, output is 'volume'
+    fantasticThings.register('Voluma 📣', 'voluma', [], ['volume'])
+
+    // define own shared data
+    volume = fantasticThings.data('volume')
+  }
+
+  // define internal data
+  let mic;
+
+  function setup() {
+    let canvas = createCanvas(windowWidth, windowHeight);
+    canvas.parent('canvasContainer');
+    frameRate(10)
+
+    // Initialize microphone
+    mic = new p5.AudioIn();
+
+    // Start recording
+    mic.start();
+  }
+
+  function draw() {
+    background(0);
+
+    // Get current volume level
+    let vol = mic.getLevel();
+
+    // draw visualization
+    noStroke()
+    fill(255, map(vol, 0, 1, 255, 10));
+    ellipse(width/2, height/2, 
+        map(vol, 0, 1, 50, 10*min(width, height)), 
+        map(vol, 0, 1, 50, 10*min(width, height)))
+    fill(255, 20)
+    stroke(255)
+    ellipse(width/2, height/2, 
+        map(vol, 0, 1, 50, 20*min(width, height)), 
+        map(vol, 0, 1, 50, 20*min(width, height)))
+    noFill()
+    stroke(155)
+    ellipse(width/2, height/2, 
+        map(vol, 0, 1, 50, 30*min(width, height)), 
+        map(vol, 0, 1, 50, 30*min(width, height)))
+    stroke(55)
+    ellipse(width/2, height/2, 
+        map(vol, 0, 1, 50, 40*min(width, height)), 
+        map(vol, 0, 1, 50, 40*min(width, height)))
+
+    // update the data
+    volume(constrain(vol * 30, 0, 1));
+    fantasticThings.activity();
+  }
+
+</script>
+</html>
