@@ -27,6 +27,7 @@
       <li><a href="/things" class="contrast"><strong>🌟 OOCSI Things 🌟</strong></a></li>
     </ul>
     <ul>
+      <li><a href="#" id="open-qr-modal">QR Code</a></li>
       <li><a href="/things/reference.html" target="_blank">Reference</a></li>
     </ul>
   </nav>
@@ -314,13 +315,53 @@
       </div>
     </div>
   </main>
+
+  <dialog id="qr-modal">
+    <article style="max-width: 300px;">
+      <div id="qrcode" style="display: flex; justify-content: center; margin: 20px;"></div>
+    </article>
+  </dialog>
+
+  <script src="/assets/js/qrcode.min.js"></script>
   <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', () => {
+      
+      // thing click logic
       document.querySelectorAll('article').forEach(d => {
         d.addEventListener('click', () => {
           window.location.href = "/things/" + d.attributes.data.value;
         })
-      })
+      });
+
+      // QR Code Modal
+      const modal = document.getElementById('qr-modal');
+      const openBtn = document.getElementById('open-qr-modal');
+      const qrContainer = document.getElementById('qrcode');
+      let qrCodeObj = null;
+
+      if (openBtn && modal) {
+        openBtn.addEventListener('click', (event) => {
+          event.preventDefault();
+          modal.showModal();
+          
+          if (!qrCodeObj) {
+            qrCodeObj = new QRCode(qrContainer, {
+              text: window.location.href,
+              width: 256,
+              height: 256,
+              colorDark : "#000000",
+              colorLight : "#ffffff",
+              correctLevel : QRCode.CorrectLevel.H
+            });
+          } else {
+             qrCodeObj.clear();
+             qrCodeObj.makeCode(window.location.href);
+          }
+        });
+
+        // Close on click anywhere
+        modal.addEventListener('click', () => { modal.close(); });
+      }
     })
 
   </script>
