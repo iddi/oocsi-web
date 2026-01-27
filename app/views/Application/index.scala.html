@@ -3,7 +3,7 @@
 @main("Welcome to OOCSI") {
 	<script src="@routes.Assets.versioned("js/d3.v7.min.js")" type="text/javascript"></script>
 	<script src="@routes.Assets.versioned("js/oocsi-graphvis.min.js")" type="text/javascript"></script>
-	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/graphvis.css")">
+	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("css/graphvis.css")">
 
 	@elements.navigation("")
   
@@ -120,7 +120,7 @@
 					<li>
 						<div class="collapsible-header">Processing</div>
 						<div class="collapsible-body" style="padding: 1rem;">
-								Connect to this server:
+								Connect to this OOCSI server:
 								<blockquote>
 									OOCSI myOocsi = new OOCSI(this, "my_unique_handle", "ADDRESS");
 								</blockquote>
@@ -130,7 +130,7 @@
 					<li>
 						<div class="collapsible-header">Arduino / ESP (C/C++)</div>
 						<div class="collapsible-body" style="padding: 1rem;">
-								Connect to this server:
+								Connect to this OOCSI server:
 								<blockquote>
 									OOCSI oocsi = OOCSI();
 									oocsi.connect(OOCSIName, hostserver, ssid, password, processOOCSI);
@@ -141,7 +141,7 @@
 					<li>
 						<div class="collapsible-header">Python/Micropython</div>
 						<div class="collapsible-body" style="padding: 1rem;">
-								Connect to this server:
+								Connect to this OOCSI server:
 								<blockquote>
 									oocsi = OOCSI('my_unique_handle', 'ADDRESS')
 								</blockquote>
@@ -151,7 +151,7 @@
 					<li>
 						<div class="collapsible-header">Websocket (Javascript)</div>
 						<div class="collapsible-body" style="padding: 1rem;">
-								Connect to this server:
+								Connect to this OOCSI server:
 								<blockquote>
 									OOCSI.connect('wss://ADDRESS/ws')
 								</blockquote>
@@ -161,7 +161,7 @@
 					<li>
 						<div class="collapsible-header">Java/Android</div>
 						<div class="collapsible-body" style="padding: 1rem;">
-								Connect to this server:
+								Connect to this OOCSI server:
 								<blockquote>
 									OOCSICommunicator oc = new OOCSICommunicator(this, "my_unique_handle");
 									oc.setReconnect(true);
