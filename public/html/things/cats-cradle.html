@@ -18,7 +18,7 @@
 <script type="text/javascript">
 
   // define your teamspace
-  fantasticThingsConfig = {
+  oocsiThingsConfig = {
     // enter your team name, or leave empty for team selection dialog
     teamspace: ""
   };
@@ -31,12 +31,12 @@
 
     // register this thing with the name 'CatsCradle' and data path 'catscradle';
     // no input, output is 'd1', 'd2', 'd3'
-    fantasticThings.register('Cats Cradle 🐈‍', 'catscradle', [], ['d1', 'd2', 'd3'])
+    oocsiThings.register('Cats Cradle 🐈‍', 'catscradle', [], ['d1', 'd2', 'd3'])
 
     // define own shared data
-    d.push(fantasticThings.data('d1'))
-    d.push(fantasticThings.data('d2'))
-    d.push(fantasticThings.data('d3'))
+    d.push(oocsiThings.data('d1'))
+    d.push(oocsiThings.data('d2'))
+    d.push(oocsiThings.data('d3'))
   }
 
   function setup() {
@@ -76,7 +76,7 @@
     }
 
     if(touches.length > 0) {
-      fantasticThings.activity();
+      oocsiThings.activity();
     }
   }
 

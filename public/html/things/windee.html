@@ -13,7 +13,7 @@
 <script type="text/javascript">
 
   // define your teamspace
-  fantasticThingsConfig = {
+  oocsiThingsConfig = {
     // enter your team name, or leave empty for team selection dialog
     teamspace: ""
   };
@@ -26,26 +26,26 @@
 
     // register this thing with the name 'Windee' and data path 'windee';
     // input is 'x' and 'color_r', 'color_g', 'color_b', no output
-    fantasticThings.register('Windee 💨', 'windee', ['x', 'color_r', 'color_g', 'color_b'], [])
+    oocsiThings.register('Windee 💨', 'windee', ['x', 'color_r', 'color_g', 'color_b'], [])
 
     // define own shared data
-    x = fantasticThings.data('x')
+    x = oocsiThings.data('x')
     x(0)
-    colorR = fantasticThings.data('color_r')
+    colorR = oocsiThings.data('color_r')
     colorR(255);
-    colorG = fantasticThings.data('color_g')
+    colorG = oocsiThings.data('color_g')
     colorG(255);
-    colorB = fantasticThings.data('color_b')
+    colorB = oocsiThings.data('color_b')
     colorB(255);
 
     // connect external data
-    fantasticThings.connect('touchee', 'x', 'x')
-    fantasticThings.connect('catscradle', 'd1', 'color_r')
-    fantasticThings.connect('catscradle', 'd2', 'color_g')
-    fantasticThings.connect('catscradle', 'd3', 'color_b')
-    fantasticThings.connect('coloradocam', 'color_r', 'color_r')
-    fantasticThings.connect('coloradocam', 'color_g', 'color_g')
-    fantasticThings.connect('coloradocam', 'color_b', 'color_b')
+    oocsiThings.connect('touchee', 'x', 'x')
+    oocsiThings.connect('catscradle', 'd1', 'color_r')
+    oocsiThings.connect('catscradle', 'd2', 'color_g')
+    oocsiThings.connect('catscradle', 'd3', 'color_b')
+    oocsiThings.connect('coloradocam', 'color_r', 'color_r')
+    oocsiThings.connect('coloradocam', 'color_g', 'color_g')
+    oocsiThings.connect('coloradocam', 'color_b', 'color_b')
   }
 
   function setup() {

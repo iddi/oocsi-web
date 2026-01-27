@@ -40,8 +40,8 @@ window.addEventListener('DOMContentLoaded', () => {
     <div id="canvasContainer"></div>` + contents;
 
   // if we have a teamspace configured, proceed with that
-  if(window.fantasticThingsConfig && window.fantasticThingsConfig.teamspace) {
-    finishSetup(window.fantasticThingsConfig.teamspace)
+  if(window.oocsiThingsConfig && window.oocsiThingsConfig.teamspace) {
+    finishSetup(window.oocsiThingsConfig.teamspace)
     return;
   }
 
@@ -136,7 +136,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 })
 
-window.fantasticThings = (() => {
+window.oocsiThings = (() => {
 
   let data = {};
   let devices = {};

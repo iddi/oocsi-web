@@ -12,7 +12,7 @@
 <script type="text/javascript">
 
   // define your teamspace
-  fantasticThingsConfig = {
+  oocsiThingsConfig = {
     // enter your team name, or leave empty for team selection dialog
     teamspace: ""
   };
@@ -24,16 +24,16 @@
   function thing() {
     
     // register...
-    fantasticThings.register('Count 🧛', 'count', ['complete'], ['toggle'])
+    oocsiThings.register('Count 🧛', 'count', ['complete'], ['toggle'])
 
     // define own shared data
-    let toggle = fantasticThings.data('toggle')
+    let toggle = oocsiThings.data('toggle')
     toggle(false)
-    let completed = fantasticThings.data('complete')
+    let completed = oocsiThings.data('complete')
     completed(false)
 
     // connect external data
-    fantasticThings.connect('lampo', 'toggle', 'toggle')
+    oocsiThings.connect('lampo', 'toggle', 'toggle')
 
     // link event logic to data updates
     toggle.subscribe((value) => {
@@ -45,7 +45,7 @@
       if(++progress == 10) {
         progress = 0;
         completed(false);
-        fantasticThings.activity();
+        oocsiThings.activity();
       }
     })
   }
@@ -68,7 +68,7 @@
     // setup progress
     progress = 0;
     completed(false);
-    fantasticThings.activity();
+    oocsiThings.activity();
   }
 
 </script>

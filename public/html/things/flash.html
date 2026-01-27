@@ -28,7 +28,7 @@
 <script type="text/javascript"> 
 
   // define your teamspace
-  fantasticThingsConfig = {
+  oocsiThingsConfig = {
     // enter your team name, or leave empty for team selection dialog
     teamspace: ""
   };
@@ -37,13 +37,13 @@
   function thing() {
 
     // register...
-    fantasticThings.register('Flash 👨‍🎤', 'flash', [], ['situation'])
+    oocsiThings.register('Flash 👨‍🎤', 'flash', [], ['situation'])
 
     // define own shared data
-    let situation = fantasticThings.data('situation')
+    let situation = oocsiThings.data('situation')
 
     // connect external data
-    fantasticThings.connect('sitgrid', 'situation', 'situation')
+    oocsiThings.connect('sitgrid', 'situation', 'situation')
 
     // define internal data
     let media = {};

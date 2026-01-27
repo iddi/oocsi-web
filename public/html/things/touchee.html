@@ -17,7 +17,7 @@
 <script type="text/javascript">
 
   // define your teamspace
-  fantasticThingsConfig = {
+  oocsiThingsConfig = {
     // enter your team name, or leave empty for team selection dialog
     teamspace: ""
   };
@@ -30,11 +30,11 @@
 
     // register this thing with the name 'Touchee' and data path 'touchee';
     // no input, output 'x' and 'y'
-    fantasticThings.register('Touch-ee 🫵', 'touchee', [], ['x', 'y'])
+    oocsiThings.register('Touch-ee 🫵', 'touchee', [], ['x', 'y'])
 
     // define own shared data
-    x = fantasticThings.data('x');
-    y = fantasticThings.data('y');
+    x = oocsiThings.data('x');
+    y = oocsiThings.data('y');
   }
 
   // define not-shared data
@@ -67,7 +67,7 @@
       // set the variables and show activity
       x(map(v.x,-width/2, width/2, -1, 1));
       y(map(v.y, -height/2, height/2, -1, 1));
-      fantasticThings.activity();
+      oocsiThings.activity();
     }
   }
 

@@ -12,7 +12,7 @@
 <script type="text/javascript">
 
   // define your teamspace
-  fantasticThingsConfig = {
+  oocsiThingsConfig = {
     // enter your team name, or leave empty for team selection dialog
     teamspace: ""
   };
@@ -23,18 +23,18 @@
   // define thing
   function thing() {
 
-    fantasticThings.register('Toktik ⏲️', 'toktik', ['toggle'], ['tick'])
+    oocsiThings.register('Toktik ⏲️', 'toktik', ['toggle'], ['tick'])
 
     // define own shared data
-    toggle = fantasticThings.data('toggle')
+    toggle = oocsiThings.data('toggle')
     toggle(true)
-    tick = fantasticThings.data('tick')
+    tick = oocsiThings.data('tick')
 
     // connect external data
-    fantasticThings.connect('lampo', 'toggle', 'toggle')
-    fantasticThings.connect('k0bolt', 'toggle', 'toggle')
-    fantasticThings.connect('mr-kip', 'toggle', 'toggle')
-    fantasticThings.connect('chuck', 'toggle', 'toggle')
+    oocsiThings.connect('lampo', 'toggle', 'toggle')
+    oocsiThings.connect('k0bolt', 'toggle', 'toggle')
+    oocsiThings.connect('mr-kip', 'toggle', 'toggle')
+    oocsiThings.connect('chuck', 'toggle', 'toggle')
   }
 
   // define internal data

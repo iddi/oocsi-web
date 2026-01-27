@@ -12,7 +12,7 @@
 <script type="text/javascript">
 
   // define your teamspace
-  fantasticThingsConfig = {
+  oocsiThingsConfig = {
     // enter your team name, or leave empty for team selection dialog
     teamspace: ""
   };
@@ -20,7 +20,7 @@
   // define thing
   function thing() {
     // register...
-    fantasticThings.register('Rada 🛸', 'rada', [], [])
+    oocsiThings.register('Rada 🛸', 'rada', [], [])
   }
 
   // define internal data
@@ -35,7 +35,7 @@
   function draw() {
     // refresh the list of devices
     if(frameCount % 20 == 0) {
-      devices = fantasticThings.devices();
+      devices = oocsiThings.devices();
     }
 
     background(0);

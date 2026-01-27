@@ -12,7 +12,7 @@
 <script type="text/javascript">
 
   // define your teamspace
-  fantasticThingsConfig = {
+  oocsiThingsConfig = {
     // enter your team name, or leave empty for team selection dialog
     teamspace: ""
   };
@@ -23,12 +23,12 @@
   // define thing
   function thing() {
 
-    fantasticThings.register('Text Display 💯', 'textdisplay', ['text'], [])
+    oocsiThings.register('Text Display 💯', 'textdisplay', ['text'], [])
 
-    text = fantasticThings.data('text')
+    text = oocsiThings.data('text')
 
     // connect external data
-    fantasticThings.connect('sitgrid', 'situation', 'text')
+    oocsiThings.connect('sitgrid', 'situation', 'text')
 
     // subscribe to text changes
     text.subscribe((value) => {

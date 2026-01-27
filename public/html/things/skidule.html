@@ -12,7 +12,7 @@
 <script type="text/javascript">
 
   // define your teamspace
-  fantasticThingsConfig = {
+  oocsiThingsConfig = {
     // enter your team name, or leave empty for team selection dialog
     teamspace: ""
   };
@@ -24,16 +24,16 @@
   function thing() {
 
     // register...
-    fantasticThings.register('Skidule 🌵', 'skidule', ['toggle', 'tick'], ['d1', 'd2'])
+    oocsiThings.register('Skidule 🌵', 'skidule', ['toggle', 'tick'], ['d1', 'd2'])
 
     // define own shared data
-    toggle = fantasticThings.data('toggle')
+    toggle = oocsiThings.data('toggle')
     toggle(true);
-    tick = fantasticThings.data('tick')
+    tick = oocsiThings.data('tick')
     tick(0);
-    d1 = fantasticThings.data('d1')
+    d1 = oocsiThings.data('d1')
     d1(0);
-    d2 = fantasticThings.data('d2')
+    d2 = oocsiThings.data('d2')
     d2(0);
 
     // subscribe to tick updates
@@ -50,11 +50,11 @@
     })
 
     // connect external data
-    fantasticThings.connect('lampo', 'toggle', 'toggle')
-    fantasticThings.connect('k0bolt', 'toggle', 'toggle')
-    fantasticThings.connect('mr-kip', 'toggle', 'toggle')
-    fantasticThings.connect('chuck', 'toggle', 'toggle')
-    fantasticThings.connect('toktik', 'tick', 'tick')
+    oocsiThings.connect('lampo', 'toggle', 'toggle')
+    oocsiThings.connect('k0bolt', 'toggle', 'toggle')
+    oocsiThings.connect('mr-kip', 'toggle', 'toggle')
+    oocsiThings.connect('chuck', 'toggle', 'toggle')
+    oocsiThings.connect('toktik', 'tick', 'tick')
   }
 
   // define internal data

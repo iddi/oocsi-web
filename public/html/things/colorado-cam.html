@@ -12,7 +12,7 @@
 <script type="text/javascript">
 
   // define your teamspace
-  fantasticThingsConfig = {
+  oocsiThingsConfig = {
     // enter your team name, or leave empty for team selection dialog
     teamspace: ""
   };
@@ -24,13 +24,13 @@
   function thing() {
     // register this thing with the name 'Colorado Cam 🤩' and data path 'coloradocam';
     // no input, output is 'brightness' and 'color_r', 'color_g', 'color_b'
-    fantasticThings.register('Colorado Cam 🤩', 'coloradocam', ['toggle'], ['brightness', 'color_r', 'color_g', 'color_b'])
+    oocsiThings.register('Colorado Cam 🤩', 'coloradocam', ['toggle'], ['brightness', 'color_r', 'color_g', 'color_b'])
 
     // define own shared data
-    brightness = fantasticThings.data('brightness')
-    color_r = fantasticThings.data('color_r')
-    color_g = fantasticThings.data('color_g')
-    color_b = fantasticThings.data('color_b')
+    brightness = oocsiThings.data('brightness')
+    color_r = oocsiThings.data('color_r')
+    color_g = oocsiThings.data('color_g')
+    color_b = oocsiThings.data('color_b')
   }
 
   // define internal data
@@ -68,7 +68,7 @@
     color_r(map(red(color), 0, 255, 0, 1));
     color_g(map(green(color), 0, 255, 0, 1));
     color_b(map(blue(color), 0, 255, 0, 1));
-    fantasticThings.activity();
+    oocsiThings.activity();
   }
 
 </script>

@@ -118,7 +118,7 @@
 &lt;script&gt;
     
     // define your teamspace
-    fantasticThingsConfig = {
+    oocsiThingsConfig = {
       // enter your team name, or leave empty for team selection dialog
       teamspace: "team-25"
     };
@@ -143,7 +143,7 @@
       <h4>OOCSI things functions</h4>
 
       <details>
-        <summary>fantasticThings.register(...)</summary>
+        <summary>oocsiThings.register(...)</summary>
         <div>
           <strong>Description</strong>
 
@@ -162,7 +162,7 @@
           <strong>Example Usage</strong>
           <pre><code>
 // from the lampo thing
-fantasticThings.register('Lampo 🪔', 'lampo', ['toggle', 'dim'], ['toggle'])
+oocsiThings.register('Lampo 🪔', 'lampo', ['toggle', 'dim'], ['toggle'])
           </code></pre>
 
           <p>
@@ -179,7 +179,7 @@ fantasticThings.register('Lampo 🪔', 'lampo', ['toggle', 'dim'], ['toggle'])
       <!-- //------------------------------------------------------------------------------------------------------ -->
 
       <details>
-        <summary>fantasticThings.data(...)</summary>
+        <summary>oocsiThings.data(...)</summary>
         <div>
           <strong>Description</strong>
           <p>
@@ -205,7 +205,7 @@ fantasticThings.register('Lampo 🪔', 'lampo', ['toggle', 'dim'], ['toggle'])
 let toggle;
 
 // create the variable
-toggle = fantasticThings.data('toggle')
+toggle = oocsiThings.data('toggle')
 
 // set the initial value --> true
 toggle(true)
@@ -222,7 +222,7 @@ toggle(true)
       <!-- //------------------------------------------------------------------------------------------------------ -->
 
       <details>
-        <summary>fantasticThings.connect(...)</summary>
+        <summary>oocsiThings.connect(...)</summary>
         <div>
           <strong>Description</strong>
           <p>
@@ -241,7 +241,7 @@ toggle(true)
           <pre><code>
 // from lampo:
 // connect the "toggle" data from any "kob0lt" thing in the teamspace to the local "toggle" data
-fantasticThings.connect('k0bolt', 'toggle', 'toggle')
+oocsiThings.connect('k0bolt', 'toggle', 'toggle')
           </code></pre>
 
           <p>
@@ -253,7 +253,7 @@ fantasticThings.connect('k0bolt', 'toggle', 'toggle')
       <!-- //------------------------------------------------------------------------------------------------------ -->
 
       <details>
-        <summary>fantasticThings.activity()</summary>
+        <summary>oocsiThings.activity()</summary>
         <div>
           <strong>Description</strong>
           <p>
@@ -266,7 +266,7 @@ fantasticThings.connect('k0bolt', 'toggle', 'toggle')
 // some data update has happened
 // ...
 // show activity in user interface
-fantasticThings.activity()
+oocsiThings.activity()
           </code></pre>
         </div>
       </details>
@@ -277,7 +277,7 @@ fantasticThings.activity()
       <h4>Data variable functions</h4>
 
       <p>
-        The functions below apply to all data variables that you have created with <code>fantasticThings.data(...)</code> (see above).
+        The functions below apply to all data variables that you have created with <code>oocsiThings.data(...)</code> (see above).
       </p>
 
       <details>
@@ -286,7 +286,7 @@ fantasticThings.activity()
           <strong>Description:</strong>
           <p>
             The <code>subscribe()</code> function subscribes to changes in a variable and allows to trigger code on every change. 
-            Is not specific to the fantastic things library. Instead it belongs to each OOCSI variable.
+            Is not specific to the oocsi things library. Instead it belongs to each OOCSI variable.
           </p>
 
           <strong>Parameters</strong>
@@ -305,7 +305,7 @@ fantasticThings.activity()
 let toggle;
 
 // linked to the "toggle" data item on the teamspace
-toggle = fantasticThings.data('toggle')
+toggle = oocsiThings.data('toggle')
 
 // subscribe with a function to run on any data change
 toggle.subscribe((newValue) => {
@@ -342,7 +342,7 @@ toggle.subscribe((newValue) => {
 let toggle;
 
 // linked to the "toggle" data item on the teamspace
-toggle = fantasticThings.data('toggle')
+toggle = oocsiThings.data('toggle')
 
 // ...
 
@@ -382,7 +382,7 @@ if(toggle()) {
 let toggle;
 
 // linked to the "toggle" data item on the teamspace
-toggle = fantasticThings.data('toggle')
+toggle = oocsiThings.data('toggle')
 
 // ...
 

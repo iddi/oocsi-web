@@ -13,7 +13,7 @@
 <script type="text/javascript">
 
   // define your teamspace
-  fantasticThingsConfig = {
+  oocsiThingsConfig = {
     // enter your team name, or leave empty for team selection dialog
     teamspace: ""
   };
@@ -30,16 +30,16 @@
 
     // register this thing with the name 'Mr. Kip' and data path 'mr-kip';
     // no input, output is 'd1', 'd2', 'd3' and 'toggle'
-    fantasticThings.register('Mr. Kip 🐔', 'mr-kip', [], ['d1', 'd2', 'd3', 'toggle'])
+    oocsiThings.register('Mr. Kip 🐔', 'mr-kip', [], ['d1', 'd2', 'd3', 'toggle'])
 
     // define own shared data
-    toggle = fantasticThings.data('toggle')
-    d.push(fantasticThings.data('d1'))
-    d.push(fantasticThings.data('d2'))
-    d.push(fantasticThings.data('d3'))
+    toggle = oocsiThings.data('toggle')
+    d.push(oocsiThings.data('d1'))
+    d.push(oocsiThings.data('d2'))
+    d.push(oocsiThings.data('d3'))
 
     // we need to ask the browser for permission to access sensors
-    deviceMotionSupported = fantasticThings.requestDeviceMotion();
+    deviceMotionSupported = oocsiThings.requestDeviceMotion();
   }
 
   function setup() {
@@ -71,7 +71,7 @@
     d[2](map(degrees(rotationZ), 0, 360, 0, 1))
     pop()
 
-    fantasticThings.activity();
+    oocsiThings.activity();
   }
 
   function deviceShaken() {

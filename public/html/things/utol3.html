@@ -12,7 +12,7 @@
 <script type="text/javascript">
 
   // define your teamspace
-  fantasticThingsConfig = {
+  oocsiThingsConfig = {
     // enter your team name, or leave empty for team selection dialog
     teamspace: ""
   };
@@ -24,25 +24,25 @@
   function thing() {
     
     // register...
-    fantasticThings.register('Utol 🧠', 'utol', ['toggle'], ['completed'])
+    oocsiThings.register('Utol 🧠', 'utol', ['toggle'], ['completed'])
 
     // define own shared data
-    toggle = fantasticThings.data('toggle')
+    toggle = oocsiThings.data('toggle')
     toggle(false)
-    completed = fantasticThings.data('completed')
+    completed = oocsiThings.data('completed')
     completed(false)
 
-    let toggleU1 = fantasticThings.data('toggle-u1')
+    let toggleU1 = oocsiThings.data('toggle-u1')
     toggleU1(false);
-    let toggleU2 = fantasticThings.data('toggle-u2')
+    let toggleU2 = oocsiThings.data('toggle-u2')
     toggleU2(false);
-    let toggleU3 = fantasticThings.data('toggle-u3')
+    let toggleU3 = oocsiThings.data('toggle-u3')
 	toggleU2(false);
 
     // connect external data
-    fantasticThings.connect('lampo', 'toggle', 'toggle-u1')
-    fantasticThings.connect('k0bolt', 'toggle', 'toggle-u2')
-    fantasticThings.connect('sitgrid', 'situation', 'toggle-u3')
+    oocsiThings.connect('lampo', 'toggle', 'toggle-u1')
+    oocsiThings.connect('k0bolt', 'toggle', 'toggle-u2')
+    oocsiThings.connect('sitgrid', 'situation', 'toggle-u3')
 
     // event logic
     let eventLogic = (event) => {
@@ -89,7 +89,7 @@
       toggleU2(false);
       toggleU3(false);
       completed(false);
-      fantasticThings.activity();
+      oocsiThings.activity();
     } else if(resetTimeout >= 0) {
       resetTimeout--;
     }
@@ -155,7 +155,7 @@
       progress = 0;
       completed(false);
     }
-    fantasticThings.activity();
+    oocsiThings.activity();
   }
 
 </script>

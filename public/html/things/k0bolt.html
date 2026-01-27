@@ -12,7 +12,7 @@
 <script type="text/javascript">
 
   // define your teamspace
-  fantasticThingsConfig = {
+  oocsiThingsConfig = {
     // enter your team name, or leave empty for team selection dialog
     teamspace: ""
   };
@@ -25,13 +25,13 @@
 
 	// register this thing with the name 'K0bolt' and data path 'k0bolt';
 	// this app uses 'toggle' as input and output
-    fantasticThings.register('K0bolt 👹', 'k0bolt', ['toggle'], ['toggle'])
+    oocsiThings.register('K0bolt 👹', 'k0bolt', ['toggle'], ['toggle'])
 
     // define own shared data
-    toggleMe = fantasticThings.data('toggle')
+    toggleMe = oocsiThings.data('toggle')
 
     // connect to external data
-    fantasticThings.connect('lampo', 'toggle', 'toggle')
+    oocsiThings.connect('lampo', 'toggle', 'toggle')
 
     // handle changes in toggle
     toggleMe.subscribe((value) => {
@@ -43,7 +43,7 @@
       setTimeout(() => {
         toggleMe(!value);
         pv = undefined;
-        fantasticThings.activity();
+        oocsiThings.activity();
       }, timeout);
 
       // create starting point for animation with random y coordinate

@@ -12,7 +12,7 @@
 <script type="text/javascript">
 
   // define your teamspace
-  fantasticThingsConfig = {
+  oocsiThingsConfig = {
     // enter your team name, or leave empty for team selection dialog
     teamspace: ""
   };
@@ -24,47 +24,47 @@
   function thing() {
 
     // register...
-    fantasticThings.register('Lineate 🤌', 'lineate', ['x', 'y', 'dim', 'toggle', 'brightness', 'volume', 'color_r', 'color_g', 'color_b', 'situation', 'd1', 'd2', 'd3'], [])
+    oocsiThings.register('Lineate 🤌', 'lineate', ['x', 'y', 'dim', 'toggle', 'brightness', 'volume', 'color_r', 'color_g', 'color_b', 'situation', 'd1', 'd2', 'd3'], [])
 
-    data['x'] = fantasticThings.data('x')
-    data['y'] = fantasticThings.data('y')
-    data['dim'] = fantasticThings.data('dim')    
-    data['toggle'] = fantasticThings.data('toggle')
-    data['toggle1'] = fantasticThings.data('toggle1')
-    data['toggle2'] = fantasticThings.data('toggle2')
-    data['brightness'] = fantasticThings.data('brightness')
-    data['volume'] = fantasticThings.data('volume')
-    data['colorR'] = fantasticThings.data('color_r')
-    data['colorG'] = fantasticThings.data('color_g')
-    data['colorB'] = fantasticThings.data('color_b')
-    data['situation'] = fantasticThings.data('situation')
-    data['d1'] = fantasticThings.data('d1')
-    data['d2'] = fantasticThings.data('d2')
-    data['d3'] = fantasticThings.data('d3')        
+    data['x'] = oocsiThings.data('x')
+    data['y'] = oocsiThings.data('y')
+    data['dim'] = oocsiThings.data('dim')    
+    data['toggle'] = oocsiThings.data('toggle')
+    data['toggle1'] = oocsiThings.data('toggle1')
+    data['toggle2'] = oocsiThings.data('toggle2')
+    data['brightness'] = oocsiThings.data('brightness')
+    data['volume'] = oocsiThings.data('volume')
+    data['colorR'] = oocsiThings.data('color_r')
+    data['colorG'] = oocsiThings.data('color_g')
+    data['colorB'] = oocsiThings.data('color_b')
+    data['situation'] = oocsiThings.data('situation')
+    data['d1'] = oocsiThings.data('d1')
+    data['d2'] = oocsiThings.data('d2')
+    data['d3'] = oocsiThings.data('d3')        
 
     // connect external data
-    fantasticThings.connect('touchee', 'x', 'x')
-    fantasticThings.connect('touchee', 'y', 'y')
-    fantasticThings.connect('lampo', 'toggle', 'toggle')
-    fantasticThings.connect('k0bolt', 'toggle', 'toggle')
-    fantasticThings.connect('dua-lampo', 'toggle1', 'toggle1')
-    fantasticThings.connect('dua-lampo', 'toggle2', 'toggle2')
-    fantasticThings.connect('coloradocam', 'brightness', 'brightness')
-    fantasticThings.connect('voluma', 'volume', 'volume')
-    fantasticThings.connect('catscradle', 'd1', 'color_r')
-    fantasticThings.connect('catscradle', 'd2', 'color_g')
-    fantasticThings.connect('catscradle', 'd3', 'color_b')
-    fantasticThings.connect('coloradocam', 'color_r', 'color_r')
-    fantasticThings.connect('coloradocam', 'color_g', 'color_g')
-    fantasticThings.connect('coloradocam', 'color_b', 'color_b')
-    fantasticThings.connect('mr-kip', 'd1', 'd1')
-    fantasticThings.connect('mr-kip', 'd2', 'd2')
-    fantasticThings.connect('mr-kip', 'd3', 'd3')
-    fantasticThings.connect('chuck', 'd1', 'd1')
-    fantasticThings.connect('chuck', 'd2', 'd2')
-    fantasticThings.connect('chuck', 'd3', 'd3')
-    fantasticThings.connect('skidule', 'd1', 'd1')
-    fantasticThings.connect('skidule', 'd2', 'd2')
+    oocsiThings.connect('touchee', 'x', 'x')
+    oocsiThings.connect('touchee', 'y', 'y')
+    oocsiThings.connect('lampo', 'toggle', 'toggle')
+    oocsiThings.connect('k0bolt', 'toggle', 'toggle')
+    oocsiThings.connect('dua-lampo', 'toggle1', 'toggle1')
+    oocsiThings.connect('dua-lampo', 'toggle2', 'toggle2')
+    oocsiThings.connect('coloradocam', 'brightness', 'brightness')
+    oocsiThings.connect('voluma', 'volume', 'volume')
+    oocsiThings.connect('catscradle', 'd1', 'color_r')
+    oocsiThings.connect('catscradle', 'd2', 'color_g')
+    oocsiThings.connect('catscradle', 'd3', 'color_b')
+    oocsiThings.connect('coloradocam', 'color_r', 'color_r')
+    oocsiThings.connect('coloradocam', 'color_g', 'color_g')
+    oocsiThings.connect('coloradocam', 'color_b', 'color_b')
+    oocsiThings.connect('mr-kip', 'd1', 'd1')
+    oocsiThings.connect('mr-kip', 'd2', 'd2')
+    oocsiThings.connect('mr-kip', 'd3', 'd3')
+    oocsiThings.connect('chuck', 'd1', 'd1')
+    oocsiThings.connect('chuck', 'd2', 'd2')
+    oocsiThings.connect('chuck', 'd3', 'd3')
+    oocsiThings.connect('skidule', 'd1', 'd1')
+    oocsiThings.connect('skidule', 'd2', 'd2')
   }
 
   function setup() {

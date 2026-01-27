@@ -12,7 +12,7 @@
 <script type="text/javascript">
 
   // define your teamspace
-  fantasticThingsConfig = {
+  oocsiThingsConfig = {
     // enter your team name, or leave empty for team selection dialog
     teamspace: ""
   };
@@ -25,21 +25,21 @@
 
     // register this thing with the name 'Lampo' and data path 'lampo';
     // this app uses 'toggle' and 'dim' as input, and 'toggle' as output
-    fantasticThings.register('Lampo 🪔 2', 'lampo2', ['toggle', 'dim'], ['toggle'])
+    oocsiThings.register('Lampo 🪔 2', 'lampo2', ['toggle', 'dim'], ['toggle'])
 
     // define own shared data
-    toggle = fantasticThings.data('toggle')
+    toggle = oocsiThings.data('toggle')
     toggle(true)
-    dim = fantasticThings.data('dim')
+    dim = oocsiThings.data('dim')
     dim(1.0)
 
     // connect to external data
-    fantasticThings.connect('touchee', 'y', 'dim')
-    fantasticThings.connect('k0bolt', 'toggle', 'toggle')
-    fantasticThings.connect('mr-kip', 'd1', 'dim')
-    fantasticThings.connect('chuck', 'd1', 'dim')
-    fantasticThings.connect('coloradocam', 'brightness', 'dim')
-    fantasticThings.connect('voluma', 'volume', 'dim')
+    oocsiThings.connect('touchee', 'y', 'dim')
+    oocsiThings.connect('k0bolt', 'toggle', 'toggle')
+    oocsiThings.connect('mr-kip', 'd1', 'dim')
+    oocsiThings.connect('chuck', 'd1', 'dim')
+    oocsiThings.connect('coloradocam', 'brightness', 'dim')
+    oocsiThings.connect('voluma', 'volume', 'dim')
   }
 
   function setup() {
@@ -56,7 +56,7 @@
   // react to touch or mouse presses
   function touchEnded() {
     toggle(!toggle())
-    fantasticThings.activity();
+    oocsiThings.activity();
   }
 
 </script>

@@ -12,7 +12,7 @@
 <script type="text/javascript">
 
   // define your teamspace
-  fantasticThingsConfig = {
+  oocsiThingsConfig = {
     // enter your team name, or leave empty for team selection dialog
     teamspace: ""
   };
@@ -25,22 +25,22 @@
   function thing() {
     
     // register...
-    fantasticThings.register('Utol 🧠', 'utol', ['toggle'], ['completed'])
+    oocsiThings.register('Utol 🧠', 'utol', ['toggle'], ['completed'])
 
     // define own shared data
-    toggle = fantasticThings.data('toggle')
+    toggle = oocsiThings.data('toggle')
     toggle(false)
-    completed = fantasticThings.data('completed')
+    completed = oocsiThings.data('completed')
     completed(false)
 
-    toggleU1 = fantasticThings.data('toggle-u1')
+    toggleU1 = oocsiThings.data('toggle-u1')
     toggleU1(false);
-    toggleU2 = fantasticThings.data('toggle-u2')
+    toggleU2 = oocsiThings.data('toggle-u2')
     toggleU2(false);
 
     // connect external data
-    fantasticThings.connect('lampo', 'toggle', 'toggle-u1')
-    fantasticThings.connect('k0bolt', 'toggle', 'toggle-u2')
+    oocsiThings.connect('lampo', 'toggle', 'toggle-u1')
+    oocsiThings.connect('k0bolt', 'toggle', 'toggle-u2')
 
     // event logic
     let eventLogic = (event, value) => {
@@ -56,7 +56,7 @@
       }
       // set timeout to default for reset
       resetTimeout = defaultTimeout;
-      fantasticThings.activity();
+      oocsiThings.activity();
     }
 
     // link event logic to data updates
@@ -86,7 +86,7 @@
       toggleU2(false);
       completed(false);
       resetTimeout = 0;
-      fantasticThings.activity();
+      oocsiThings.activity();
     } else if(resetTimeout >= 0) {
       resetTimeout--;
     }
@@ -135,7 +135,7 @@
     // button?
     if(dist(mouseX, mouseY, width/2, height/4) <= 25) {
       toggle(!toggle());
-      fantasticThings.activity();
+      oocsiThings.activity();
     }
 
     // reset?
@@ -144,7 +144,7 @@
       toggleU2(false);
       completed(false);
       resetTimeout = 0;
-      fantasticThings.activity();
+      oocsiThings.activity();
     }
   }
 

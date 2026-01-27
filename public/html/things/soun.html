@@ -13,7 +13,7 @@
 <script type="text/javascript">
 
   // define your teamspace
-  fantasticThingsConfig = {
+  oocsiThingsConfig = {
     // enter your team name, or leave empty for team selection dialog
     teamspace: ""
   };
@@ -25,13 +25,13 @@
   function thing() {
     // register this thing with the name 'Soun 📻' and data path 'soun';
     // input is 'situation', no output
-    fantasticThings.register('Soun 📻', 'soun', ['situation'], [])
+    oocsiThings.register('Soun 📻', 'soun', ['situation'], [])
 
     // define own shared data
-    situation = fantasticThings.data('situation')
+    situation = oocsiThings.data('situation')
 
     // connect external data
-    fantasticThings.connect('sitgrid', 'situation', 'situation')
+    oocsiThings.connect('sitgrid', 'situation', 'situation')
 
     // subscribe to situation update
     situation.subscribe((value) => {

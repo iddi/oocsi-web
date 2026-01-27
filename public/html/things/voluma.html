@@ -13,7 +13,7 @@
 <script type="text/javascript">
 
   // define your teamspace
-  fantasticThingsConfig = {
+  oocsiThingsConfig = {
     // enter your team name, or leave empty for team selection dialog
     teamspace: ""
   };
@@ -25,10 +25,10 @@
   function thing() {
     // register this thing with the name 'Voluma' and data path 'voluma';
     // no input, output is 'volume'
-    fantasticThings.register('Voluma 📣', 'voluma', [], ['volume'])
+    oocsiThings.register('Voluma 📣', 'voluma', [], ['volume'])
 
     // define own shared data
-    volume = fantasticThings.data('volume')
+    volume = oocsiThings.data('volume')
   }
 
   // define internal data
@@ -75,7 +75,7 @@
 
     // update the data
     volume(constrain(vol * 30, 0, 1));
-    fantasticThings.activity();
+    oocsiThings.activity();
   }
 
 </script>
