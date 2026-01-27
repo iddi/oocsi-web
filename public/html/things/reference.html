@@ -67,13 +67,13 @@
       
       <b>Quick start</b>
       <p>
-        To install the OOCSI things package, just download the whole <a href="/assets/code/oocsi-things.zip" download="oocsi-things.zip">OOCSI Things bundle</a> and unpack it into a web-accessible directory of your choice. You can use Data Foundry to do that.
+        To work with an OOCSI thing, for instance, to modify it, extend it or change any part of it, click the <b>Download source</b> link that you can find in the starting dialog of every <i>thing</i> (that's where you select the team). This will download a single HTML file that you can then upload to a web-accessible directory of your choice. You can use Data Foundry to do that (just create a new Data Foundry project with an "existing dataset", upload your HTML file there and activate web access).
       </p>
 
 
-      <b>Link library</b>
+      <b>Things need libraries</b>
       <p>
-        Ensure that a few libraries are loaded in the <code>head</code> of your HTML file:
+        We need a few libraries loaded in the <code>head</code> of any thing HTML file:
         <pre><code class="language-html">
 &lt;link href="https://data.id.tue.nl/assets/stylesheets/picoCSS/pico.indigo.min.css" rel="stylesheet" type="text/css"&gt;
 &lt;script src="https://data.id.tue.nl/assets/javascripts/oocsi-web.js"&gt;&lt;/script&gt;
@@ -83,11 +83,15 @@
         The first is a stylesheet that ensures that navigation, and especially the team selection dialog look right. 
         The second and third are scripts, one for OOCSI and the other for the thing features that build on top of OOCSI.
       </p>
+
+      <p>
+        Some things have more libraries because they need to access sensors, produce sound or draw something on a canvas. We often use <a href="https://p5js.org" target="_blank">P5.js</a> for that.
+      </p>
       
       <b>Setup a place for <i>thing</i> code</b>
       <p>
         The setup of the <i>thing</i> should happen in one go and before the rest of the page starts rendering.
-        Asa convention we use a final function that you define in the beginning of a JavaScript code block in your HTML page.
+        As a convention we use a final function that you define in the beginning of a JavaScript code block in your HTML page.
 
         <pre><code class="language-html">
 &lt;script&gt;
