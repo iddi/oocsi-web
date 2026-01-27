@@ -1,12 +1,15 @@
-/*!
- * OOCSI Things - a collection of connected high-level design prototyping building blocks, using the OOCSI design middleware.
- * 
+/*
+ * OOCSI Things is a collection of connected high-level design prototyping building blocks, using the OOCSI design middleware.
+ * More information: https://oocsi.net
+ *
  * Copyright (c) 2024-2026 Mathias Funk, Industrial Design dept., Eindhoven University of Technology
  */
+
 let globalSettings = {}
 
-// set namespace for OOCSI communication and visualization
+// set OOCSI server
 const server = (() => new URL(document.currentScript.src).host)()
+// set namespace for OOCSI communication and visualization
 const namespace = "OOCSI-things";
 
 // disable auto-init of P5
@@ -18,6 +21,7 @@ window.addEventListener('DOMContentLoaded', () => {
   style.sheet.insertRule(`* { -webkit-user-select: none; -ms-user-select: none; user-select: none; }`, 0);
   style.sheet.insertRule(`#header {
       position: fixed;
+      z-index: 1;
       width: 100%;
       display: block;
       padding: 0.1rem 0.5rem;
@@ -32,6 +36,7 @@ window.addEventListener('DOMContentLoaded', () => {
   style.sheet.insertRule(`#header .green { color: #78dec7; }`, 6);
   style.sheet.insertRule(`#header .purple { color: #c244fb; }`, 7);
   style.sheet.insertRule(`#header .blue { color: #84e9ff; }`, 8);
+  style.sheet.insertRule(`#canvasContainer { position: fixed; }`, 9);
 
 
   let contents = document.querySelector('body').innerHTML;
@@ -54,26 +59,7 @@ window.addEventListener('DOMContentLoaded', () => {
         <fieldset role="group">
           <input list="team-choices" id="team-choice" name="team-choice" />
           <datalist id="team-choices">
-            <option value="Team 1"></option>
-            <option value="Team 2"></option>
-            <option value="Team 3"></option>
-            <option value="Team 4"></option>
-            <option value="Team 5"></option>
-            <option value="Team 6"></option>
-            <option value="Team 7"></option>
-            <option value="Team 8"></option>
-            <option value="Team 9"></option>
-            <option value="Team 10"></option>
-            <option value="Team 11"></option>
-            <option value="Team 12"></option>
-            <option value="Team 13"></option>
-            <option value="Team 14"></option>
-            <option value="Team 15"></option>
-            <option value="Team 16"></option>
-            <option value="Team 17"></option>
-            <option value="Team 18"></option>
-            <option value="Team 19"></option>
-            <option value="Team 20"></option>
+            ${Array(20).fill(0).map((_, i) => `<option value="Team ${i+1}"></option>`).join(' ')}
             <option value="Team Test"></option>
           </datalist>
           <input type="submit" value="Go!">
@@ -200,7 +186,7 @@ window.oocsiThings = (() => {
         } else {
           document.querySelector('#connection').style.opacity = '0';
         }
-      }, 2000)
+      }, 1000)
     },
     data: (name) => {
       data[name] = OOCSI.variable(globalSettings.channel, globalSettings.appSlug + '_' + name);
@@ -222,7 +208,7 @@ window.oocsiThings = (() => {
       }, 200)
     },
     devices: () => {
-      // clean devices first
+      // clean timed-out devices first
       const currentTime = Date.now();
       devices = Object.entries(devices).reduce((acc, [key, value]) => {
         const timestampMs = value.timestamp;

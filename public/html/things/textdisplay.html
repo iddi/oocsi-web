@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!-- 
+ OOCSI Things is a collection of connected high-level design prototyping building blocks, using the OOCSI design middleware.
+ More information: https://oocsi.net
+
+ Copyright (c) 2024-2026 Mathias Funk, Industrial Design dept., Eindhoven University of Technology
+-->
 <html>
 <head>
   <meta charset="utf-8">
@@ -18,20 +24,20 @@
   };
 
   // thing variables
-  let text;
+  let textDisplay;
 
   // define thing
   function thing() {
 
     oocsiThings.register('Text Display 💯', 'textdisplay', ['text'], [])
 
-    text = oocsiThings.data('text')
+    textDisplay = oocsiThings.data('text')
 
     // connect external data
     oocsiThings.connect('sitgrid', 'situation', 'text')
 
     // subscribe to text changes
-    text.subscribe((value) => {
+    textDisplay.subscribe((value) => {
       scaler = 1;
     })
   }
@@ -51,7 +57,7 @@
     scale(scaler);
     fill(255, 255 - scaler * 40);
     textSize(64);
-    text(text(), -textWidth(text())/2, -32 + scaler)
+    text(textDisplay(), -textWidth(textDisplay())/2, -32 + scaler)
   }
 
 </script>
