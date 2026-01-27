@@ -80,7 +80,7 @@ window.addEventListener('DOMContentLoaded', () => {
         </fieldset>
       </form>
       <small>
-        Connecting via <code>${server}</code>...
+        Connecting via <code>${server}</code>... <a href="#" id="download-source" style="float: right">Download Source</a>
       </small>
     </article></dialog>`
 
@@ -94,6 +94,19 @@ window.addEventListener('DOMContentLoaded', () => {
     let teamName = document.querySelector('#team-choice').value
     document.querySelector('#team-modal').remove();
     finishSetup(teamName);
+  })
+
+  // install download source handler
+  document.querySelector('#download-source').addEventListener('click', (e) => {
+    e.preventDefault();
+    let source = document.documentElement.outerHTML;
+    source = source.replace(/"\/assets\//g, '"' + location.origin + '/assets/');
+    const blob = new Blob([source], {type: 'text/html'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = location.pathname.split('/').pop() || 'thing.html';
+    a.click();
   })
 
   function finishSetup(teamName) {
