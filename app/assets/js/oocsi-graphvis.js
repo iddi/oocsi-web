@@ -1,9 +1,9 @@
-;function oocsiGraphVis(element, channelFilter = '') {
+;function oocsiGraphVis(element, channelFilter = '', initialClientFilter = '') {
 
     const container = document.querySelector(element);
     if(!container) { return; }
 
-    let clientFilterExpression = '';
+    let clientFilterExpression = initialClientFilter;
     let channelFilterExpression = channelFilter;
 
     const svg = d3.select(element).append('svg')
@@ -373,7 +373,7 @@
             .attr('class', 'widget search')
             .html(`<span class="text">Filter clients:</span>
                 <br>
-                <input type="search">`)
+                <input type="search" value="${clientFilterExpression}">`)
         d3.select(element + " .search input").on("input", () => {
             clientFilterExpression = d3.select(element + " .search input").property("value").toLowerCase();
             update()

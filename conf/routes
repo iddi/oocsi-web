@@ -7,7 +7,8 @@ GET		/								controllers.Application.index(request: Request)
 GET		/ws								controllers.Application.ws()
 GET 	/metrics						controllers.Application.metrics(request: Request)
 GET 	/network.json					controllers.Application.netJson()
-GET 	/network						controllers.Application.network(request: Request)
+GET 	/network						controllers.Application.network(request: Request, filter: String = "")
+GET 	/network/:filter				controllers.Application.network(request: Request, filter: String)
 
 # Tools
 GET 	/tools							controllers.Tools.index(request: Request)

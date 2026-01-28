@@ -138,8 +138,8 @@ public class Application extends Controller {
 	 * 
 	 * @return
 	 */
-	public Result network(Request request) {
-		return ok(views.html.Application.network.render("network", "", request.host()));
+	public Result network(Request request, String filter) {
+		return ok(views.html.Application.network.render("network", "", request.host(), filter));
 	}
 
 	/**

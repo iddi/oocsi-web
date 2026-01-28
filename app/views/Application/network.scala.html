@@ -1,4 +1,4 @@
-@(message: String, title: String, address: String) 
+@(message: String, title: String, address: String, filter: String) 
 
 @main("OOCSI Server Network") {
     <script src="@routes.Assets.versioned("js/d3.v7.min.js")" type="text/javascript"></script>
@@ -13,7 +13,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            oocsiGraphVis('#oocsi-graphvis');
+            oocsiGraphVis('#oocsi-graphvis', '', '@filter');
         })
     </script>
 }
