@@ -23,10 +23,11 @@ public class Things extends Controller {
      */
     public Result index(Request request) {
         InputStream indexStream = environment.resourceAsStream("public/html/things/index.html");
-        if (indexStream != null) {
-            return ok(indexStream).as("text/html");
+        if (indexStream == null) {
+            return redirect(routes.Application.index());
         }
-        return ok(views.html.Things.index.render("OOCSI Things"));
+        
+        return ok(indexStream).as("text/html");        
     }
 
     /**
@@ -38,19 +39,6 @@ public class Things extends Controller {
             thingname.contains(".." ) || thingname.contains("/") || thingname.contains("\\")) {
             return badRequest("Invalid thing name");
         }
-
-        // // Special mapping for the library file (mapping fantastic-things.js to the source file)
-        // if ("oocsi-things.js".equals(thingname)) {
-        //     InputStream jsStream = environment.resourceAsStream("app/assets/js/things/oocsi-things.js");
-        //     // If not found in app/assets (e.g. in JAR), try public/js/things if it was moved there
-        //     if (jsStream == null) {
-        //          jsStream = environment.resourceAsStream("public/js/things/oocsi-things.js");
-        //     }
-            
-        //     if (jsStream != null) {
-        //         return ok(jsStream).as("application/javascript");
-        //     }
-        // }
 
         // Resolve the requested file
         // 1. Try exact match

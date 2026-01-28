@@ -368,6 +368,29 @@
         // Close on click anywhere
         modal.addEventListener('click', () => { modal.close(); });
       }
+
+      // check for team cookie
+      let teamCookie = document.cookie.split("; ").find((row) => row.startsWith("ft_teamName="));
+      let teamName = teamCookie ? teamCookie.split("=")[1] : undefined;
+      
+      if (teamName) {
+          teamName = decodeURIComponent(teamName);
+          // Convert to lowercase
+          let str = teamName.toLowerCase();
+          // Replace spaces with hyphens
+          str = str.replace(/\s+/g, '-');
+          // Remove non-alphanumeric except hyphen
+          str = str.replace(/[^a-z0-9-]/g, '');
+          // Trim leading/trailing hyphens
+          let teamSlug = str.replace(/^-+|-+$/g, '');
+          
+          let navUl = document.querySelector('nav ul:last-child');
+          if (navUl) {
+              let li = document.createElement('li');
+              li.innerHTML = `<a href="/network/${teamSlug}" target="_blank">Network</a>`;
+              navUl.prepend(li);
+          }
+      }
     })
 
   </script>
