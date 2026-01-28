@@ -370,7 +370,7 @@
       }
 
       // check for team cookie
-      let teamCookie = document.cookie.split("; ").find((row) => row.startsWith("ft_teamName="));
+      let teamCookie = document.cookie.split("; ").find((row) => row.startsWith("ot_teamName="));
       let teamName = teamCookie ? teamCookie.split("=")[1] : undefined;
       
       if (teamName) {

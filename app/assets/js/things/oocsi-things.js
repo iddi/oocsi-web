@@ -71,7 +71,7 @@ window.addEventListener('DOMContentLoaded', () => {
     </article></dialog>`
 
   // set team saved in cookie
-  let teamCookie = document.cookie.split("; ").find((row) => row.startsWith("ft_teamName="));
+  let teamCookie = document.cookie.split("; ").find((row) => row.startsWith("ot_teamName="));
   let teamName = teamCookie ? teamCookie.split("=")[1] : undefined;
   document.querySelector('#team-choice').value = teamName !== undefined ? decodeURIComponent(teamName): '';
 
@@ -106,7 +106,7 @@ window.addEventListener('DOMContentLoaded', () => {
     let teamSlug = str.replace(/^-+|-+$/g, '');
     globalSettings.team = teamName;
     globalSettings.channel = (namespace && namespace.length > 0 ? (namespace + '/') : '') + teamSlug;
-    setCookie('ft_teamName', teamName)
+    setCookie('ot_teamName', teamName)
 
     window.thing && window.thing();
 
