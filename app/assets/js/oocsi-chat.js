@@ -184,7 +184,7 @@
         #oc-chat-input {
             flex: 1;
             margin: 0;
-            padding: 8px;
+            padding: 0 8px;
             border: 1px solid #ddd;
             border-radius: 4px;
             outline: none;

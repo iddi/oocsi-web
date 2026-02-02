@@ -54,5 +54,5 @@ Assets / pipelineStages := Seq(terser)
 // minify js assets
 TerserKeys.terserCompress := true
 TerserKeys.terserMangle := true
-terser / includeFilter := GlobFilter("oocsi-things.js") || GlobFilter("oocsi-graphvis*.js")
+terser / includeFilter := GlobFilter("oocsi-*.js")
 
