@@ -88,7 +88,7 @@ var OOCSI = (function() {
   }
 
   function internalConnected() {
-    return websocket.readyState === WebSocket.OPEN;
+    return websocket ? websocket.readyState === WebSocket.OPEN : false;
   }
 
   function internalSend(client, data) {
@@ -134,7 +134,7 @@ var OOCSI = (function() {
   }
 
   function internalReconnect() {
-    if(!internalConnected() && websocket.readyState !== WebSocket.CONNECTING) {
+    if(!internalConnected() && (!websocket || websocket.readyState !== WebSocket.CONNECTING)) {
       logger("RECONNECTING");
       init();
       // reconnect subscriptions
