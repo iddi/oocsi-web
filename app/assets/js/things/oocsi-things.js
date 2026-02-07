@@ -16,6 +16,10 @@ const namespace = "OOCSI-things";
 window.mocha = true;
 
 window.addEventListener('DOMContentLoaded', () => {
+
+  // clean existing OT facilities
+  document.querySelectorAll('#header,#canvasContainer').forEach(d => d.remove());
+
   // add styles
   const style = document.head.appendChild(document.createElement('style'));
   style.sheet.insertRule(`* { -webkit-user-select: none; -ms-user-select: none; user-select: none; }`, 0);
@@ -38,7 +42,7 @@ window.addEventListener('DOMContentLoaded', () => {
   style.sheet.insertRule(`#header .blue { color: #84e9ff; }`, 8);
   style.sheet.insertRule(`#canvasContainer { position: fixed; }`, 9);
 
-
+  // create facilities
   let contents = document.querySelector('body').innerHTML;
   document.querySelector('body').innerHTML = `
     <div id="header"></div>
@@ -53,7 +57,7 @@ window.addEventListener('DOMContentLoaded', () => {
   // otherwise, we select one via UI: create and open dialog
   document.querySelector('#canvasContainer').innerHTML = 
     `<dialog id="team-modal" open><article>
-      <h2><a href="index.html" style="color: var(--pico-h2-color); text-decoration: none;">OOCSI Things 🌟</a></h2>
+      <h2><a href="index.html" style="color: var(--pico-h2-color); text-decoration: none;" alt="Back to the overview" title="Back to the overview">OOCSI Things 🌟</a></h2>
       <label for="team-choice">Choose a team:</label>
       <form>
         <fieldset role="group">
