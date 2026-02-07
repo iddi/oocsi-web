@@ -45,7 +45,7 @@ window.addEventListener('DOMContentLoaded', () => {
     <div id="canvasContainer"></div>` + contents;
 
   // if we have a teamspace configured, proceed with that
-  if(window.oocsiThingsConfig && window.oocsiThingsConfig.teamspace) {
+  if(window.oocsiThingsConfig && window.oocsiThingsConfig.teamspace && window.oocsiThingsConfig.teamspace.trim().length > 0) {
     finishSetup(window.oocsiThingsConfig.teamspace)
     return;
   }
@@ -76,7 +76,8 @@ window.addEventListener('DOMContentLoaded', () => {
   document.querySelector('#team-choice').value = teamName !== undefined ? decodeURIComponent(teamName): '';
 
   // install button handler
-  document.querySelector('#team-modal input[type=submit]').addEventListener('click', () => {
+  document.querySelector('#team-modal input[type=submit]').addEventListener('click', (e) => {
+    e.preventDefault();
     let teamName = document.querySelector('#team-choice').value
     document.querySelector('#team-modal').remove();
     finishSetup(teamName);
