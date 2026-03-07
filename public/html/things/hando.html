@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<!-- 
+ OOCSI Things is a collection of connected high-level design prototyping building blocks, using the OOCSI design middleware.
+ More information: https://oocsi.net
+
+ Copyright (c) 2024-2026 Mathias Funk, Industrial Design dept., Eindhoven University of Technology
+-->
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="/assets/css/pico.indigo.min.css">
+  <script type="text/javascript" src="/assets/js/p5.min.js"></script>
+  <!-- Lock ml5.js to v0.12.2 to match referenced handpose documentation -->
+  <script type="text/javascript" src="/assets/js/ml5.min.js"></script>
+  <script type="text/javascript" src="/assets/js/oocsi-web.js"></script>
+  <script type="text/javascript" src="/assets/js/things/oocsi-things.min.js"></script>
+  <style type="text/css">
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+    }
+  </style>
+</head>
+<body></body>
+<script type="text/javascript">
+
+  // define your teamspace
+  oocsiThingsConfig = {
+    // enter your team name, or leave empty for team selection dialog
+    teamspace: ""
+  };
+
+  // thing variables
+  let x, y, dim, toggle;
+  let capture;
+  let handpose;
+  let predictions = [];
+  let modelReady = false;
+
+  // define thing
+  function thing() {
+    // register this thing with the name 'Hando 🖐️' and data path 'hando';
+    // no input, output is 'x', 'y', 'dim' and 'toggle'
+    oocsiThings.register('Hando 🖐️', 'hando', [], ['x', 'y', 'dim', 'toggle']);
+
+    // define own shared data
+    x = oocsiThings.data('x');
+    y = oocsiThings.data('y');
+    dim = oocsiThings.data('dim');
+    toggle = oocsiThings.data('toggle');
+  }
+
+  function setup() {
+    let canvas = createCanvas(windowWidth, windowHeight);
+    canvas.parent('canvasContainer');
+    
+    // Setup camera capture
+    let options = {
+      audio: false,
+      video: {
+        facingMode: "user"
+      }
+    };
+    capture = createCapture(options);
+    capture.size(640, 480);
+    capture.hide();
+
+    // Initialize handpose model
+    handpose = ml5.handpose(capture, () => {
+      console.log('Handpose Model ready');
+      modelReady = true;
+    });
+    
+    // Listen for handpose events
+    handpose.on("predict", results => {
+      predictions = results;
+    });
+  }
+
+  function draw() {
+    background(0);
+    
+    // Fit 640x480 video to screen while maintaining aspect ratio
+    let scaleRatio = max(width / 640, height / 480);
+    let drawW = 640 * scaleRatio;
+    let drawH = 480 * scaleRatio;
+    let drawX = (width - drawW) / 2;
+    let drawY = (height - drawH) / 2;
+
+    // Draw mirrored video
+    push();
+    translate(width, 0);
+    scale(-1, 1);
+    image(capture, -drawX, drawY, drawW, drawH);
+    pop();
+
+    if (!modelReady) {
+      fill(255);
+      textAlign(CENTER);
+      text("Loading Handpose model...", width/2, height/2);
+      return;
+    }
+
+    if (predictions.length > 0) {
+      // Single Hand Focus: only track the first detected hand
+      let hand = predictions[0];
+      
+      // Feature Extraction
+      let indexTip = hand.annotations.indexFinger[3];
+      let thumbTip = hand.annotations.thumb[3];
+      let wrist = hand.annotations.palmBase[0];
+      let middleFingerBase = hand.annotations.middleFinger[0];
+
+      // 1. Cursor (x, y) - Based on Index Finger Tip
+      // Mirroring: indexTip[0] is from 0 to 640 (left to right in video)
+      // Since video is mirrored, we map 0->1 and 640->-1
+      let mappedX = constrain(map(indexTip[0], 0, 640, 1, -1), -1, 1);
+      let mappedY = constrain(map(indexTip[1], 0, 480, -1, 1), -1, 1);
+      
+      // 2. Pinch (dim) - Distance between Thumb and Index Tips
+      // Standard distance at 640x480: pinched is ~20-30, spread is ~150-200
+      let d = dist(indexTip[0], indexTip[1], thumbTip[0], thumbTip[1]);
+      let mappedDim = constrain(map(d, 30, 150, 0, 1), 0, 1);
+
+      // 3. Toggle - Hand presence
+      toggle(true);
+      x(mappedX);
+      y(mappedY);
+      dim(mappedDim);
+
+      // Visual Feedback
+      drawHandUI(hand, scaleRatio, drawX, drawY);
+      
+      oocsiThings.activity();
+    } else {
+      toggle(false);
+    }
+  }
+
+  function drawHandUI(hand, scaleRatio, offsetX, offsetY) {
+    // Draw all keypoints
+    for (let i = 0; i < hand.landmarks.length; i++) {
+      let keypoint = hand.landmarks[i];
+      // Map video coordinates to screen coordinates (mirrored)
+      let sx = width - (keypoint[0] * scaleRatio + offsetX);
+      let sy = keypoint[1] * scaleRatio + offsetY;
+      
+      noStroke();
+      fill(0, 255, 0, 150);
+      ellipse(sx, sy, 8, 8);
+    }
+
+    // Highlight pinch gesture
+    let indexTip = hand.annotations.indexFinger[3];
+    let thumbTip = hand.annotations.thumb[3];
+    let ix = width - (indexTip[0] * scaleRatio + offsetX);
+    let iy = indexTip[1] * scaleRatio + offsetY;
+    let tx = width - (thumbTip[0] * scaleRatio + offsetX);
+    let ty = thumbTip[1] * scaleRatio + offsetY;
+
+    fill(255, 0, 0)
+    ellipse(ix, iy, 24, 24);
+    stroke(255, 255, 0);
+    strokeWeight(2);
+    line(ix, iy, tx, ty);
+    fill(255, 255, 0);
+    ellipse(ix, iy, 12, 12);
+    ellipse(tx, ty, 12, 12);
+  }
+
+</script>
+</html>

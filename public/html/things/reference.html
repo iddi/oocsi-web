@@ -81,9 +81,9 @@
       <p>
         We need a few libraries loaded in the <code>head</code> of any thing HTML file:
         <pre><code class="language-html">
-&lt;link href="https://data.id.tue.nl/assets/stylesheets/picoCSS/pico.indigo.min.css" rel="stylesheet" type="text/css"&gt;
-&lt;script src="https://data.id.tue.nl/assets/javascripts/oocsi-web.js"&gt;&lt;/script&gt;
-&lt;script src="https://data.id.tue.nl/assets/javascripts/things/oocsi-things.min.js"&gt;&lt;/script&gt;
+&lt;link href="/assets/stylesheets/picoCSS/pico.indigo.min.css" rel="stylesheet" type="text/css"&gt;
+&lt;script src="/assets/javascripts/oocsi-web.js"&gt;&lt;/script&gt;
+&lt;script src="/assets/javascripts/things/oocsi-things.min.js"&gt;&lt;/script&gt;
         </code></pre>
 
         The first is a stylesheet that ensures that navigation, and especially the team selection dialog look right. 
@@ -117,7 +117,7 @@
         Note that before we define varaiables <i>outside</i> this function, otherwise we cannot use them in the rest of our code.
       </p>
 
-      <b>Select a team space <mark>new!</mark></b>
+      <b>Select a team space</b>
       <p>
         By default, OOCSI Things will pop up a dialog for you to select a team space on every load (for every thing). 
         It will store the last selection in a cookie on your device, so you don't need to enter the name of the space again and again.
@@ -164,7 +164,7 @@
           <strong>Parameters</strong>
           <ul>
             <li><em><code>name</code> (string)</em>: screen name of the thing, can include emjois and will be shown in the header of the thing</li>
-            <li><em><code>slug</code> (string)</em>: OOCSI name of the thing, only alphanumerical characters and dashes allowed. This will be used on the OOCSI network.</li>
+            <li><em><code>handle</code> (string)</em>: OOCSI name of the thing, only alphanumerical characters and dashes allowed. This will be used on the OOCSI network.</li>
             <li><em><code>inVars</code> (array of string)</em>: list of input data variables, just for documentation and showing input indicators in header of the thing.</li>
             <li><em><code>outVars</code> (array of string)</em>: list of output data variables, just for documentation and showing input indicators in header of the thing.</li>
           </ul>
@@ -232,26 +232,26 @@ toggle(true)
       <!-- //------------------------------------------------------------------------------------------------------ -->
 
       <details>
-        <summary>oocsiThings.connect(...)</summary>
+        <summary>oocsiThings.link(...)</summary>
         <div>
           <strong>Description</strong>
           <p>
-            The <code>connect()</code> function links <i>different</i> variables and ensures that different types of things can share their data logically.
+            The <code>link()</code> function links <i>different</i> variables and ensures that different types of things can share their data logically.
           </p>
 
           <strong>Parameters</strong>
           <ul>
-            <li><em><code>thing_name</code> (required)</em>: this is the <code>slug</code> of the thing whose data you would like to connect to a local data variable.</li>
-            <li><em><code>data_name</code> (optional)</em>: this is the name of the data that you would like to connect to a local data variable.</li>
-            <li><em><code>own_data_name</code> (required)</em>: this is the name of the local data that receives the data after connecting.</li>
+            <li><em><code>thing_name</code> (required)</em>: this is the <code>handle</code> of the thing whose data you would like to link to a local data variable.</li>
+            <li><em><code>data_name</code> (required)</em>: this is the name of the data that you would like to link to a local data variable.</li>
+            <li><em><code>own_data_name</code> (required)</em>: this is the name of the local data that receives the data after linking.</li>
           </ul>
 
           <strong>Example Usage</strong>
-          <p>Below is an example of how to use the <code>connect()</code> function:</p>
+          <p>Below is an example of how to use the <code>link()</code> function:</p>
           <pre><code>
 // from lampo:
-// connect the "toggle" data from any "kob0lt" thing in the teamspace to the local "toggle" data
-oocsiThings.connect('k0bolt', 'toggle', 'toggle')
+// link the "toggle" data from any "kob0lt" thing in the teamspace to the local "toggle" data
+oocsiThings.link('k0bolt', 'toggle', 'toggle')
           </code></pre>
 
           <p>

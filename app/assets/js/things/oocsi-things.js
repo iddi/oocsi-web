@@ -198,6 +198,7 @@ window.oocsiThings = (() => {
       return data[name]
     },
     connect: (app, name, ownData) => {
+      ownData = ownData || name;
       if(data[ownData]) {
         // connect data at app_name to ownData
         let app_name = OOCSI.variable(globalSettings.channel, app + '_' + name)
@@ -205,6 +206,19 @@ window.oocsiThings = (() => {
           data[ownData](value);
         });
       }
+    },
+    link: (app, name, ownData) => {
+      ownData = ownData || name;
+      if(data[ownData]) {
+        // connect data at app_name to ownData
+        let app_name = OOCSI.variable(globalSettings.channel, app + '_' + name)
+        app_name.subscribe((value) => {
+          data[ownData](value);
+        });
+      }
+    },
+    subscribe: (fct) => {
+      OOCSI.subscribe(globalSettings.channel, fct)
     },
     activity: () => {
       document.querySelector('#activity').style.opacity = '1.0';

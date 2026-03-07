@@ -38,6 +38,7 @@
 
     // connect external data
     oocsiThings.connect('sitgrid', 'situation', 'situation')
+    oocsiThings.connect('objecter', 'label', 'situation')
 
     // subscribe to situation update
     situation.subscribe((value) => {
