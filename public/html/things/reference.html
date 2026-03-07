@@ -46,10 +46,13 @@
       <h2>What are OOCSI Things?</h2>
 
       <p>
-        Super quick: it's is a collection of small mobile web pages that do each one things well and communicate data via the <a href="https://oocsi.net" target="_blank">OOCSI design middleware</a>. 
-        Each thing has a different specialty; sensing data, allowing for user interaction, playing media, or all of them.
+        Super quick: it's a collection of small mobile web pages that each do one thing well and communicate data via the <a href="https://oocsi.net" target="_blank">OOCSI design middleware</a>. 
+        Each thing has a different specialty: sensing data, allowing for user interaction, playing media, or all of them.
       </p>
-
+      
+      <p>
+        <strong>Think of them like walkie-talkies.</strong> When multiple Things join the same "Team Space" (like tuning into the same radio channel), they can instantly hear each other and share information, such as button presses, colors, or sensor readings.
+      </p>
 
       <b>Useful?</b>
       <p>
@@ -62,9 +65,14 @@
       <p>
         After connecting to OOCSI, a thing will join a team space (actually an OOCSI channel) and then exchange data with other things over this channel. 
         The data exchange uses the OOCSI variable abstraction which allows to synchronize the variable values quickly and safely over the OOCSI channel.
-        You can use the variables easily to get and set values as follows: for example, if you need the current value of a variable <code>position</code> you use the name of the variable with parentheses: <code>position()</code>. 
-        To change the variable you fill in the new value (here: "2") into the parentheses: <code>position(2)</code>.
-        Everywhere in the code of the thing, you can use the variables to change the behavior or to share new values with other things.
+      </p>
+      <ul>
+        <li><strong>Defining variables:</strong> You define a variable that will be shared across the network (e.g., <code>let position = oocsiThings.data('position');</code>).</li>
+        <li><strong>Reading values:</strong> To get the current value, simply use the variable name with empty parentheses: <code>position()</code>.</li>
+        <li><strong>Writing values:</strong> To change the variable across all devices, pass the new value into the parentheses: <code>position(2)</code>.</li>
+      </ul>
+      <p>
+        Everywhere in the code of the thing, you can use these variables to change the behavior or to share new values with other things.
       </p>
     </section>
 
@@ -91,7 +99,8 @@
       </p>
 
       <p>
-        Some things have more libraries because they need to access sensors, produce sound or draw something on a canvas. We often use <a href="https://p5js.org" target="_blank">P5.js</a> for that.
+        Some things have more libraries because they need to access sensors, produce sound or draw something on a canvas. We often use <a href="https://p5js.org" target="_blank">P5.js</a> for that. 
+        <strong>P5.js is a great fit for OOCSI Things</strong> because its continuous <code>draw()</code> loop allows you to read OOCSI variables (like <code>toggle()</code>) and update the screen instantly without needing complex event listeners.
       </p>
       
       <b>Setup a place for <i>thing</i> code</b>
@@ -236,22 +245,22 @@ toggle(true)
         <div>
           <strong>Description</strong>
           <p>
-            The <code>link()</code> function links <i>different</i> variables and ensures that different types of things can share their data logically.
+            The <code>link()</code> function links <i>different</i> variables between different Things. This is how you make one Thing control or affect another.
           </p>
 
           <strong>Parameters</strong>
           <ul>
-            <li><em><code>thing_name</code> (required)</em>: this is the <code>handle</code> of the thing whose data you would like to link to a local data variable.</li>
-            <li><em><code>data_name</code> (required)</em>: this is the name of the data that you would like to link to a local data variable.</li>
-            <li><em><code>own_data_name</code> (required)</em>: this is the name of the local data that receives the data after linking.</li>
+            <li><em><code>thing_name</code> (required)</em>: this is the <code>handle</code> of the other Thing whose data you would like to receive.</li>
+            <li><em><code>data_name</code> (required)</em>: this is the name of the data variable on the other Thing.</li>
+            <li><em><code>own_data_name</code> (required)</em>: this is the name of your local data variable that will receive updates.</li>
           </ul>
 
           <strong>Example Usage</strong>
-          <p>Below is an example of how to use the <code>link()</code> function:</p>
+          <p>Below is an example of how to use the <code>link()</code> function. Imagine you have a slider Thing called <code>touchee</code> (which outputs a variable called <code>y</code>) and a light Thing called <code>lampo</code> (which uses a variable called <code>dim</code> for its brightness):</p>
           <pre><code>
-// from lampo:
-// link the "toggle" data from any "kob0lt" thing in the teamspace to the local "toggle" data
-oocsiThings.link('k0bolt', 'toggle', 'toggle')
+// In the lampo Thing's code:
+// Link the "y" (slider position) data from any "touchee" thing to our local "dim" data
+oocsiThings.link('touchee', 'y', 'dim')
           </code></pre>
 
           <p>
@@ -407,6 +416,57 @@ function touchEnded() {
         </div>
       </details>
 
+    </section>
+
+    <hr>
+
+    <section>
+      <h2>Communicating beyond OOCSI Things (e.g., ESP32)</h2>
+      <p>
+        Because OOCSI Things run on standard OOCSI channels (the Team Space), any external OOCSI client can communicate with them. This is incredibly powerful for hybrid prototyping where you mix web interfaces with physical sensors and actuators powered by microcontrollers like an ESP32.
+      </p>
+
+      <h4>Channel naming</h4>
+      <p>
+        To talk to your Things, your external client needs to connect to the exact same Team Space. If your Team Space is called <code>team-25</code>, your ESP32 needs to send messages to, or subscribe to, the channel named <code>team-25</code>. In most settings, this channel might be prefixed, such as <code>OOCSI-things/team-25</code>.
+      </p>
+
+      <h4>Sending data to Things (ESP32 Example)</h4>
+      <p>
+        If you have a physical button connected to an ESP32 and you want a Thing to react to it, you send a standard OOCSI message to the shared channel:
+      </p>
+      <pre><code>// ESP32 Code (using OOCSI-ESP library)
+// Create a message for the Team Space channel
+oocsi.newMessage("OOCSI-things/team-25");
+
+// Add data. The key "cup_drink" becomes the variable name in the Thing
+oocsi.addBool("cup_drink", true);
+
+// Send it!
+oocsi.sendMessage();</code></pre>
+      <p>
+        In your web Thing, you would define a variable (e.g., <code>let drink = oocsiThings.data('drink');</code>) and then link it to the ESP32 (acting as thing "cup") using its handle: <code>oocsiThings.link('cup', 'drink');</code>.
+      </p>
+
+      <h4>Receiving data from Things (ESP32 Example)</h4>
+      <p>
+        Conversely, if you want an ESP32 to react to a Thing (for example, tapping a button on a web page to move a physical servo motor), the ESP32 subscribes to the channel and listens for the Thing's variable name:
+      </p>
+      <pre><code>// ESP32 Code (using OOCSI-ESP library)
+// First, subscribe to the channel in your setup()
+oocsi.subscribe("OOCSI-things/team-25");
+
+// Inside your processOOCSI callback function:
+void processOOCSI() {
+  // Check if the message contains the variable from your Thing (e.g., "lampo_toggle")
+  if (oocsi.has("lampo_toggle")) {
+    // Get the value sent by the Thing
+    bool toggle = oocsi.getBool("lampo_toggle", false);
+
+    // Use the value to move a servo motor
+    myservo.write(toggle ? 0 : 180);
+  }
+}</code></pre>   
     </section>
 
   </main>
