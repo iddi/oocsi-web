@@ -16,7 +16,7 @@ libraryDependencies ++= Seq(
 
 lazy val root = (project in file(".")).enablePlugins(PlayJava, LauncherJarPlugin, JavaAppPackaging)
 
-Compile / unmanagedSourceDirectories += (baseDirectory.value / "../oocsi/server/src")
+Compile / unmanagedSourceDirectories += (baseDirectory.value / "oocsi/server/src")
 
 // Play provides two styles of routers, one expects its actions to be injected, the
 // other, legacy style, accesses its actions statically.

@@ -1,0 +1,3 @@
+[submodule "oocsi"]
+	path = oocsi
+	url = https://github.com/iddi/oocsi
