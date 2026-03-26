@@ -48,8 +48,8 @@ jobs:
           target: builder
           platforms: linux/amd64
           push: true
-          tags: ${{ steps.meta.outputs.tags }}:builder
-          labels: ${{ steps.meta.outputs.labels }}:builder
+          tags: ${{ steps.meta.outputs.tags }}_builder
+          labels: ${{ steps.meta.outputs.labels }}_builder
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
@@ -64,7 +64,7 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=${{ steps.meta.outputs.tags }}:builder
+          cache-from: type=registry,ref=${{ steps.meta.outputs.tags }}_builder
           cache-to: type=inline
           build-args: |
             BUILDKIT_INLINE_CACHE=1
