@@ -49,6 +49,9 @@ RUN sbt update
 # Build the application
 RUN sbt dist && ls -l /app/target/universal
 
+# Copy zip to root for easier export
+RUN cp /app/target/universal/oocsi-*.zip /oocsi-web.zip
+
 ## ---------------------------------------------------------------------------
 
 # Stage 2: Application container
