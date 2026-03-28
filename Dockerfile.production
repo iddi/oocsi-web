@@ -5,11 +5,9 @@ WORKDIR /app
 # Copy the pre-built zip from build context
 COPY artifacts/oocsi-*.zip app.zip
 
-RUN apk add --no-cache zip && \
-    unzip app.zip && \
+RUN unzip app.zip && \
     mv oocsi* oocsi && \
-    rm app.zip && \
-    apk del zip
+    rm app.zip
 
 EXPOSE 9000
 
