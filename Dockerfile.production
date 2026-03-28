@@ -1,4 +1,4 @@
-FROM ghcr.io/graalvm/graalvm-community:25 AS production
+FROM ghcr.io/bell-sw/liberica-runtime-container:jre-25.0.2-slim-stream-musl
 
 WORKDIR /app
 
