@@ -1,15 +1,16 @@
-FROM ghcr.io/bell-sw/liberica-runtime-container:jre-25.0.2-slim-stream-musl
+FROM ghcr.io/bell-sw/liberica-openjdk-alpine-musl:25.0.2-cds
 
 WORKDIR /app
 
 # Copy the pre-built zip from build context
 COPY artifacts/oocsi-*.zip app.zip
 
-RUN unzip app.zip && \
+RUN apk add bash && \
+    unzip app.zip && \
     mv oocsi* oocsi && \
     rm app.zip
 
-EXPOSE 9000
+EXPOSE 4444 9000
 
 WORKDIR /app/oocsi
 CMD ["bin/oocsi-web", "-Dconfig.file=/app/oocsi/conf/application.conf", "-Dlogger.file=/app/oocsi/conf/logback.xml"]
