@@ -1,11 +1,11 @@
 name := """oocsi-web"""
 organization := "IndustrialDesign"
 
-version := "0.4.11"
+version := "0.4.12"
 
 maintainer := "m.funk@tue.nl"
 
-scalaVersion := "2.13.13"
+scalaVersion := "2.13.18"
 
 libraryDependencies ++= Seq(
   guice,

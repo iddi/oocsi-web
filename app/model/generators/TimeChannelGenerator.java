@@ -32,7 +32,7 @@ public class TimeChannelGenerator {
 
 	private void initialize() {
 		this.actorSystem.scheduler().scheduleAtFixedRate(Duration.create(2, TimeUnit.SECONDS),
-		        Duration.create(1, TimeUnit.SECONDS), () -> publish(), this.executionContext);
+				Duration.create(1, TimeUnit.SECONDS), () -> publish(), this.executionContext);
 	}
 
 	private void publish() {
@@ -53,6 +53,27 @@ public class TimeChannelGenerator {
 			Channel channel = server.getChannel(CHANNEL);
 			if (channel != null) {
 				channel.send(m);
+			}
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		// second channel with correct month, just for migration period
+		Message m2 = new Message("OOCSI/tools/timechannel-gen", CHANNEL + "2");
+		m2.addData("y", cal.get(Calendar.YEAR));
+		m2.addData("M", cal.get(Calendar.MONTH) + 1);
+		m2.addData("d", cal.get(Calendar.DAY_OF_MONTH));
+		m2.addData("dw", cal.get(Calendar.DAY_OF_WEEK));
+		m2.addData("h", cal.get(Calendar.HOUR_OF_DAY));
+		m2.addData("m", cal.get(Calendar.MINUTE));
+		m2.addData("s", cal.get(Calendar.SECOND));
+		m2.addData("timestamp", cal.getTimeInMillis());
+		m2.addData("datetime", sdf.format(cal.getTime()));
+
+		try {
+			Channel channel = server.getChannel(CHANNEL + "2");
+			if (channel != null) {
+				channel.send(m2);
 			}
 		} catch (Exception e) {
 			// do nothing
