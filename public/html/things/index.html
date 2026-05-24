@@ -9,7 +9,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Workshop - Things</title>
+  <meta name="theme-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="/assets/images/OOCSI_logo_tile.png">
+  <link rel="manifest" href="/things/manifest.json">
+  <title>OOCSI Things</title>
   <link rel="stylesheet" type="text/css" href="/assets/css/pico.indigo.min.css">
   <style type="text/css">
     article {
@@ -359,6 +364,15 @@
 
   <script src="/assets/js/qrcode.min.js"></script>
   <script type="text/javascript">
+    // register service worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/things/sw.js')
+          .then(reg => console.log('Service Worker registered', reg))
+          .catch(err => console.log('Service Worker registration failed', err));
+      });
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       
       // thing click logic

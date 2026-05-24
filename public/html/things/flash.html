@@ -9,6 +9,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="/assets/images/OOCSI_logo_tile.png">
+  <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" type="text/css" href="/assets/css/pico.indigo.min.css">
   <script type="text/javascript" src="/assets/js/oocsi-web.js"></script>
   <script type="text/javascript" src="/assets/js/things/oocsi-things.min.js"></script>
@@ -31,7 +36,16 @@
     <img src="">
   </div>
 </body>
-<script type="text/javascript"> 
+<script type="text/javascript">
+
+  // register service worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('Service Worker registered', reg))
+        .catch(err => console.log('Service Worker registration failed', err));
+    });
+  }
 
   // define your teamspace
   oocsiThingsConfig = {

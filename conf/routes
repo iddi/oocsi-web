@@ -25,6 +25,7 @@ GET 	/animoocsi						controllers.Tools.animate(request: Request)
 
 # Toolkit
 GET     /things							controllers.Things.index(request: Request)
+GET     /things/						controllers.Things.index(request: Request)
 GET     /things/:thingname              controllers.Things.thing(request: Request, thingname: String)
 
 +nocsrf
