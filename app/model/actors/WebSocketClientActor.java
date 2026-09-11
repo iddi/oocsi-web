@@ -85,16 +85,19 @@ public class WebSocketClientActor extends AbstractActor {
 				client = new WebSocketClient(clientName, server, this);
 				if (server.addClient(client)) {
 					logger.info("WS client " + client.getName() + " connected");
-					// status(200, );
-					out.tell("{\"message\" : \"welcome " + client.getName() + "\"}", self());
+					com.fasterxml.jackson.databind.node.ObjectNode msg = play.libs.Json.newObject();
+					msg.put("message", "welcome " + client.getName());
+					out.tell(msg.toString(), self());
 				} else {
 					logger.info("WS client " + client.getName() + " rejected as existing");
-					// status(401, );
-					out.tell("{\"message\" : \"ERROR: client " + client.getName() + " exists already\"}", self());
+					com.fasterxml.jackson.databind.node.ObjectNode msg = play.libs.Json.newObject();
+					msg.put("message", "ERROR: client " + client.getName() + " exists already");
+					out.tell(msg.toString(), self());
 
 					// kill self
 					kill();
 				}
+				return;
 			}
 
 			// anything useful?
@@ -104,11 +107,10 @@ public class WebSocketClientActor extends AbstractActor {
 
 	private String replaceHashesWithDigits(String input) {
 		StringBuilder result = new StringBuilder(input.length());
-		Random RAND = new Random();
 		for (int i = 0; i < input.length(); i++) {
 			char c = input.charAt(i);
 			if (c == '#') {
-				result.append(RAND.nextInt(10));
+				result.append(java.util.concurrent.ThreadLocalRandom.current().nextInt(10));
 			} else {
 				result.append(c);
 			}

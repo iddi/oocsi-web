@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.pekko.actor.ActorRef;
 import org.apache.pekko.actor.ActorSystem;
@@ -32,6 +33,9 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.typesafe.config.Config;
 
+import io.github.bucket4j.Bandwidth;
+import io.github.bucket4j.Bucket;
+import io.github.bucket4j.Refill;
 import model.actors.SSEChannelClient;
 import model.actors.ServiceClientActor;
 import model.actors.WebSocketClientActor;
@@ -41,6 +45,7 @@ import model.clients.HeyOOCSIClient.OOCSIDevice;
 import nl.tue.id.oocsi.server.OOCSIServer;
 import nl.tue.id.oocsi.server.model.Channel;
 import nl.tue.id.oocsi.server.model.Client;
+import nl.tue.id.oocsi.server.model.Server;
 import nl.tue.id.oocsi.server.protocol.Message;
 import play.Environment;
 import play.data.DynamicForm;
@@ -68,6 +73,12 @@ public class Application extends Controller {
 	private final OOCSIServer server;
 	private final HeyOOCSIClient heyOOCSIClient;
 
+	private final boolean rateLimitEnabled;
+	private final long rateLimitCapacity;
+	private final long rateLimitRefillTokens;
+	private final long rateLimitRefillDuration;
+	private final Map<String, Bucket> rateLimitBuckets = new ConcurrentHashMap<>();
+
 	private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
 	@Inject
@@ -91,6 +102,16 @@ public class Application extends Controller {
 			}
 		}
 
+		// configure rate limiting
+		this.rateLimitEnabled = !configuration.hasPath("oocsi.ratelimit.enabled")
+		        || configuration.getBoolean("oocsi.ratelimit.enabled");
+		this.rateLimitCapacity = configuration.hasPath("oocsi.ratelimit.capacity")
+		        ? configuration.getLong("oocsi.ratelimit.capacity") : 120;
+		this.rateLimitRefillTokens = configuration.hasPath("oocsi.ratelimit.refillTokens")
+		        ? configuration.getLong("oocsi.ratelimit.refillTokens") : 120;
+		this.rateLimitRefillDuration = configuration.hasPath("oocsi.ratelimit.refillDurationSeconds")
+		        ? configuration.getLong("oocsi.ratelimit.refillDurationSeconds") : 60;
+
 		// trigger the log summary every minute
 		as.scheduler().scheduleAtFixedRate(Duration.ofMinutes(1), Duration.ofMinutes(1), () -> {
 			sl.logSummary();
@@ -102,6 +123,26 @@ public class Application extends Controller {
 			Thread.sleep(1000);
 			return CompletableFuture.completedFuture(null);
 		});
+	}
+
+	private boolean isRateLimited(Request request) {
+		if (!rateLimitEnabled || request == null) {
+			return false;
+		}
+		String clientIp = request.remoteAddress();
+		Bucket bucket = rateLimitBuckets.computeIfAbsent(clientIp, k -> {
+			Refill refill = Refill.greedy(rateLimitRefillTokens, Duration.ofSeconds(rateLimitRefillDuration));
+			Bandwidth limit = Bandwidth.classic(rateLimitCapacity, refill);
+			return Bucket.builder().addLimit(limit).build();
+		});
+		return !bucket.tryConsume(1);
+	}
+
+	private static String truncate(String val, int maxLen) {
+		if (val == null) {
+			return "";
+		}
+		return val.length() <= maxLen ? val : val.substring(0, maxLen);
 	}
 
 	/**
@@ -313,11 +354,17 @@ public class Application extends Controller {
 	 */
 	public Result sendData(Request request, String channel, String data) {
 
+		if (isRateLimited(request)) {
+			return status(429, "Too Many Requests");
+		}
+
 		// extract user id if provided
 		String userId = extractUserId(request);
 
 		if (channel == null || channel.trim().length() == 0) {
 			return badRequest("ERROR: channel missing");
+		} else if (Server.RESERVED_NAMES.contains(channel.trim())) {
+			return badRequest("ERROR: reserved channel name");
 		} else if (server.getChannel(channel) == null) {
 			return notFound("ERROR: channel not found");
 		} else {
@@ -340,10 +387,16 @@ public class Application extends Controller {
 	 */
 	public Result sendDataAndClose(Request request, String channel, String data) {
 
+		if (isRateLimited(request)) {
+			return status(429, "Too Many Requests");
+		}
+
 		// extract user id if provided
 		String userId = extractUserId(request);
 
 		if (channel == null || channel.trim().length() == 0) {
+			return badRequest(views.html.Application.sendAndClose.render());
+		} else if (Server.RESERVED_NAMES.contains(channel.trim())) {
 			return badRequest(views.html.Application.sendAndClose.render());
 		} else if (server.getChannel(channel) == null) {
 			return notFound(views.html.Application.sendAndClose.render());
@@ -366,19 +419,25 @@ public class Application extends Controller {
 	 */
 	public Result track(Request request, String channel, String data) {
 
+		if (isRateLimited(request)) {
+			return status(429, "Too Many Requests");
+		}
+
 		// extract user id if provided
 		String userId = extractUserId(request);
 
 		if (channel == null || channel.trim().length() == 0) {
 			return badRequest("ERROR: channel missing");
+		} else if (Server.RESERVED_NAMES.contains(channel.trim())) {
+			return badRequest("ERROR: reserved channel name");
 		} else if (server.getChannel(channel) == null) {
 			return notFound("ERROR: channel not found");
 		} else {
 			Message m = new Message("WEB-REQUEST", channel);
 			m.addData("parameter", data);
-			m.addData("User-Agent", request.header("User-Agent").orElse(""));
-			m.addData("Referer", request.header("Referer").orElse(""));
-			m.addData("Origin", request.header("Origin").orElse(""));
+			m.addData("User-Agent", truncate(request.header("User-Agent").orElse(""), 256));
+			m.addData("Referer", truncate(request.header("Referer").orElse(""), 256));
+			m.addData("Origin", truncate(request.header("Origin").orElse(""), 256));
 			m.addData("userId", userId);
 
 			server.getChannel(channel).send(m);
@@ -395,12 +454,18 @@ public class Application extends Controller {
 	 */
 	public Result send(Request request, String channel) {
 
+		if (isRateLimited(request)) {
+			return status(429, "Too Many Requests");
+		}
+
 		// extract user id if provided
 		String userId = extractUserId(request);
 
 		// // check channel available
 		if (channel == null || channel.trim().isEmpty()) {
 			return badRequest("ERROR: channel missing");
+		} else if (Server.RESERVED_NAMES.contains(channel.trim())) {
+			return badRequest("ERROR: reserved channel name");
 		}
 
 		String sender;
@@ -444,6 +509,13 @@ public class Application extends Controller {
 	 * @return
 	 */
 	private Result internalSend(String sender, String channel, String userId, Map<String, String> messageData) {
+		if (channel != null && Server.RESERVED_NAMES.contains(channel.trim())) {
+			return badRequest("ERROR: reserved channel name");
+		}
+		if (sender != null && Server.RESERVED_NAMES.contains(sender.trim())) {
+			return badRequest("ERROR: reserved sender name");
+		}
+
 		// check whether there is another client with same name (-> abort)
 		Client serverClient = server.getClient(sender);
 		if (serverClient != null) {
@@ -458,8 +530,8 @@ public class Application extends Controller {
 
 			// fill message
 			for (String key : messageData.keySet()) {
-				if (!key.equals("sender") || !key.equals("channel") || !key.equals("recipient")
-				        || !key.equals("timestamp") || !key.equals("")) {
+				if (!key.equals("sender") && !key.equals("channel") && !key.equals("recipient")
+				        && !key.equals("timestamp") && !key.equals("") && !key.equals("userId")) {
 					message.addData(key, messageData.get(key));
 				}
 			}
@@ -536,6 +608,10 @@ public class Application extends Controller {
 	 * @return
 	 */
 	public CompletionStage<Result> serviceCallPost(Request request, String service, String call) {
+		if (isRateLimited(request)) {
+			return CompletableFuture.completedFuture(status(429, "Too Many Requests"));
+		}
+
 		if (server.getChannel(service) != null) {
 			return internalServiceCall(service, call, request.body().asText());
 		} else {
@@ -556,7 +632,7 @@ public class Application extends Controller {
 		String decodedChannelName = URLDecoder.decode(channelName, StandardCharsets.UTF_8);
 
 		// compose flow with a special OOCSI client
-		final SSEChannelClient channelClient = new SSEChannelClient("Events-" + System.currentTimeMillis());
+		final SSEChannelClient channelClient = new SSEChannelClient("Events-" + UUID.randomUUID().toString());
 		Source<EventSource.Event, Cancellable> eventSource = Source.tick(Duration.ZERO, Duration.ofMillis(100), "")
 		        .map(tick -> {
 			        if (!channelClient.isEmpty()) {

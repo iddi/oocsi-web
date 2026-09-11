@@ -1,5 +1,8 @@
 package model.clients;
 
+import java.net.InetAddress;
+import java.net.URI;
+import java.time.Duration;
 import java.util.concurrent.CompletionStage;
 
 import org.slf4j.Logger;
@@ -15,6 +18,8 @@ import play.libs.ws.WSRequest;
 import play.libs.ws.WSResponse;
 
 public class HTTPRequestClient extends Client {
+
+	private static final int MAX_RESPONSE_BODY_LENGTH = 65536;
 
 	private static final Logger logger = LoggerFactory.getLogger(HTTPRequestClient.class);
 
@@ -53,6 +58,75 @@ public class HTTPRequestClient extends Client {
 	@Override
 	public long lastAction() {
 		return System.currentTimeMillis();
+	}
+
+	private static boolean isSafeUrl(String urlStr) {
+		try {
+			URI uri = new URI(urlStr);
+			String scheme = uri.getScheme();
+			if (scheme == null || (!scheme.equalsIgnoreCase("http") && !scheme.equalsIgnoreCase("https"))) {
+				return false;
+			}
+			String host = uri.getHost();
+			if (host == null || host.trim().isEmpty()) {
+				return false;
+			}
+			host = host.trim().toLowerCase();
+			if (host.equals("localhost") || host.endsWith(".localhost") || host.endsWith(".local")
+			        || host.endsWith(".internal")) {
+				return false;
+			}
+
+			InetAddress[] addresses = InetAddress.getAllByName(host);
+			for (InetAddress addr : addresses) {
+				if (addr.isAnyLocalAddress() || addr.isLoopbackAddress() || addr.isLinkLocalAddress()
+				        || addr.isSiteLocalAddress() || addr.isMulticastAddress()) {
+					return false;
+				}
+				byte[] bytes = addr.getAddress();
+				if (bytes.length == 4) {
+					int b0 = bytes[0] & 0xFF;
+					int b1 = bytes[1] & 0xFF;
+					if (b0 == 0 || b0 == 10 || b0 == 127) {
+						return false;
+					}
+					if (b0 == 169 && b1 == 254) {
+						return false;
+					}
+					if (b0 == 172 && (b1 >= 16 && b1 <= 31)) {
+						return false;
+					}
+					if (b0 == 192 && b1 == 168) {
+						return false;
+					}
+					if (b0 == 100 && (b1 >= 64 && b1 <= 127)) {
+						return false;
+					}
+					if (b0 == 198 && (b1 == 18 || b1 == 19)) {
+						return false;
+					}
+				} else if (bytes.length == 16) {
+					boolean isIPv4Mapped = true;
+					for (int i = 0; i < 10; i++) {
+						if (bytes[i] != 0) {
+							isIPv4Mapped = false;
+							break;
+						}
+					}
+					if (isIPv4Mapped && (bytes[10] & 0xFF) == 0xFF && (bytes[11] & 0xFF) == 0xFF) {
+						int b0 = bytes[12] & 0xFF;
+						int b1 = bytes[13] & 0xFF;
+						if (b0 == 0 || b0 == 10 || b0 == 127 || (b0 == 169 && b1 == 254)
+						        || (b0 == 172 && (b1 >= 16 && b1 <= 31)) || (b0 == 192 && b1 == 168)) {
+							return false;
+						}
+					}
+				}
+			}
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
 	@Override
@@ -107,8 +181,8 @@ public class HTTPRequestClient extends Client {
 			channel = event.getSender();
 		}
 
-		// abort if key data is missing
-		if (url.isEmpty()) {
+		// abort if key data is missing or URL fails safety checks
+		if (url.isEmpty() || !isSafeUrl(url)) {
 			return false;
 		}
 
@@ -116,7 +190,7 @@ public class HTTPRequestClient extends Client {
 		logger.info("Calling http-web-request for URL " + url + " with method " + method + " for " + channel + " by "
 		        + event.getSender());
 		try {
-			WSRequest request = wsClient.url(url);
+			WSRequest request = wsClient.url(url).setRequestTimeout(Duration.ofSeconds(5));
 			final CompletionStage<WSResponse> wsResponse;
 			if (method.equals("post")) {
 				if (!postBody.isEmpty()) {
@@ -132,7 +206,11 @@ public class HTTPRequestClient extends Client {
 					Message m = new Message("http-web-request", channel);
 					m.data.putAll(event.data);
 					m.data.put("result-status", response.getStatus());
-					m.data.put("result-body", response.getBody());
+					String body = response.getBody();
+					if (body != null && body.length() > MAX_RESPONSE_BODY_LENGTH) {
+						body = body.substring(0, MAX_RESPONSE_BODY_LENGTH);
+					}
+					m.data.put("result-body", body);
 					m.data.put("result-content-type", response.getContentType());
 					if (event.data.containsKey(OOCSICall.MESSAGE_ID)) {
 						m.data.put(OOCSICall.MESSAGE_ID, event.data.get(OOCSICall.MESSAGE_ID));

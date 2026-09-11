@@ -36,6 +36,7 @@ public class ServiceClientActor extends AbstractActor {
 	@Override
 	public Receive createReceive() {
 		return receiveBuilder().match(ServiceRequest.class, request -> {
+			requestClient.reset();
 			server.addClient(requestClient);
 			Channel serviceClient = server.getChannel(request.service);
 

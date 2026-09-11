@@ -45,7 +45,7 @@ GET		/icons/*file					controllers.Assets.at(path="/public/images/icons", file)
 GET		/channels						controllers.Application.channels()
 GET 	/subscribe/*id					controllers.Application.subscribe(request: Request, id: String)
 GET 	/send/:channel/:data				controllers.Application.sendData(request: Request, channel: String, data: String)
-GET 	/sendAndClose/:channel/:data		controllers.Application.sendData(request: Request, channel: String, data: String)
+GET 	/sendAndClose/:channel/:data		controllers.Application.sendDataAndClose(request: Request, channel: String, data: String)
 GET 	/track/:channel/:data			controllers.Application.track(request: Request, channel: String, data: String)
 +nocsrf
 POST	/send							controllers.Application.send(request: Request, channel: String ?= "")

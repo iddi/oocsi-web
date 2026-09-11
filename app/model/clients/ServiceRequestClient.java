@@ -1,15 +1,17 @@
 package model.clients;
 
+import java.util.UUID;
+
 import nl.tue.id.oocsi.server.OOCSIServer;
 import nl.tue.id.oocsi.server.model.Client;
 import nl.tue.id.oocsi.server.protocol.Message;
 
 public class ServiceRequestClient extends Client {
 
-	public Message completedMessage = null;
+	public volatile Message completedMessage = null;
 
 	public ServiceRequestClient(OOCSIServer server) {
-		super("serverclient" + Math.random(), server.getChangeListener());
+		super("serverclient_" + UUID.randomUUID().toString(), server.getChangeListener());
 	}
 
 	@Override
@@ -44,5 +46,9 @@ public class ServiceRequestClient extends Client {
 
 	public boolean completed() {
 		return completedMessage != null;
+	}
+
+	public void reset() {
+		completedMessage = null;
 	}
 }
