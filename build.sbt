@@ -19,6 +19,8 @@ lazy val root = (project in file(".")).enablePlugins(PlayJava, LauncherJarPlugin
 
 Compile / unmanagedSourceDirectories += (baseDirectory.value / "oocsi/server/src")
 
+Test / parallelExecution := false
+
 // Play provides two styles of routers, one expects its actions to be injected, the
 // other, legacy style, accesses its actions statically.
 routesGenerator := InjectedRoutesGenerator
