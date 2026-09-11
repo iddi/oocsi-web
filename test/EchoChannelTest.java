@@ -30,7 +30,9 @@ public class EchoChannelTest extends WithServer {
 
 		oco.channel("echo").data("testInt", 3).data("testString", "vanilla").send();
 
-		Thread.sleep(100);
+		for (int i = 0; i < 20 && events.isEmpty(); i++) {
+			Thread.sleep(100);
+		}
 
 		assertEquals(1, events.size());
 	}
