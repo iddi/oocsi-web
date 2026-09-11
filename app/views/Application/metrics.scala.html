@@ -82,12 +82,30 @@
 
 				// set configuration
 				newChart.configuration.channel = channel;
+				function getNestedValue(obj, path) {
+					if (!obj || typeof path !== 'string') return undefined;
+					var parts = path.split('.');
+					var current = obj;
+					for (var j = 0; j < parts.length; j++) {
+						var part = parts[j];
+						if (!part || part === '__proto__' || part === 'prototype' || part === 'constructor') {
+							return undefined;
+						}
+						if (current && typeof current === 'object' && part in current) {
+							current = current[part];
+						} else {
+							return undefined;
+						}
+					}
+					return current;
+				}
+
 				newChart.configuration.selector = selector;
 
 				var row = d3.select('#chartsContainer')
 					.append('div').attr('id', 'container' + (charts.length + 1)).classed('row', true);
 				row = row.append('div').classed('card-panel', true);
-				row.append('div').classed('col s12', true).html('OOCSI: ' + selector);
+				row.append('div').classed('col s12', true).text('OOCSI: ' + selector);
 				row.append('div').classed('col s12', true).style('font-weight', 100).html('current value: ').append('span').attr('id', 'container_currVal' + (charts.length + 1));			
 				row.append('div').attr('id', 'chart' + (charts.length + 1)).classed('col s12', true);
 				row.append('div').style('clear', 'both');
@@ -105,10 +123,10 @@
 				    OOCSI.subscribe(channel, function(e) {
 						{
 					    	for (var i = 0; i < channels[channel].length; i++) {
-					    		var selector = channels[channel][i];
-					    		var value = eval('e.data.' + selector.selector);
+					    		var sel = channels[channel][i];
+					    		var value = getNestedValue(e.data, sel.selector);
 					    		if(value !== undefined) {
-							    	updateChart(selector.index, value);
+							    	updateChart(sel.index, value);
 							    }
 					    	};
 						}

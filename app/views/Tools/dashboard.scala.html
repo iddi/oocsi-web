@@ -66,14 +66,39 @@
 				// connect to OOCSI server
 				OOCSI.connect((window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws', 'OOCSI/tools/dashboard_####');
 
+				function getNestedValue(obj, path) {
+					if (!obj || typeof path !== 'string') return undefined;
+					var parts = path.split('.');
+					var current = obj;
+					for (var j = 0; j < parts.length; j++) {
+						var part = parts[j];
+						if (!part || part === '__proto__' || part === 'prototype' || part === 'constructor') {
+							return undefined;
+						}
+						if (current && typeof current === 'object' && part in current) {
+							current = current[part];
+						} else {
+							return undefined;
+						}
+					}
+					return current;
+				}
+
 				// add charts
 				var json = readCookie('charts');
-				chartLoader = JSON.parse(json);
-				if(chartLoader !== null && chartLoader !== undefined && chartLoader.length > 0) {
-					chartLoader.forEach(function(c) {
-						addChart(c.channel, c.selector);
-					});
-				} else {
+				try {
+					var chartLoader = JSON.parse(json);
+					if(Array.isArray(chartLoader) && chartLoader.length > 0) {
+						chartLoader.forEach(function(c) {
+							if (c && typeof c.channel === 'string' && typeof c.selector === 'string' && /^[a-zA-Z0-9_.]+$/.test(c.selector)) {
+								addChart(c.channel, c.selector);
+							}
+						});
+					} else {
+						addChart('testchannel', 'color');
+						addChart('testchannel', 'position');
+					}
+				} catch(e) {
 					addChart('testchannel', 'color');
 					addChart('testchannel', 'position');
 				}
@@ -84,6 +109,9 @@
 	    
 		    // add chart function
 		    function addChart(channel, selector) {
+				if (!channel || !selector || !/^[a-zA-Z0-9_.]+$/.test(selector)) {
+					return;
+				}
 
 		    	var container = document.getElementById("chartsContainer");
 		    	var elementWidth = container.offsetWidth;
@@ -98,7 +126,6 @@
 					chartData: [{'date': new Date(), 'value': 0}],
 					chartSpec: {
 						title: "",
-				        //description: "This is a simple line chart. You can remove the area portion by adding area: false to the arguments list.",
 				        data: [],
 				        width: elementWidth * 0.9,
 				        height: elementWidth * 0.2,
@@ -119,7 +146,9 @@
 				var row = d3.select('#chartsContainer')
 					.append('div').attr('id', 'container' + (charts.length + 1)).classed('row', true);
 				row = row.append('div').classed('card-panel', true);
-				row.append('div').classed('col s12', true).html(channel + ': ' + selector + ' <a href="#" id="removeChartBtn' + (charts.length + 1) + '">remove</a>');
+				var headerDiv = row.append('div').classed('col s12', true);
+				headerDiv.append('span').text(channel + ': ' + selector + ' ');
+				headerDiv.append('a').attr('href', '#').attr('id', 'removeChartBtn' + (charts.length + 1)).text('remove');
 				row.append('div').classed('col s12', true).style('font-weight', 100).html('current value: ').append('span').attr('id', 'container_currVal' + (charts.length + 1));			
 				row.append('div').attr('id', 'chart' + (charts.length + 1)).classed('col s12', true);
 				row.append('div').style('clear', 'both');
@@ -140,10 +169,10 @@
 				    OOCSI.subscribe(channel, function(e) {
 						{
 					    	for (var i = 0; i < channels[channel].length; i++) {
-					    		var selector = channels[channel][i];
-					    		var value = eval('e.data.' + selector.selector);
+					    		var sel = channels[channel][i];
+					    		var value = getNestedValue(e.data, sel.selector);
 					    		if(value !== undefined) {
-						    		updateChart(selector.index, value);
+						    		updateChart(sel.index, value);
 						    	}
 					    	};
 						}
@@ -154,7 +183,7 @@
 
 		    	updateChart(charts.length - 1, 0);
 
-		    	createCookie('charts', JSON.stringify(charts.map(function(d) {return d.configuration}).filter(function(d) {return d !== undefined})), 1);
+		    	createCookie('charts', JSON.stringify(charts.map(function(d) {return d.configuration}).filter(function(d) {return d !== undefined && d.selector && /^[a-zA-Z0-9_.]+$/.test(d.selector)})), 1);
 	    	}
 		    
 		    // chart update function
@@ -214,7 +243,9 @@
 		   		var channel = $('#channel').val();
 		   		var selector = $('#selector').val();
 
-		   		addChart(channel, selector);
+		   		if (channel && selector && /^[a-zA-Z0-9_.]+$/.test(selector)) {
+		   			addChart(channel, selector);
+		   		}
 
 		   		$('#channel').val('');
 		   		$('#selector').val('');	   		
@@ -231,7 +262,8 @@
 			    } else {
 			        expires = "";
 			    }
-			    document.cookie = encodeURIComponent(name) + "=" + encodeURIComponent(value) + expires + "; path=/";
+			    var secure = window.location.protocol === 'https:' ? '; Secure' : '';
+			    document.cookie = encodeURIComponent(name) + "=" + encodeURIComponent(value) + expires + "; path=/; SameSite=Strict" + secure;
 			}
 
 			function readCookie(name) {

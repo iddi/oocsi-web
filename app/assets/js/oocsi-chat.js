@@ -318,16 +318,26 @@
             msgList.scrollTop = msgList.scrollHeight;
         }
 
+        function escapeHTML(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
         function renderJSON(obj) {
-            if (typeof obj !== 'object' || obj === null) return `<span class="oc-json-val">${String(obj)}</span>`;
+            if (typeof obj !== 'object' || obj === null) return `<span class="oc-json-val">${escapeHTML(String(obj))}</span>`;
             
             let html = '';
             for (let key in obj) {
                 const val = obj[key];
+                const safeKey = escapeHTML(key);
                 if (typeof val === 'object' && val !== null) {
-                    html += `<details open><summary>${key}</summary><div style="padding-left:10px">${renderJSON(val)}</div></details>`;
+                    html += `<details open><summary>${safeKey}</summary><div style="padding-left:10px">${renderJSON(val)}</div></details>`;
                 } else {
-                    html += `<div class="oc-json-kv"><span class="oc-json-key">${key}:</span> <span class="oc-json-val">${String(val)}</span></div>`;
+                    html += `<div class="oc-json-kv"><span class="oc-json-key">${safeKey}:</span> <span class="oc-json-val">${escapeHTML(String(val))}</span></div>`;
                 }
             }
             return html || '{}';
@@ -340,9 +350,8 @@
             const content = document.createElement('div');
             content.className = 'oc-json-tree';
             
-            // Initial summary using sender and simplified preview
-            const keys = Object.keys(data).join(', ');
-            content.innerHTML = `<details><summary>Raw Data [${sender}]</summary>${renderJSON(data)}</details>`;
+            const safeSender = escapeHTML(sender);
+            content.innerHTML = `<details><summary>Raw Data [${safeSender}]</summary>${renderJSON(data)}</details>`;
             
             div.appendChild(content);
 

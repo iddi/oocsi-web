@@ -38,21 +38,43 @@
 			var currentChannel = undefined;
 			function subscribe(channel) {
 				currentChannel = channel
-				eventLog.innerText = 'waiting for data...'
+				var eventLog = document.getElementById("eventLog");
+				if (eventLog) eventLog.innerText = 'waiting for data...'
 			}
 			function update(ev, id) {
 				let elem = document.getElementById("node_" + id)
-				elem.innerText = ev.data.value || (ev.data.state !== false ? "true" : "false")
+				if (elem) elem.innerText = ev.data.value || (ev.data.state !== false ? "true" : "false")
 				if(sl_data["sl_" + id] === undefined) {sl_data["sl_" + id] = [];}
 				while(sl_data["sl_" + id].length > 30) {sl_data["sl_" + id].shift();}
 				sl_data["sl_" + id].push(ev.data.value || (ev.data.state !== false? 1 : 0))
-				sparkline.sparkline(document.getElementById("sl_" + id), sl_data["sl_" + id])
+				let slElem = document.getElementById("sl_" + id);
+				if (slElem) sparkline.sparkline(slElem, sl_data["sl_" + id])
 
 				if(ev.recipient == currentChannel) {
-					eventLog.innerText = JSON.stringify(ev.data)
+					var eventLog = document.getElementById("eventLog");
+					if (eventLog) eventLog.innerText = JSON.stringify(ev.data)
 				}
 			}
 			var sl_data = {}
+
+			document.addEventListener("DOMContentLoaded", function() {
+				document.querySelectorAll('.subscribe-link').forEach(function(link) {
+					link.addEventListener('click', function(e) {
+						e.preventDefault();
+						subscribe(this.getAttribute('data-channel'));
+					});
+				});
+
+				document.querySelectorAll('.sparkline-node').forEach(function(node) {
+					var channel = node.getAttribute('data-channel');
+					var id = node.getAttribute('data-id');
+					if (channel && id) {
+						OOCSI.subscribe(channel, function(ev) {
+							update(ev, id);
+						});
+					}
+				});
+			});
 		</script>
     </head>
     <body>
@@ -87,14 +109,9 @@
 				        		</summary>
 				        		@for(comp <- od.components) {
 				        		<p class="entity">
-				        			@comp.toString() (<a href="#" onclick="subscribe('@comp.channel')">subscribe</a>) <br>
+				        			@comp.toString() (<a href="#" class="subscribe-link" data-channel="@comp.channel">subscribe</a>) <br>
 				        			<svg class="sparkline" id="sl_@comp.toString().hashCode()" width="200" height="24" stroke-width="2"></svg>
-				        			<span id="node_@comp.toString().hashCode()"></span>
-				        			<script type="text/javascript">
-				        				OOCSI.subscribe('@comp.channel', function(ev) {
-											update(ev, "@comp.toString().hashCode()")
-				        				})
-				        			</script>
+				        			<span class="sparkline-node" id="node_@comp.toString().hashCode()" data-channel="@comp.channel" data-id="@comp.toString().hashCode()"></span>
 				        		</p>
 				        		}
 				        	</details>

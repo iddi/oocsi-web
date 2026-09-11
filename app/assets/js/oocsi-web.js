@@ -2,12 +2,16 @@ var OOCSI = (function() {
 
   var wsUri = "ws://localhost/ws";
   var username;
-  var handlers = {};
-  var responders = {};
-  var calls = {};
+  var handlers = Object.create(null);
+  var responders = Object.create(null);
+  var calls = Object.create(null);
   var websocket;
   var logger = internalLog;
   var error = internalError;
+
+  function isDangerousKey(key) {
+    return key === '__proto__' || key === 'prototype' || key === 'constructor';
+  }
 
   function init() {
     logger("CONNECTING to "  + wsUri);
@@ -33,19 +37,22 @@ var OOCSI = (function() {
     if(evt.data !== 'ping') {
       try {
         var e = JSON.parse(evt.data);
-        if(e.data.hasOwnProperty('_MESSAGE_ID') && calls.hasOwnProperty(e.data['_MESSAGE_ID'])) {
-          var c = calls[e.data['_MESSAGE_ID']];
+        if(e && e.data && typeof e.data === 'object') {
+          var msgId = e.data['_MESSAGE_ID'];
+          if(msgId && calls[msgId] !== undefined) {
+            var c = calls[msgId];
 
-          if((+new Date) < c.expiration) {
-            delete e.data['_MESSAGE_ID'];
-            c.fn(e.data);
+            if((+new Date) < c.expiration) {
+              delete e.data['_MESSAGE_ID'];
+              c.fn(e.data);
+            }
+
+            delete calls[msgId];
+          } else if(e.recipient && !isDangerousKey(e.recipient) && handlers[e.recipient] !== undefined) {
+            handlers[e.recipient].forEach((fn) => { if (typeof fn === 'function') { fn(e); } });
+          } else {
+            logger('no handler for event: ' + evt.data);
           }
-
-          delete calls[e.data['_MESSAGE_ID']];
-        } else if(handlers[e.recipient] !== undefined) {
-          handlers[e.recipient].forEach((fn) => {fn(e)});
-        } else {
-          logger('no handler for event: ' + evt.data);
         }
       } catch(e) {
         logger('ERROR: parse exception for event data ' + evt.data);
@@ -95,8 +102,18 @@ var OOCSI = (function() {
     internalConnected() && submit('sendjson ' + client + ' '+ JSON.stringify(data));
   } 
 
+  function cleanupExpiredCalls() {
+    var now = +new Date();
+    for (var id in calls) {
+      if (calls[id] && now >= calls[id].expiration) {
+        delete calls[id];
+      }
+    }
+  }
+
   function internalCall(call, data, timeout, fn) {
     if(internalConnected()) {
+      cleanupExpiredCalls();
       var uuid = guid();
       calls[uuid] = {expiration: (+new Date) + timeout, fn: fn};
       data['_MESSAGE_ID'] = uuid;
@@ -106,7 +123,7 @@ var OOCSI = (function() {
   } 
 
   function internalRegister(call, fn) {
-    if(internalConnected()) {
+    if(internalConnected() && !isDangerousKey(call)) {
       responders[call] = {fn: fn};
       internalSubscribe(call, function(e) {
         var response = {'_MESSAGE_ID': e.data['_MESSAGE_ID']};
@@ -117,19 +134,26 @@ var OOCSI = (function() {
   }
 
   function internalSubscribe(channel, fn) {
+    if (!channel || isDangerousKey(channel)) {
+      return;
+    }
     if(internalConnected()) {
       submit('subscribe ' + channel);
       if(handlers[channel] === undefined) {
         handlers[channel] = [];
       }
-      handlers[channel].push(fn);
+      if (typeof fn === 'function' && handlers[channel].indexOf(fn) === -1) {
+        handlers[channel].push(fn);
+      }
     } 
   } 
 
   function internalUnsubscribe(channel) {
     if(internalConnected()) {
       submit('unsubscribe ' + channel);
-      handlers[channel] = [];
+      if (!isDangerousKey(channel)) {
+        handlers[channel] = [];
+      }
     }
   }
 
@@ -139,28 +163,53 @@ var OOCSI = (function() {
       init();
       // reconnect subscriptions
       waitForSocket(function() {
-        for (ch in handlers) {
-          submit('subscribe ' + ch);
+        for (var ch in handlers) {
+          if (!isDangerousKey(ch) && handlers[ch] && handlers[ch].length > 0) {
+            submit('subscribe ' + ch);
+          }
         }
       });
     }
   }
 
   function guid() {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID();
+    }
+    if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+      var buf = new Uint8Array(16);
+      crypto.getRandomValues(buf);
+      buf[6] = (buf[6] & 0x0f) | 0x40;
+      buf[8] = (buf[8] & 0x3f) | 0x80;
+      var hex = Array.from(buf, function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+      return hex.substring(0, 8) + '-' + hex.substring(8, 12) + '-' + hex.substring(12, 16) + '-' + hex.substring(16, 20) + '-' + hex.substring(20);
+    }
     function s4() {
       return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
     }
-      return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
   }
 
   return {
     connect: function(server, clientName, fn) {
       wsUri = server;
       username = clientName && clientName.length > 0 ? clientName : "webclient_####";
-      username = username.replace(/#/g, () => Math.floor(Math.random() * 10));
-      handlers[username] = [fn];
+      username = username.replace(/#/g, function() {
+        if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+          var buf = new Uint8Array(1);
+          crypto.getRandomValues(buf);
+          return (buf[0] % 10).toString();
+        }
+        return Math.floor(Math.random() * 10).toString();
+      });
+      if (fn && typeof fn === 'function') {
+        handlers[username] = [fn];
+      } else {
+        handlers[username] = [];
+      }
       init();
       setInterval(internalReconnect, 1000);
+      setInterval(cleanupExpiredCalls, 10000);
     },
     send: function(recipient, data) {
       waitForSocket(function() {
