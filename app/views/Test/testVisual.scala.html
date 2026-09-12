@@ -58,11 +58,17 @@
 	// --------------------------------------------------------------------
 	// connect to OOCSI server running on IP
 	OOCSI.connect((window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws', 'OOCSI/test/visual_####', function(e) {
-			$('#c2_results').append('<p>' + JSON.stringify(e.data) + '</p>');
+			$('#c2_results').append($('<p>').text(JSON.stringify(e.data)));
 	});
 
 	setTimeout(function(){
-		clientName.innerHTML = ", connected as <code>" + OOCSI.handle() + "</code>"
+		var clientSpan = document.getElementById('clientName');
+		if (clientSpan) {
+			clientSpan.textContent = ', connected as ';
+			var codeNode = document.createElement('code');
+			codeNode.textContent = OOCSI.handle();
+			clientSpan.appendChild(codeNode);
+		}
 		let subscription = readCookie('subscription');
 		if(subscription && subscription.length > 0) {
 			$('#c1_channel').val(subscription)
@@ -77,7 +83,7 @@
 
 		createCookie('subscription', channelName);
 		OOCSI.subscribe(channelName, function(e) {
-			$('#c1_results').append('<p>' + JSON.stringify(e.data) + '</p>');
+			$('#c1_results').append($('<p>').text(JSON.stringify(e.data)));
 		});
 		return false;
 	});

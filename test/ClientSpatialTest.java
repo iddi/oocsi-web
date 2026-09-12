@@ -422,12 +422,13 @@ public class ClientSpatialTest extends ClientTestBase {
 			OOCSISpatial.createSpatial(client2, "spatialChannel", "integer_distance", 9, 2);
 		}
 
-		Thread.sleep(150);
+		Thread.sleep(500);
 
 		// send a message to all neighbors (two hops)
 		assertEquals("os2_rt_4", os1.routing("os2_rt_8"));
 
 		clients.get("os2_rt_4").disconnect();
+		Thread.sleep(500);
 
 		// send a message to all neighbors (two hops)
 		assertEquals("os2_rt_5", os1.routing("os2_rt_8"));

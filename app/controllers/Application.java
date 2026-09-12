@@ -393,7 +393,7 @@ public class Application extends Controller {
 		// extract user id if provided
 		String userId = extractUserId(request);
 
-		if (channel == null || channel.trim().length() == 0) {
+		if (channel == null || channel.trim().length() == 0 || !Server.isValidChannelName(channel.trim())) {
 			return badRequest("ERROR: channel missing");
 		} else if (Server.RESERVED_NAMES.contains(channel.trim())) {
 			return badRequest("ERROR: reserved channel name");
@@ -426,7 +426,7 @@ public class Application extends Controller {
 		// extract user id if provided
 		String userId = extractUserId(request);
 
-		if (channel == null || channel.trim().length() == 0) {
+		if (channel == null || channel.trim().length() == 0 || !Server.isValidChannelName(channel.trim())) {
 			return badRequest(views.html.Application.sendAndClose.render());
 		} else if (Server.RESERVED_NAMES.contains(channel.trim())) {
 			return badRequest(views.html.Application.sendAndClose.render());
@@ -458,7 +458,7 @@ public class Application extends Controller {
 		// extract user id if provided
 		String userId = extractUserId(request);
 
-		if (channel == null || channel.trim().length() == 0) {
+		if (channel == null || channel.trim().length() == 0 || !Server.isValidChannelName(channel.trim())) {
 			return badRequest("ERROR: channel missing");
 		} else if (Server.RESERVED_NAMES.contains(channel.trim())) {
 			return badRequest("ERROR: reserved channel name");
@@ -494,7 +494,7 @@ public class Application extends Controller {
 		String userId = extractUserId(request);
 
 		// // check channel available
-		if (channel == null || channel.trim().isEmpty()) {
+		if (channel == null || channel.trim().isEmpty() || !Server.isValidChannelName(channel.trim())) {
 			return badRequest("ERROR: channel missing");
 		} else if (Server.RESERVED_NAMES.contains(channel.trim())) {
 			return badRequest("ERROR: reserved channel name");
@@ -541,10 +541,10 @@ public class Application extends Controller {
 	 * @return
 	 */
 	private Result internalSend(String sender, String channel, String userId, Map<String, String> messageData) {
-		if (channel != null && Server.RESERVED_NAMES.contains(channel.trim())) {
+		if (channel != null && (!Server.isValidChannelName(channel.trim()) || Server.RESERVED_NAMES.contains(channel.trim()))) {
 			return badRequest("ERROR: reserved channel name");
 		}
-		if (sender != null && Server.RESERVED_NAMES.contains(sender.trim())) {
+		if (sender != null && (!Server.isValidClientName(sender.trim()) || Server.RESERVED_NAMES.contains(sender.trim()))) {
 			return badRequest("ERROR: reserved sender name");
 		}
 
@@ -675,9 +675,18 @@ public class Application extends Controller {
 		final EventSource.Event empty = new EventSource.Event(null, null, null);
 
 		String decodedChannelName = channelName;
-		if (decodedChannelName == null || !decodedChannelName.matches("^[a-zA-Z0-9_\\-.:/?!@#]+$")) {
+		try {
+			if (decodedChannelName != null) {
+				decodedChannelName = java.net.URLDecoder.decode(decodedChannelName, java.nio.charset.StandardCharsets.UTF_8.name());
+			}
+		} catch (Exception ignored) {
+		}
+
+		if (decodedChannelName == null || !Server.isValidSubscription(decodedChannelName)) {
 			return badRequest("Invalid channel name");
 		}
+
+		final String validChannelName = decodedChannelName;
 
 		// compose flow with a special OOCSI client
 		final SSEChannelClient channelClient = new SSEChannelClient("Events-" + UUID.randomUUID().toString());
@@ -693,7 +702,7 @@ public class Application extends Controller {
 					return empty;
 				}).filter(event -> event != empty).watchTermination((prevMatValue, completionStage) -> {
 					completionStage.whenComplete((done, exc) -> {
-						server.unsubscribe(channelClient, decodedChannelName);
+						server.unsubscribe(channelClient, validChannelName);
 						server.removeClient(channelClient);
 					});
 					return prevMatValue;
@@ -701,7 +710,7 @@ public class Application extends Controller {
 
 		// connect client
 		server.addClient(channelClient);
-		server.subscribe(channelClient, decodedChannelName);
+		server.subscribe(channelClient, validChannelName);
 
 		// return response with flow management
 		return ok().chunked(eventSource.via(EventSource.flow())).as(Http.MimeTypes.EVENT_STREAM);

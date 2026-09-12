@@ -16,6 +16,7 @@ import model.actors.WebSocketClientActor;
 import nl.tue.id.oocsi.server.OOCSIServer;
 import nl.tue.id.oocsi.server.model.Channel;
 import nl.tue.id.oocsi.server.model.Client;
+import nl.tue.id.oocsi.server.model.Server;
 import nl.tue.id.oocsi.server.protocol.Message;
 import nl.tue.id.oocsi.server.protocol.Protocol;
 import play.libs.Json;
@@ -87,23 +88,29 @@ public class WebSocketClient extends Client {
 			if (tokens.length == 3) {
 				String recipient = tokens[1];
 				String data = tokens[2];
-				Channel c = server.getChannel(recipient);
-				if (c != null) {
-					Map<String, Object> map = Protocol.parseJSONMessage(data);
-					c.send(new Message(token, recipient, new Date(), map));
+				if (Server.isValidChannelName(recipient)) {
+					Channel c = server.getChannel(recipient);
+					if (c != null) {
+						Map<String, Object> map = Protocol.parseJSONMessage(data);
+						c.send(new Message(token, recipient, new Date(), map));
+					}
 				}
 			}
 		} else if (inputLine.startsWith("subscribe")) {
 			String[] tokens = inputLine.split(" ", 2);
 			if (tokens.length == 2) {
 				String channel = tokens[1];
-				server.subscribe(this, channel);
+				if (Server.isValidSubscription(channel)) {
+					server.subscribe(this, channel);
+				}
 			}
 		} else if (inputLine.startsWith("unsubscribe")) {
 			String[] tokens = inputLine.split(" ", 2);
 			if (tokens.length == 2) {
 				String channel = tokens[1];
-				server.unsubscribe(this, channel);
+				if (Server.isValidSubscription(channel)) {
+					server.unsubscribe(this, channel);
+				}
 			}
 		} else {
 			// ignore all other messages, do nothing

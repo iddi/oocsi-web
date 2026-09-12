@@ -12,6 +12,7 @@ import com.google.inject.Inject;
 
 import model.clients.WebSocketClient;
 import nl.tue.id.oocsi.server.OOCSIServer;
+import nl.tue.id.oocsi.server.model.Server;
 import play.libs.Json;
 
 public class WebSocketClientActor extends AbstractActor {
@@ -52,25 +53,17 @@ public class WebSocketClientActor extends AbstractActor {
 				// remove any whitespace at begin and end
 				clientName = clientName.trim();
 
-				// check input line for exceptional values that cannot be handled safely
-				// do some filtering for SSH clients connecting and other abuse
-				if (clientName.length() > 200) {
-					OOCSIServer.log("Killed client connection for [length]: " + clientName);
-					clientName = "webclient_####";
-				}
-				if (!clientName.matches("\\p{ASCII}+$")) {
-					OOCSIServer.log("Killed client connection for [non-ASCII chars]: " + clientName);
-					clientName = "webclient_####";
-				}
-				if (clientName.matches(".*\\s.*")) {
-					OOCSIServer.log("Killed client connection because client name contains whitespace characters: "
-							+ clientName);
-					clientName = "webclient_####";
-				}
-
 				// check input line for workable deviations from protocol
 				// remove starting or trailing slashes
 				clientName = clientName.replaceAll("^/|/$", "");
+
+				// check input line for exceptional values that cannot be handled safely
+				// do some filtering for SSH clients connecting, invalid names, and other abuse
+				if (clientName.length() == 0 || !Server.isValidClientName(clientName)
+						|| clientName.contains("OpenSSH") || clientName.contains("libssh")) {
+					OOCSIServer.log("Sanitized invalid client connection handle: " + clientName);
+					clientName = "webclient_####";
+				}
 
 				// if there are one or more hashes in the inputLine, we need to generate a client name
 				for (int i = 0; i < 20 && clientName.contains("#"); i++) {
