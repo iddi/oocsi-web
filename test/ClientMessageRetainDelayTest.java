@@ -212,4 +212,69 @@ public class ClientMessageRetainDelayTest extends ClientTestBase {
 		o2.disconnect();
 	}
 
+	@Test
+	public void testRetainedMessageNotErasedByNormalMessageAndExplicitClear() throws InterruptedException {
+		final List<String> listC = new Vector<String>();
+		final List<String> listD = new Vector<String>();
+
+		OOCSIClient o1a = new OOCSIClient("test_message_retain_pa");
+		o1a.connect("localhost", 4444);
+		assertTrue(o1a.isConnected());
+
+		OOCSIClient o1b = new OOCSIClient("test_message_retain_pb");
+		o1b.connect("localhost", 4444);
+		assertTrue(o1b.isConnected());
+		o1b.subscribe("channel_retain_persist", new DataHandler() {
+			public void receive(String sender, Map<String, Object> data, long timestamp) {
+			}
+		});
+		Thread.sleep(200);
+
+		// Send retained message
+		new OOCSIMessage(o1a, "channel_retain_persist").data("_RETAIN", 60).data("msg", "retained_val").send();
+		Thread.sleep(200);
+
+		// Send ordinary message without _RETAIN (should NOT wipe retainedMessage)
+		new OOCSIMessage(o1a, "channel_retain_persist").data("msg", "normal_val").send();
+		Thread.sleep(200);
+
+		// Connect new subscriber C
+		OOCSIClient o1c = new OOCSIClient("test_message_retain_pc");
+		o1c.connect("localhost", 4444);
+		assertTrue(o1c.isConnected());
+		o1c.subscribe("channel_retain_persist", new DataHandler() {
+			public void receive(String sender, Map<String, Object> data, long timestamp) {
+				listC.add(data.toString());
+			}
+		});
+		Thread.sleep(200);
+
+		// Verify C received the retained message
+		assertEquals(1, listC.size());
+		assertTrue(listC.get(0).contains("retained_val"));
+
+		// Explicitly clear retained message with _RETAIN: 0
+		new OOCSIMessage(o1a, "channel_retain_persist").data("_RETAIN", 0).send();
+		Thread.sleep(200);
+
+		// Connect new subscriber D
+		OOCSIClient o1d = new OOCSIClient("test_message_retain_pd");
+		o1d.connect("localhost", 4444);
+		assertTrue(o1d.isConnected());
+		o1d.subscribe("channel_retain_persist", new DataHandler() {
+			public void receive(String sender, Map<String, Object> data, long timestamp) {
+				listD.add(data.toString());
+			}
+		});
+		Thread.sleep(200);
+
+		// Verify D received no retained message
+		assertEquals(0, listD.size());
+
+		o1a.disconnect();
+		o1b.disconnect();
+		o1c.disconnect();
+		o1d.disconnect();
+	}
+
 }
