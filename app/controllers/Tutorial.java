@@ -4,6 +4,7 @@ import org.apache.pekko.actor.ActorSystem;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.typesafe.config.Config;
 
 import model.clients.EchoClient;
 import model.clients.HTTPRequestClient;
@@ -23,7 +24,7 @@ public class Tutorial extends Controller {
 	private Environment environment;
 
 	@Inject
-	public Tutorial(Environment environment, OOCSIServer server, ActorSystem system, ExecutionContext ectx,
+	public Tutorial(Environment environment, Config configuration, OOCSIServer server, ActorSystem system, ExecutionContext ectx,
 			WSClient wsClient, HeyOOCSIClient heyOOCSIClient) {
 		this.environment = environment;
 
@@ -31,7 +32,9 @@ public class Tutorial extends Controller {
 		new EchoClient("echo", server);
 
 		// start HTTP request client, inject ws client
-		new HTTPRequestClient("http-web-request", server, wsClient);
+		boolean followRedirects = !configuration.hasPath("oocsi.httpclient.followRedirects")
+				|| configuration.getBoolean("oocsi.httpclient.followRedirects");
+		new HTTPRequestClient("http-web-request", server, wsClient, followRedirects);
 
 		// start generators
 		new TestChannelGenerator(server, system, ectx);

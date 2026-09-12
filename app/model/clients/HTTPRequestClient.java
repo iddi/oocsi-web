@@ -12,6 +12,7 @@ import nl.tue.id.oocsi.client.services.OOCSICall;
 import nl.tue.id.oocsi.server.OOCSIServer;
 import nl.tue.id.oocsi.server.model.Channel;
 import nl.tue.id.oocsi.server.model.Client;
+import nl.tue.id.oocsi.server.model.Server;
 import nl.tue.id.oocsi.server.protocol.Message;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
@@ -23,16 +24,32 @@ public class HTTPRequestClient extends Client {
 
 	private static final Logger logger = LoggerFactory.getLogger(HTTPRequestClient.class);
 
-	private OOCSIServer server;
+	private Server server;
 	private WSClient wsClient;
+	private boolean followRedirects = true;
 	private long lastExternalRequest = System.currentTimeMillis();
 
-	public HTTPRequestClient(String token, OOCSIServer server, WSClient wsClient) {
-		super(token, server.getChangeListener());
+	public HTTPRequestClient(String token, Server server, WSClient wsClient) {
+		this(token, server, wsClient, true);
+	}
+
+	public HTTPRequestClient(String token, Server server, WSClient wsClient, boolean followRedirects) {
+		super(token, server != null ? server.getChangeListener() : null);
 
 		this.server = server;
 		this.wsClient = wsClient;
-		server.addClient(this);
+		this.followRedirects = followRedirects;
+		if (server != null) {
+			server.addClient(this);
+		}
+	}
+
+	public boolean isFollowRedirects() {
+		return followRedirects;
+	}
+
+	public void setFollowRedirects(boolean followRedirects) {
+		this.followRedirects = followRedirects;
 	}
 
 	@Override
@@ -194,7 +211,7 @@ public class HTTPRequestClient extends Client {
 		logger.info("Calling http-web-request for URL " + url + " with method " + method + " for " + channel + " by "
 				+ event.getSender());
 		try {
-			WSRequest request = wsClient.url(url).setRequestTimeout(Duration.ofSeconds(5));
+			WSRequest request = wsClient.url(url).setFollowRedirects(followRedirects).setRequestTimeout(Duration.ofSeconds(5));
 			final CompletionStage<WSResponse> wsResponse;
 			if (method.equals("post")) {
 				if (!postBody.isEmpty()) {

@@ -254,6 +254,14 @@ public class OpenIssuesRegressionTest {
 				HTTPRequestClient.isSafeUrl("file:///etc/passwd"));
 		assertFalse("GOPHER scheme must be blocked",
 				HTTPRequestClient.isSafeUrl("gopher://example.com/"));
+
+		// Test redirect configuration
+		HTTPRequestClient defaultClient = new HTTPRequestClient("http-test-default", server, null);
+		assertTrue("Default followRedirects should be true", defaultClient.isFollowRedirects());
+		HTTPRequestClient noRedirectClient = new HTTPRequestClient("http-test-noredirect", server, null, false);
+		assertFalse("Explicit followRedirects should be false", noRedirectClient.isFollowRedirects());
+		defaultClient.setFollowRedirects(false);
+		assertFalse("Setter should update followRedirects", defaultClient.isFollowRedirects());
 	}
 
 	/**
