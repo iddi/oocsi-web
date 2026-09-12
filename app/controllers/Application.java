@@ -34,8 +34,8 @@ import com.google.inject.Singleton;
 import com.typesafe.config.Config;
 
 import io.github.bucket4j.Bandwidth;
+import io.github.bucket4j.BandwidthBuilder;
 import io.github.bucket4j.Bucket;
-import io.github.bucket4j.Refill;
 import model.actors.SSEChannelClient;
 import model.actors.ServiceClientActor;
 import model.actors.WebSocketClientActor;
@@ -131,8 +131,10 @@ public class Application extends Controller {
 		}
 		String clientIp = request.remoteAddress();
 		Bucket bucket = rateLimitBuckets.computeIfAbsent(clientIp, k -> {
-			Refill refill = Refill.greedy(rateLimitRefillTokens, Duration.ofSeconds(rateLimitRefillDuration));
-			Bandwidth limit = Bandwidth.classic(rateLimitCapacity, refill);
+			Bandwidth limit = BandwidthBuilder.builder()
+					.capacity(rateLimitCapacity)
+					.refillGreedy(rateLimitRefillTokens, Duration.ofSeconds(rateLimitRefillDuration))
+					.build();
 			return Bucket.builder().addLimit(limit).build();
 		});
 		return !bucket.tryConsume(1);
