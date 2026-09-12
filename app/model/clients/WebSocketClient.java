@@ -23,7 +23,6 @@ import play.libs.Json;
 public class WebSocketClient extends Client {
 
 	private final ObjectMapper JSON_OBJECT_MAPPER;
-//	private static final Logger logger = LoggerFactory.getLogger(WebSocketClient.class);
 
 	private OOCSIServer server;
 	private WebSocketClientActor output;
@@ -36,8 +35,8 @@ public class WebSocketClient extends Client {
 		this.output = out;
 
 		this.JSON_OBJECT_MAPPER = JsonMapper.builder().configure(MapperFeature.SORT_CREATOR_PROPERTIES_FIRST, false)
-		        .configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true)
-		        .configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true).build();
+				.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true)
+				.configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true).build();
 	}
 
 	/*

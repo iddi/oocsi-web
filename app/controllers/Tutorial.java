@@ -24,7 +24,7 @@ public class Tutorial extends Controller {
 
 	@Inject
 	public Tutorial(Environment environment, OOCSIServer server, ActorSystem system, ExecutionContext ectx,
-	        WSClient wsClient, HeyOOCSIClient heyOOCSIClient) {
+			WSClient wsClient, HeyOOCSIClient heyOOCSIClient) {
 		this.environment = environment;
 
 		// start client

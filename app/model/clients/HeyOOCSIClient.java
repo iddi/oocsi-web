@@ -99,9 +99,9 @@ public class HeyOOCSIClient extends Client {
 							if (e.getValue().isArray()) {
 								Float[] locationComponents = new Float[2];
 								locationComponents[0] = Float
-								        .valueOf((float) ((ArrayNode) e.getValue()).get(0).asDouble());
+										.valueOf((float) ((ArrayNode) e.getValue()).get(0).asDouble());
 								locationComponents[1] = Float
-								        .valueOf((float) ((ArrayNode) e.getValue()).get(1).asDouble());
+										.valueOf((float) ((ArrayNode) e.getValue()).get(1).asDouble());
 								od.locations.put(e.getKey(), locationComponents);
 							}
 						});
@@ -126,15 +126,15 @@ public class HeyOOCSIClient extends Client {
 					Client c = server.getClient(event.getSender());
 					if (c != null) {
 						c.send(new Message(token, event.getSender()).addData("clientHandle", clientHandle)
-						        .addData("location", od.serializeLocations())
-						        .addData("components", od.serializeComponents())
-						        .addData("properties", od.serializeProperties()));
+								.addData("location", od.serializeLocations())
+								.addData("components", od.serializeComponents())
+								.addData("properties", od.serializeProperties()));
 					}
 
 					return true;
 				}
 			} else if (event.data.containsKey("x") && event.data.containsKey("y")
-			        && event.data.containsKey("distance")) {
+					&& event.data.containsKey("distance")) {
 				try {
 					final float x = ((Number) event.data.get("x")).floatValue();
 					final float y = ((Number) event.data.get("y")).floatValue();
@@ -162,13 +162,13 @@ public class HeyOOCSIClient extends Client {
 
 					// create sorted list of clients, potentially truncated by "closest"
 					List<String> cns = clientNames.entrySet().stream().sorted(Map.Entry.comparingByKey()).limit(closest)
-					        .map(e -> e.getValue()).collect(Collectors.toList());
+							.map(e -> e.getValue()).collect(Collectors.toList());
 
 					// assemble the clients within distance from reference point and send back
 					Client c = server.getClient(event.getSender());
 					if (c != null) {
 						c.send(new Message(token, event.getSender()).addData("x", x).addData("y", y)
-						        .addData("distance", distance).addData("clients", cns.toArray(new String[] {})));
+								.addData("distance", distance).addData("clients", cns.toArray(new String[] {})));
 					}
 				} catch (NumberFormatException | ClassCastException e) {
 					// could not parse the coordinates or distance, do nothing
@@ -191,7 +191,7 @@ public class HeyOOCSIClient extends Client {
 				Client c = server.getClient(event.getSender());
 				if (c != null) {
 					c.send(new Message(token, event.getSender()).addData("location", location).addData("clients",
-					        clientNames.toArray(new String[] {})));
+							clientNames.toArray(new String[] {})));
 				}
 
 				return true;
@@ -208,9 +208,9 @@ public class HeyOOCSIClient extends Client {
 	private void purgeStaleClients() {
 		synchronized (clients) {
 			clients = clients.values().stream()
-			        .filter(od -> this.server.getClients().stream().anyMatch(c -> c.getName().equals(od.deviceId))
-			                || !od.purgeable())
-			        .collect(Collectors.toMap(od -> od.name, od -> od));
+					.filter(od -> this.server.getClients().stream().anyMatch(c -> c.getName().equals(od.deviceId))
+							|| !od.purgeable())
+					.collect(Collectors.toMap(od -> od.name, od -> od));
 		}
 	}
 
@@ -224,7 +224,7 @@ public class HeyOOCSIClient extends Client {
 
 		Multimap<String, OOCSIDevice> locationsMappedDevices = MultimapBuilder.hashKeys().linkedListValues().build();
 		clients.values().stream().forEach(
-		        od -> od.locations.entrySet().stream().forEach(loc -> locationsMappedDevices.put(loc.getKey(), od)));
+				od -> od.locations.entrySet().stream().forEach(loc -> locationsMappedDevices.put(loc.getKey(), od)));
 		return locationsMappedDevices;
 	}
 

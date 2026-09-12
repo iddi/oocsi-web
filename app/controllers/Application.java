@@ -83,8 +83,8 @@ public class Application extends Controller {
 
 	@Inject
 	public Application(ActorSystem as, Materializer m, ApplicationLifecycle lifecycle, ExecutionContext ec,
-	        FormFactory f, Environment env, OOCSIServer server, HeyOOCSIClient heyOOCSIClient, Config configuration,
-	        SummarizingLogger sl) {
+			FormFactory f, Environment env, OOCSIServer server, HeyOOCSIClient heyOOCSIClient, Config configuration,
+			SummarizingLogger sl) {
 
 		this.system = as;
 		this.materializer = m;
@@ -104,13 +104,16 @@ public class Application extends Controller {
 
 		// configure rate limiting
 		this.rateLimitEnabled = !configuration.hasPath("oocsi.ratelimit.enabled")
-		        || configuration.getBoolean("oocsi.ratelimit.enabled");
+				|| configuration.getBoolean("oocsi.ratelimit.enabled");
 		this.rateLimitCapacity = configuration.hasPath("oocsi.ratelimit.capacity")
-		        ? configuration.getLong("oocsi.ratelimit.capacity") : 120;
+				? configuration.getLong("oocsi.ratelimit.capacity")
+				: 300;
 		this.rateLimitRefillTokens = configuration.hasPath("oocsi.ratelimit.refillTokens")
-		        ? configuration.getLong("oocsi.ratelimit.refillTokens") : 120;
+				? configuration.getLong("oocsi.ratelimit.refillTokens")
+				: 300;
 		this.rateLimitRefillDuration = configuration.hasPath("oocsi.ratelimit.refillDurationSeconds")
-		        ? configuration.getLong("oocsi.ratelimit.refillDurationSeconds") : 60;
+				? configuration.getLong("oocsi.ratelimit.refillDurationSeconds")
+				: 60;
 
 		// trigger the log summary every minute
 		as.scheduler().scheduleAtFixedRate(Duration.ofMinutes(1), Duration.ofMinutes(1), () -> {
@@ -131,10 +134,8 @@ public class Application extends Controller {
 		}
 		String clientIp = request.remoteAddress();
 		Bucket bucket = rateLimitBuckets.computeIfAbsent(clientIp, k -> {
-			Bandwidth limit = BandwidthBuilder.builder()
-					.capacity(rateLimitCapacity)
-					.refillGreedy(rateLimitRefillTokens, Duration.ofSeconds(rateLimitRefillDuration))
-					.build();
+			Bandwidth limit = BandwidthBuilder.builder().capacity(rateLimitCapacity)
+					.refillGreedy(rateLimitRefillTokens, Duration.ofSeconds(rateLimitRefillDuration)).build();
 			return Bucket.builder().addLimit(limit).build();
 		});
 		return !bucket.tryConsume(1);
@@ -154,7 +155,7 @@ public class Application extends Controller {
 	 */
 	public Result index(Request request) {
 		String channels = server.getChannelList().replace("OOCSI_connections,", "").replace("OOCSI_clients,", "")
-		        .replace("OOCSI_events,", "").replace("OOCSI_metrics,", "");
+				.replace("OOCSI_events,", "").replace("OOCSI_metrics,", "");
 		if (channels.length() > 160) {
 			channels = channels.substring(0, 160) + "...";
 		}
@@ -228,7 +229,7 @@ public class Application extends Controller {
 						String targetChannelName = c1.getName();
 						// don't allow for private nodes and node names with a space
 						if (!c1.isPrivate() && !targetChannelName.startsWith("OOCSI_")
-						        && !targetChannelName.contains(" ")) {
+								&& !targetChannelName.contains(" ")) {
 							ObjectNode link1 = Json.newObject();
 							link1.put("source", channelName);
 							link1.put("target", targetChannelName);
@@ -333,7 +334,7 @@ public class Application extends Controller {
 	 */
 	public WebSocket ws() {
 		return WebSocket.Text.accept(
-		        request -> ActorFlow.actorRef(out -> WebSocketClientActor.props(out, server), system, materializer));
+				request -> ActorFlow.actorRef(out -> WebSocketClientActor.props(out, server), system, materializer));
 	}
 
 	/**
@@ -497,7 +498,7 @@ public class Application extends Controller {
 			}
 
 			return internalSend(sender, channel, userId, dynamicForm.rawData())
-			        .withCookies(createUserIdCookie(request, userId));
+					.withCookies(createUserIdCookie(request, userId));
 		}
 
 	}
@@ -533,7 +534,7 @@ public class Application extends Controller {
 			// fill message
 			for (String key : messageData.keySet()) {
 				if (!key.equals("sender") && !key.equals("channel") && !key.equals("recipient")
-				        && !key.equals("timestamp") && !key.equals("") && !key.equals("userId")) {
+						&& !key.equals("timestamp") && !key.equals("") && !key.equals("userId")) {
 					message.addData(key, messageData.get(key));
 				}
 			}
@@ -567,7 +568,7 @@ public class Application extends Controller {
 	 */
 	private Cookie createUserIdCookie(Request request, String userId) {
 		return new Cookie("userId", userId, 24 * 3600, "/",
-		        (request.host().startsWith("localhost") ? null : request.host()), request.secure(), true, SameSite.LAX);
+				(request.host().startsWith("localhost") ? null : request.host()), request.secure(), true, SameSite.LAX);
 	}
 
 	// ----------------------------------------------------------------------------------------------------------------
@@ -636,22 +637,22 @@ public class Application extends Controller {
 		// compose flow with a special OOCSI client
 		final SSEChannelClient channelClient = new SSEChannelClient("Events-" + UUID.randomUUID().toString());
 		Source<EventSource.Event, Cancellable> eventSource = Source.tick(Duration.ZERO, Duration.ofMillis(100), "")
-		        .map(tick -> {
-			        if (!channelClient.isEmpty()) {
-				        // ensure that the client stay live
-				        channelClient.touch();
-				        // don't use .withName here because that would complicate the EventSource subscription on the
-				        // client
-				        return EventSource.Event.event(channelClient.poll());
-			        }
-			        return empty;
-		        }).filter(event -> event != empty).watchTermination((prevMatValue, completionStage) -> {
-			        completionStage.whenComplete((done, exc) -> {
-				        server.unsubscribe(channelClient, decodedChannelName);
-				        server.removeClient(channelClient);
-			        });
-			        return prevMatValue;
-		        });
+				.map(tick -> {
+					if (!channelClient.isEmpty()) {
+						// ensure that the client stay live
+						channelClient.touch();
+						// don't use .withName here because that would complicate the EventSource subscription on the
+						// client
+						return EventSource.Event.event(channelClient.poll());
+					}
+					return empty;
+				}).filter(event -> event != empty).watchTermination((prevMatValue, completionStage) -> {
+					completionStage.whenComplete((done, exc) -> {
+						server.unsubscribe(channelClient, decodedChannelName);
+						server.removeClient(channelClient);
+					});
+					return prevMatValue;
+				});
 
 		// connect client
 		server.addClient(channelClient);
@@ -674,38 +675,38 @@ public class Application extends Controller {
 	private CompletionStage<Result> internalServiceCall(String service, String call, String data) {
 		final ActorRef a = system.actorOf(ServiceClientActor.props(server));
 		CompletionStage<Result> prom = FutureConverters
-		        .asJava(ask(a, new ServiceClientActor.ServiceRequest(service, call, data), 5000))
-		        .thenApply(response -> {
+				.asJava(ask(a, new ServiceClientActor.ServiceRequest(service, call, data), 5000))
+				.thenApply(response -> {
 
-			        // kill actor
-			        a.tell(PoisonPill.getInstance(), a);
+					// kill actor
+					a.tell(PoisonPill.getInstance(), a);
 
-			        if (response == null) {
-				        return noContent();
-			        } else {
-				        Map<String, Object> messageData = ((Message) response).data;
-				        if (messageData.containsKey("html"))
-					        return ok((String) messageData.get("html")).as("text/html")
-					                .withHeader("Access-Control-Allow-Origin", "*")
-					                .withHeader("Access-Control-Allow-Headers", "X-Requested-With")
-					                .withHeader("Access-Control-Allow-Headers", "Content-Type")
-					                .withHeader("Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS");
-				        else if (messageData.containsKey("text"))
-					        return ok((String) messageData.get("text")).as("text/plain");
-				        else if (messageData.containsKey("json"))
-					        return ok((String) messageData.get("json")).as("text/json");
-				        else if (messageData.containsKey("csv"))
-					        return ok((String) messageData.get("csv")).as("text/csv");
-				        else
-					        return ok();
-			        }
-		        }).exceptionally(e -> {
+					if (response == null) {
+						return noContent();
+					} else {
+						Map<String, Object> messageData = ((Message) response).data;
+						if (messageData.containsKey("html"))
+							return ok((String) messageData.get("html")).as("text/html")
+									.withHeader("Access-Control-Allow-Origin", "*")
+									.withHeader("Access-Control-Allow-Headers", "X-Requested-With")
+									.withHeader("Access-Control-Allow-Headers", "Content-Type")
+									.withHeader("Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS");
+						else if (messageData.containsKey("text"))
+							return ok((String) messageData.get("text")).as("text/plain");
+						else if (messageData.containsKey("json"))
+							return ok((String) messageData.get("json")).as("text/json");
+						else if (messageData.containsKey("csv"))
+							return ok((String) messageData.get("csv")).as("text/csv");
+						else
+							return ok();
+					}
+				}).exceptionally(e -> {
 
-			        // kill actor
-			        a.tell(PoisonPill.getInstance(), a);
+					// kill actor
+					a.tell(PoisonPill.getInstance(), a);
 
-			        return notFound(service + " not found");
-		        });
+					return notFound(service + " not found");
+				});
 		return prom;
 	}
 }

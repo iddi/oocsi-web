@@ -73,14 +73,14 @@ public class HTTPRequestClient extends Client {
 			}
 			host = host.trim().toLowerCase();
 			if (host.equals("localhost") || host.endsWith(".localhost") || host.endsWith(".local")
-			        || host.endsWith(".internal")) {
+					|| host.endsWith(".internal")) {
 				return false;
 			}
 
 			InetAddress[] addresses = InetAddress.getAllByName(host);
 			for (InetAddress addr : addresses) {
 				if (addr.isAnyLocalAddress() || addr.isLoopbackAddress() || addr.isLinkLocalAddress()
-				        || addr.isSiteLocalAddress() || addr.isMulticastAddress()) {
+						|| addr.isSiteLocalAddress() || addr.isMulticastAddress()) {
 					return false;
 				}
 				byte[] bytes = addr.getAddress();
@@ -117,7 +117,7 @@ public class HTTPRequestClient extends Client {
 						int b0 = bytes[12] & 0xFF;
 						int b1 = bytes[13] & 0xFF;
 						if (b0 == 0 || b0 == 10 || b0 == 127 || (b0 == 169 && b1 == 254)
-						        || (b0 == 172 && (b1 >= 16 && b1 <= 31)) || (b0 == 192 && b1 == 168)) {
+								|| (b0 == 172 && (b1 >= 16 && b1 <= 31)) || (b0 == 192 && b1 == 168)) {
 							return false;
 						}
 					}
@@ -188,7 +188,7 @@ public class HTTPRequestClient extends Client {
 
 		// log and make the call
 		logger.info("Calling http-web-request for URL " + url + " with method " + method + " for " + channel + " by "
-		        + event.getSender());
+				+ event.getSender());
 		try {
 			WSRequest request = wsClient.url(url).setRequestTimeout(Duration.ofSeconds(5));
 			final CompletionStage<WSResponse> wsResponse;
@@ -226,14 +226,14 @@ public class HTTPRequestClient extends Client {
 				}
 			}).exceptionally(e -> {
 				logger.error("Problem calling http-web-request for URL " + url + " with method " + method + " for "
-				        + channel + " by " + event.getSender() + ": " + e.getLocalizedMessage());
+						+ channel + " by " + event.getSender() + ": " + e.getLocalizedMessage());
 				return null;
 			});
 
 			return true;
 		} catch (Exception e) {
 			logger.error("Problem calling http-web-request for URL " + url + " with method " + method + " for "
-			        + channel + " by " + event.getSender() + ": " + e.getLocalizedMessage());
+					+ channel + " by " + event.getSender() + ": " + e.getLocalizedMessage());
 			if (!validate(event.getRecipient())) {
 				return false;
 			}

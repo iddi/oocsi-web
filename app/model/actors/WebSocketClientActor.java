@@ -1,7 +1,5 @@
 package model.actors;
 
-import java.util.Random;
-
 import org.apache.pekko.actor.AbstractActor;
 import org.apache.pekko.actor.ActorRef;
 import org.apache.pekko.actor.PoisonPill;
@@ -9,10 +7,12 @@ import org.apache.pekko.actor.Props;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 
 import model.clients.WebSocketClient;
 import nl.tue.id.oocsi.server.OOCSIServer;
+import play.libs.Json;
 
 public class WebSocketClientActor extends AbstractActor {
 
@@ -64,7 +64,7 @@ public class WebSocketClientActor extends AbstractActor {
 				}
 				if (clientName.matches(".*\\s.*")) {
 					OOCSIServer.log("Killed client connection because client name contains whitespace characters: "
-					        + clientName);
+							+ clientName);
 					clientName = "webclient_####";
 				}
 
@@ -85,12 +85,12 @@ public class WebSocketClientActor extends AbstractActor {
 				client = new WebSocketClient(clientName, server, this);
 				if (server.addClient(client)) {
 					logger.info("WS client " + client.getName() + " connected");
-					com.fasterxml.jackson.databind.node.ObjectNode msg = play.libs.Json.newObject();
+					ObjectNode msg = Json.newObject();
 					msg.put("message", "welcome " + client.getName());
 					out.tell(msg.toString(), self());
 				} else {
 					logger.info("WS client " + client.getName() + " rejected as existing");
-					com.fasterxml.jackson.databind.node.ObjectNode msg = play.libs.Json.newObject();
+					ObjectNode msg = Json.newObject();
 					msg.put("message", "ERROR: client " + client.getName() + " exists already");
 					out.tell(msg.toString(), self());
 
