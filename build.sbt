@@ -12,7 +12,8 @@ libraryDependencies ++= Seq(
   javaWs,
 
   "com.ezylang" % "EvalEx" % "3.4.0",
-  "com.bucket4j" % "bucket4j-core" % "8.10.1"
+  "com.bucket4j" % "bucket4j-core" % "8.10.1",
+  "com.github.ben-manes.caffeine" % "caffeine" % "3.1.8"
 )
 
 lazy val root = (project in file(".")).enablePlugins(PlayJava, LauncherJarPlugin, JavaAppPackaging)
