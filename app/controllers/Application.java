@@ -5,6 +5,7 @@ import static org.apache.pekko.pattern.Patterns.ask;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,6 +15,13 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import play.libs.F;
 
 import org.apache.pekko.actor.ActorRef;
 import org.apache.pekko.actor.ActorSystem;
@@ -77,7 +85,10 @@ public class Application extends Controller {
 	private final long rateLimitCapacity;
 	private final long rateLimitRefillTokens;
 	private final long rateLimitRefillDuration;
-	private final Map<String, Bucket> rateLimitBuckets = new ConcurrentHashMap<>();
+	private final Cache<String, Bucket> rateLimitBuckets = Caffeine.newBuilder()
+			.maximumSize(100_000)
+			.expireAfterAccess(1, TimeUnit.HOURS)
+			.build();
 
 	private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
@@ -128,17 +139,17 @@ public class Application extends Controller {
 		});
 	}
 
-	private boolean isRateLimited(Request request) {
+	private boolean isRateLimited(Http.RequestHeader request) {
 		if (!rateLimitEnabled || request == null) {
 			return false;
 		}
 		String clientIp = request.remoteAddress();
-		Bucket bucket = rateLimitBuckets.computeIfAbsent(clientIp, k -> {
+		Bucket bucket = rateLimitBuckets.get(clientIp, k -> {
 			Bandwidth limit = BandwidthBuilder.builder().capacity(rateLimitCapacity)
 					.refillGreedy(rateLimitRefillTokens, Duration.ofSeconds(rateLimitRefillDuration)).build();
 			return Bucket.builder().addLimit(limit).build();
 		});
-		return !bucket.tryConsume(1);
+		return bucket != null && !bucket.tryConsume(1);
 	}
 
 	private static String truncate(String val, int maxLen) {
@@ -148,14 +159,27 @@ public class Application extends Controller {
 		return val.length() <= maxLen ? val : val.substring(0, maxLen);
 	}
 
+	public static String filterChannelList(String rawChannels) {
+		if (rawChannels == null) {
+			return "";
+		}
+		return Arrays.stream(rawChannels.split(","))
+				.map(String::trim)
+				.filter(ch -> !ch.isEmpty() && !Server.RESERVED_NAMES.contains(ch))
+				.collect(Collectors.joining(","));
+	}
+
+	public String filteredChannelList() {
+		return filterChannelList(server.getChannelList());
+	}
+
 	/**
 	 * action to show the landing page for the OOCSI server
 	 * 
 	 * @return
 	 */
 	public Result index(Request request) {
-		String channels = server.getChannelList().replace("OOCSI_connections,", "").replace("OOCSI_clients,", "")
-				.replace("OOCSI_events,", "").replace("OOCSI_metrics,", "");
+		String channels = filteredChannelList();
 		if (channels.length() > 160) {
 			channels = channels.substring(0, 160) + "...";
 		}
@@ -333,8 +357,13 @@ public class Application extends Controller {
 	 * @return
 	 */
 	public WebSocket ws() {
-		return WebSocket.Text.accept(
-				request -> ActorFlow.actorRef(out -> WebSocketClientActor.props(out, server), system, materializer));
+		return WebSocket.Text.acceptOrResult(request -> {
+			if (isRateLimited(request)) {
+				return CompletableFuture.completedFuture(F.Either.Left(status(429, "Too Many Requests")));
+			}
+			return CompletableFuture.completedFuture(F.Either.Right(
+					ActorFlow.actorRef(out -> WebSocketClientActor.props(out, server), system, materializer)));
+		});
 	}
 
 	/**
@@ -343,7 +372,7 @@ public class Application extends Controller {
 	 * @return
 	 */
 	public Result channels() {
-		return ok(server.getChannelList());
+		return ok(filteredChannelList());
 	}
 
 	// ----------------------------------------------------------------------------------------------------------------
@@ -555,8 +584,21 @@ public class Application extends Controller {
 	 * @param request
 	 * @return
 	 */
+	public static final Pattern UUID_RE = Pattern.compile(
+			"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+			Pattern.CASE_INSENSITIVE);
+
+	public static String validateOrCreateUserId(String cookieValue) {
+		if (cookieValue != null && UUID_RE.matcher(cookieValue).matches()) {
+			return cookieValue;
+		}
+		return UUID.randomUUID().toString();
+	}
+
 	private String extractUserId(Request request) {
-		return request.cookie("userId").map(c -> c.value().toString()).orElse(UUID.randomUUID().toString());
+		return request.cookie("userId")
+				.map(c -> validateOrCreateUserId(c.value().toString()))
+				.orElseGet(() -> UUID.randomUUID().toString());
 	}
 
 	/**
@@ -632,7 +674,10 @@ public class Application extends Controller {
 	public Result subscribe(Request request, String channelName) {
 		final EventSource.Event empty = new EventSource.Event(null, null, null);
 
-		String decodedChannelName = URLDecoder.decode(channelName, StandardCharsets.UTF_8);
+		String decodedChannelName = channelName;
+		if (decodedChannelName == null || !decodedChannelName.matches("^[a-zA-Z0-9_\\-.:/?!@#]+$")) {
+			return badRequest("Invalid channel name");
+		}
 
 		// compose flow with a special OOCSI client
 		final SSEChannelClient channelClient = new SSEChannelClient("Events-" + UUID.randomUUID().toString());
