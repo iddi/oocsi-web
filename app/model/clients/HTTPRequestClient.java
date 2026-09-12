@@ -60,7 +60,7 @@ public class HTTPRequestClient extends Client {
 		return System.currentTimeMillis();
 	}
 
-	private static boolean isSafeUrl(String urlStr) {
+	public static boolean isSafeUrl(String urlStr) {
 		try {
 			URI uri = new URI(urlStr);
 			String scheme = uri.getScheme();
@@ -105,6 +105,9 @@ public class HTTPRequestClient extends Client {
 					if (b0 == 198 && (b1 == 18 || b1 == 19)) {
 						return false;
 					}
+					if ((b0 & 0xF0) == 240) {
+						return false;
+					}
 				} else if (bytes.length == 16) {
 					boolean isIPv4Mapped = true;
 					for (int i = 0; i < 10; i++) {
@@ -117,7 +120,8 @@ public class HTTPRequestClient extends Client {
 						int b0 = bytes[12] & 0xFF;
 						int b1 = bytes[13] & 0xFF;
 						if (b0 == 0 || b0 == 10 || b0 == 127 || (b0 == 169 && b1 == 254)
-								|| (b0 == 172 && (b1 >= 16 && b1 <= 31)) || (b0 == 192 && b1 == 168)) {
+								|| (b0 == 172 && (b1 >= 16 && b1 <= 31)) || (b0 == 192 && b1 == 168)
+								|| ((b0 & 0xF0) == 240)) {
 							return false;
 						}
 					}
