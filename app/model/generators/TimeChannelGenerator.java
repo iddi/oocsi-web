@@ -1,6 +1,7 @@
 package model.generators;
 
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.concurrent.TimeUnit;
@@ -16,7 +17,7 @@ import scala.concurrent.duration.Duration;
 public class TimeChannelGenerator {
 
 	private static final String CHANNEL = "timechannel";
-	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+	private static final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
 	final private OOCSIServer server;
 	final private ActorSystem actorSystem;
@@ -47,7 +48,7 @@ public class TimeChannelGenerator {
 		m.addData("m", cal.get(Calendar.MINUTE));
 		m.addData("s", cal.get(Calendar.SECOND));
 		m.addData("timestamp", cal.getTimeInMillis());
-		m.addData("datetime", sdf.format(cal.getTime()));
+		m.addData("datetime", DTF.format(LocalDateTime.now()));
 
 		try {
 			Channel channel = server.getChannel(CHANNEL);

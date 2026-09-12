@@ -155,9 +155,7 @@ public class Tools extends Controller {
 	 */
 	public Result clientRefreshStats(Request request) {
 		ObjectNode on = Json.newObject();
-		oocsiServer.getClients().stream().forEach(cl -> {
-			on.put(cl.getName(), cl.lastAction());
-		});
+		on.put("clientCount", oocsiServer.getClients().size());
 
 		return ok(on);
 	}

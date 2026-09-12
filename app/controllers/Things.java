@@ -57,7 +57,7 @@ public class Things extends Controller {
 			return ok(is).as(getContentType(filename.toLowerCase()));
 		}
 
-		return notFound("Thing not found: " + thingname);
+		return notFound("Thing not found.");
 	}
 
 	/**
