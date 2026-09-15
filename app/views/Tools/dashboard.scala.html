@@ -66,23 +66,6 @@
 				// connect to OOCSI server
 				OOCSI.connect((window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws', 'OOCSI/tools/dashboard_####');
 
-				function getNestedValue(obj, path) {
-					if (!obj || typeof path !== 'string') return undefined;
-					var parts = path.split('.');
-					var current = obj;
-					for (var j = 0; j < parts.length; j++) {
-						var part = parts[j];
-						if (!part || part === '__proto__' || part === 'prototype' || part === 'constructor') {
-							return undefined;
-						}
-						if (current && typeof current === 'object' && part in current) {
-							current = current[part];
-						} else {
-							return undefined;
-						}
-					}
-					return current;
-				}
 
 				// add charts
 				var json = readCookie('charts');
@@ -106,6 +89,24 @@
 	        	
 			var charts = [];
 			var channels = {};
+
+			function getNestedValue(obj, path) {
+				if (!obj || typeof path !== 'string') return undefined;
+				var parts = path.split('.');
+				var current = obj;
+				for (var j = 0; j < parts.length; j++) {
+					var part = parts[j];
+					if (!part || part === '__proto__' || part === 'prototype' || part === 'constructor') {
+						return undefined;
+					}
+					if (current && typeof current === 'object' && part in current) {
+						current = current[part];
+					} else {
+						return undefined;
+					}
+				}
+				return current;
+			}
 	    
 		    // add chart function
 		    function addChart(channel, selector) {

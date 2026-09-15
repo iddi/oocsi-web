@@ -430,4 +430,33 @@ public class OpenIssuesRegressionTest {
 		assertNotNull("Transformed property 'fahrenheit' must exist", receivedMsg.data.get("fahrenheit"));
 		assertEquals("30C should be 86F", 86.0f, ((Number) receivedMsg.data.get("fahrenheit")).floatValue(), 0.01f);
 	}
+
+	/**
+	 * Test that dashboard template defines getNestedValue in script scope accessible to addChart
+	 */
+	@Test
+	public void testDashboardTemplateDefinesGetNestedValueInAddChartScope() {
+		play.twirl.api.Html rendered = views.html.Tools.dashboard.render("dashboard", "", "localhost");
+		String body = rendered.body();
+
+		// Check that getNestedValue is defined
+		assertTrue("Dashboard should contain getNestedValue definition",
+				body.contains("function getNestedValue(obj, path)"));
+
+		// Check that getNestedValue is defined before addChart and outside of $(document).ready
+		int readyIdx = body.indexOf("$(document).ready");
+		int readyCloseIdx = body.indexOf("});", readyIdx);
+		int getNestedValueIdx = body.indexOf("function getNestedValue(obj, path)");
+		int addChartIdx = body.indexOf("function addChart(channel, selector)");
+
+		assertTrue("$(document).ready must be present", readyIdx != -1 && readyCloseIdx != -1);
+		assertTrue("getNestedValue must be present", getNestedValueIdx != -1);
+		assertTrue("addChart must be present", addChartIdx != -1);
+
+		assertTrue("getNestedValue must not be trapped inside $(document).ready block",
+				getNestedValueIdx > readyCloseIdx);
+		assertTrue("getNestedValue must be defined before addChart",
+				getNestedValueIdx < addChartIdx);
+	}
 }
+
