@@ -71,8 +71,30 @@ RUN microdnf install unzip && \
     rm app.zip && \
     microdnf remove unzip
 
-# Expose the application port
-EXPOSE 9000
+# Expose the application ports (4444: OOCSI TCP socket, 9000: HTTP/WebSocket)
+EXPOSE 4444 9000
+
+# -------------------------------------------------------------------------------------------------
+# JVM Performance & Garbage Collection Tuning (Optional / Configurable)
+#
+# By default in container environments, the JVM sizes heap based on container cgroups.
+# The options below tune GC pause times and heap sizing for the high-concurrency, short-lived
+# object allocation patterns typical of the OOCSI server (e.g. JSON messaging, NIO sockets):
+#
+#   -XX:+UseG1GC                     : G1 Garbage Collector provides predictable, low-latency pause times.
+#   -XX:MaxRAMPercentage=65.0        : Allocates up to 65% of available container RAM to Java heap,
+#                                      leaving the remaining 35% for direct byte buffers (NIO), thread stacks, and OS.
+#   -XX:InitialRAMPercentage=40.0    : Avoids gradual heap expansion overhead at startup.
+#   -XX:G1ReservePercent=15          : Reserves 15% spare memory in G1 regions to prevent costly evacuation failures.
+#   -XX:InitiatingHeapOccupancyPercent=45 : Starts concurrent GC cycles earlier (at 45% heap occupancy)
+#                                      to stay ahead of sudden message bursts.
+#   -XX:+ExitOnOutOfMemoryError      : Immediately terminates on OOM so the container orchestrator (Docker/K8s)
+#                                      can quickly restart the container rather than lingering in a hung state.
+#
+# These options can be overridden or disabled entirely at runtime by passing your own JAVA_OPTS:
+# e.g.: docker run -e JAVA_OPTS="-XX:+UseSerialGC -Xmx1g" ...
+# -------------------------------------------------------------------------------------------------
+ENV JAVA_OPTS="-XX:+UseG1GC -XX:MaxRAMPercentage=65.0 -XX:InitialRAMPercentage=40.0 -XX:G1ReservePercent=15 -XX:InitiatingHeapOccupancyPercent=45 -XX:+ExitOnOutOfMemoryError"
 
 # Switch to DF directory
 WORKDIR /app/oocsi
@@ -84,4 +106,4 @@ CMD ["bin/oocsi-web", "-Dconfig.file=/app/oocsi/conf/application.conf", "-Dlogge
 # CMD ["/bin/bash"]
 
 ## to run the dockerfile in production mode:
-## docker build --tag oocsidocker:production --target production . && docker run -it -rm -p 9000:9000 -p 4444:4444 oocsidocker:production
+## docker build --tag oocsidocker:production --target production . && docker run -it --rm -p 9000:9000 -p 4444:4444 oocsidocker:production

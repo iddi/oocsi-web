@@ -314,9 +314,14 @@
         return []; // Return an empty path if no path is found
     }
 
+    let activeDots = 0;
+    const MAX_ACTIVE_DOTS = 200;
+
     function animateDot(path, additionalClass='') {
         if (path.length < 2) { return;}
         if(!path.every(d => isNodeFiltered(d))) { return; }
+        if (activeDots >= MAX_ACTIVE_DOTS) { return; }
+        activeDots++;
 
         const dot = svg.append("circle")
             .attr("class", "moving-dot" + additionalClass)
@@ -346,6 +351,7 @@
         // Remove the dot after animation
         setTimeout(() => {
             dot.remove();
+            activeDots--;
         }, duration);
     }
 
@@ -353,14 +359,60 @@
 
     // ----------------------------------------------------------------------------------------------
 
-    // subscribe to all OOCSI events
-    const eventSource = new EventSource("/subscribe/OOCSI_events");
+    // subscribe to OOCSI events with visibility and intersection gating (SYS-2)
+    let eventSource = null;
+    let isVisible = false;
 
-    // Set up an event listener for messages
-    eventSource.onmessage = function(event) {
-        let e = JSON.parse(event.data)
-        e && sendMessage(e['PUB'], e['CHANNEL'], e['SUB'])
-    };
+    function startEventSource() {
+        if (eventSource || document.hidden || !isVisible) {
+            return;
+        }
+        eventSource = new EventSource("/subscribe/OOCSI_events");
+        eventSource.onmessage = function(event) {
+            try {
+                let e = JSON.parse(event.data);
+                e && sendMessage(e['PUB'], e['CHANNEL'], e['SUB']);
+            } catch (ignored) {}
+        };
+        eventSource.onerror = function() {
+            stopEventSource();
+            if (isVisible && !document.hidden) {
+                setTimeout(startEventSource, 3000);
+            }
+        };
+    }
+
+    function stopEventSource() {
+        if (eventSource) {
+            eventSource.close();
+            eventSource = null;
+        }
+    }
+
+    if (container && 'IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                isVisible = entry.isIntersecting;
+                if (isVisible) {
+                    startEventSource();
+                } else {
+                    stopEventSource();
+                }
+            });
+        }, { threshold: 0.1 });
+        observer.observe(container);
+    } else {
+        isVisible = true;
+        startEventSource();
+    }
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            stopEventSource();
+        } else if (isVisible) {
+            startEventSource();
+        }
+    });
 
     // ----------------------------------------------------------------------------------------------
 

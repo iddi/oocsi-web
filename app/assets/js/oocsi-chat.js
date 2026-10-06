@@ -405,7 +405,7 @@
                 });
             };
 
-            if (!OOCSI.isConnected()) {
+            if (!OOCSI.isConnected() && !OOCSI.isConnecting() && !OOCSI.handle()) {
                 OOCSI.connect(serverURL, "ChatClient_" + Math.floor(Math.random() * 100000000), () => {
                      console.log("[OOCSI-Chat] Connected to " + serverURL);
                      isConnected = true;

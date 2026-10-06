@@ -310,23 +310,25 @@
 
 					// draw channels ----------------------------------------------------------------------------------
 					if(configuration.showChannels) {
-						channels.forEach(function(d, i) {
-							// some arrangement
-							channels.forEach(function(e,o) {
-								if(d != e) {
-									if(p.dist(d.x, d.y, e.x, e.y) < 60) {
-										while(p.dist(d.vx, d.vy, e.vx, e.vy) < 0.5) {
-											d.vx = p.random(-2, 2);
-											d.vy = p.random(-2, 2);
-										}
-
-										d.x += d.vx;
-										d.y += d.vy;
-										e.x += e.vx;
-										e.y += e.vy;
+						for (let i = 0; i < channels.length; i++) {
+							let d = channels[i];
+							for (let o = i + 1; o < channels.length; o++) {
+								let e = channels[o];
+								if(p.dist(d.x, d.y, e.x, e.y) < 60) {
+									while(p.dist(d.vx, d.vy, e.vx, e.vy) < 0.5) {
+										d.vx = p.random(-2, 2);
+										d.vy = p.random(-2, 2);
 									}
+
+									d.x += d.vx;
+									d.y += d.vy;
+									e.x += e.vx;
+									e.y += e.vy;
 								}
-							});
+							}
+						}
+
+						channels.forEach(function(d, i) {
 
 							p.push();
 							p.translate(d.x, d.y, 1);

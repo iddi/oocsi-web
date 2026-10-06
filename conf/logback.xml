@@ -1,8 +1,14 @@
 <!-- https://www.playframework.com/documentation/latest/SettingsLogger -->
 <configuration>
 
-  <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <file>${application.home:-.}/logs/application.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>${application.home:-.}/logs/application.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+      <maxFileSize>50MB</maxFileSize>
+      <maxHistory>7</maxHistory>
+      <totalSizeCap>500MB</totalSizeCap>
+    </rollingPolicy>
     <encoder>
       <pattern>%date %highlight(%-5level) %logger - %message%n%xException</pattern>
     </encoder>
@@ -15,10 +21,13 @@
   </appender>
 
   <appender name="ASYNCFILE" class="ch.qos.logback.classic.AsyncAppender">
+    <queueSize>1024</queueSize>
+    <neverBlock>true</neverBlock>
     <appender-ref ref="FILE" />
   </appender>
 
   <appender name="ASYNCSTDOUT" class="ch.qos.logback.classic.AsyncAppender">
+    <queueSize>1024</queueSize>
     <appender-ref ref="STDOUT" />
   </appender>
 

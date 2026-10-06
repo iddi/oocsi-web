@@ -148,6 +148,7 @@
 				var frame = 0;
 
 				function setup() {
+					frameRate(20);
 					var canvas = createCanvas($('#sketch-holder').width(), $('#sketch-holder').width()/2);
 					canvas.parent('sketch-holder');
 					background(255);
@@ -193,9 +194,7 @@
 					for (var i = 0; i < width; i++) {
 						let y = getC(i)
 						if(y > -1) {
-							let v1 = createVector(px, py);
-							let v2 = createVector(i, y);
-							if(v1.dist(v2) < control.dist) {
+							if(Math.hypot(px - i, py - y) < control.dist) {
 								noStroke();
 								fill(200);
 								ellipse(i, y, 2, 2);
