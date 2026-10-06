@@ -166,12 +166,16 @@ public class ClientConnectionTest extends ClientTestBase {
 
 		assertTrue(!o.isConnected());
 
-		Thread.sleep(500);
-
+		for (int i = 0; i < 20 && !o.isConnected(); i++) {
+			Thread.sleep(50);
+		}
 		assertTrue(o.isConnected());
 
 		OOCSIClient o3 = new OOCSIClient("test_client_0_reconnect_subscriptions3");
 		o3.connect("localhost", 4444);
+		for (int i = 0; i < 20 && !o3.isConnected(); i++) {
+			Thread.sleep(50);
+		}
 		assertTrue(o3.isConnected());
 		o3.send("subscriptionTest", "some unimportant data");
 

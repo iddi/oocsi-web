@@ -146,21 +146,18 @@ public class WebSocketClient extends Client {
 	}
 
 	private String toJson(Message m) {
-		ObjectNode je = Json.newObject();
+		return m.getWebJsonForm(() -> {
+			Map<String, Object> wrapper = new HashMap<>(4);
+			wrapper.put("recipient", m.getRecipient());
+			wrapper.put("timestamp", m.getTimestamp().getTime());
+			wrapper.put("sender", m.getSender());
+			wrapper.put("data", m.data);
 
-		// add OOCSI properties
-		je.put("recipient", m.getRecipient());
-		je.put("timestamp", m.getTimestamp().getTime());
-		je.put("sender", m.getSender());
-
-		je.set("data", JSON_OBJECT_MAPPER.valueToTree(m.data));
-
-		// serialize message
-		try {
-			return JSON_OBJECT_MAPPER.writeValueAsString(je);
-		} catch (JsonProcessingException e) {
-			// fall back to normal toString
-			return je.toString();
-		}
+			try {
+				return JSON_OBJECT_MAPPER.writeValueAsString(wrapper);
+			} catch (JsonProcessingException e) {
+				return wrapper.toString();
+			}
+		});
 	}
 }

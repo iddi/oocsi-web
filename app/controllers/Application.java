@@ -664,17 +664,26 @@ public class Application extends Controller {
 	/**
 	 * respond to GET request to service (forward, return)
 	 * 
+	 * @param request
 	 * @param service
 	 * @param call
 	 * @param data
 	 * @return
 	 */
-	public CompletionStage<Result> serviceCall(String service, String call, String data) {
+	public CompletionStage<Result> serviceCall(Request request, String service, String call, String data) {
+		if (request != null && isRateLimited(request)) {
+			return CompletableFuture.completedFuture(status(429, "Too Many Requests"));
+		}
+
 		if (server.getChannel(service) != null) {
 			return internalServiceCall(service, call, data);
 		} else {
 			return CompletableFuture.completedFuture(notFound(service + " not found"));
 		}
+	}
+
+	public CompletionStage<Result> serviceCall(String service, String call, String data) {
+		return serviceCall(null, service, call, data);
 	}
 
 	/**
@@ -704,8 +713,6 @@ public class Application extends Controller {
 	 * @return
 	 */
 	public Result subscribe(Request request, String channelName) {
-		final EventSource.Event empty = new EventSource.Event(null, null, null);
-
 		String decodedChannelName = channelName;
 		try {
 			if (decodedChannelName != null) {
@@ -720,22 +727,20 @@ public class Application extends Controller {
 
 		final String validChannelName = decodedChannelName;
 
-		// compose flow with a special OOCSI client
-		final SSEChannelClient channelClient = new SSEChannelClient("Events-" + UUID.randomUUID().toString());
-		Source<EventSource.Event, Cancellable> eventSource = Source.tick(Duration.ZERO, Duration.ofMillis(100), "")
-				.map(tick -> {
-					if (!channelClient.isEmpty()) {
-						// ensure that the client stay live
-						channelClient.touch();
-						// don't use .withName here because that would complicate the EventSource subscription on the
-						// client
-						return EventSource.Event.event(channelClient.poll());
-					}
-					return empty;
-				}).filter(event -> event != empty).watchTermination((prevMatValue, completionStage) -> {
+		// compose push-based flow with a special OOCSI client
+		org.apache.pekko.japi.Pair<org.apache.pekko.stream.javadsl.SourceQueueWithComplete<EventSource.Event>, Source<EventSource.Event, org.apache.pekko.NotUsed>> pair =
+				Source.<EventSource.Event>queue(64, org.apache.pekko.stream.OverflowStrategy.dropHead())
+						.preMaterialize(materializer);
+
+		final org.apache.pekko.stream.javadsl.SourceQueueWithComplete<EventSource.Event> queue = pair.first();
+		final SSEChannelClient channelClient = new SSEChannelClient("Events-" + UUID.randomUUID().toString(), queue);
+
+		Source<EventSource.Event, ?> eventSource = pair.second()
+				.watchTermination((prevMatValue, completionStage) -> {
 					completionStage.whenComplete((done, exc) -> {
 						server.unsubscribe(channelClient, validChannelName);
 						server.removeClient(channelClient);
+						channelClient.disconnect();
 					});
 					return prevMatValue;
 				});

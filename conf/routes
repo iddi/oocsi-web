@@ -63,7 +63,7 @@ GET 	/tutorials/paint-the-canvas		controllers.Tutorial.paint_the_canvas()
 # services with least priority
 GET 	/:service						controllers.Application.serviceIndex(service)
 GET 	/:service/						controllers.Application.serviceIndex(service)
-GET		/:service/:call					controllers.Application.serviceCall(service, call, data: String ?= "")
-GET		/:service/:call/:data			controllers.Application.serviceCall(service, call, data)
+GET		/:service/:call					controllers.Application.serviceCall(request: Request, service, call, data: String ?= "")
+GET		/:service/:call/:data			controllers.Application.serviceCall(request: Request, service, call, data)
 +nocsrf
 POST	/:service/:call					controllers.Application.serviceCallPost(request: Request, service, call)

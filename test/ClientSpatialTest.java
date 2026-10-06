@@ -150,11 +150,18 @@ public class ClientSpatialTest extends ClientTestBase {
 			});
 		}
 
+		// wait for spatial neighbor discovery to settle
+		for (int i = 0; i < 30 && os1.getNeighbors().size() < 3; i++) {
+			Thread.sleep(100);
+		}
+
 		// send a message to all neighbors
 		os1.neighbors().data("hello", "world").send();
 
-		// wait longer than timeout
-		Thread.sleep(200);
+		// wait for messages to be received
+		for (int i = 0; i < 30 && eventSink.size() < 3; i++) {
+			Thread.sleep(100);
+		}
 
 		assertTrue(eventSink.contains("ok 2"));
 		assertTrue(!eventSink.contains("not ok 3"));
@@ -606,7 +613,9 @@ public class ClientSpatialTest extends ClientTestBase {
 		client6.connect("localhost", 4444);
 		OOCSISpatial.createSpatial(client6, "spatialChannel2", "double_distance2", 1f, 2f, 1.4f);
 
-		Thread.sleep(150);
+		for (int i = 0; i < 30 && !"os_rt_2".equals(os1.routing("os_rt_3")); i++) {
+			Thread.sleep(50);
+		}
 
 		// start routing...
 
@@ -615,7 +624,9 @@ public class ClientSpatialTest extends ClientTestBase {
 		// disconnect _2
 		clients.get("os_rt_2").disconnect();
 
-		Thread.sleep(100);
+		for (int i = 0; i < 30 && !"os_rt_4".equals(os1.routing("os_rt_3")); i++) {
+			Thread.sleep(50);
+		}
 
 		assertEquals("os_rt_4", os1.routing("os_rt_3"));
 

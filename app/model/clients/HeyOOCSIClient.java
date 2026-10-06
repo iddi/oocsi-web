@@ -26,14 +26,13 @@ import play.libs.Json;
 public class HeyOOCSIClient extends Client {
 
 	final private OOCSIServer server;
-	private Map<String, OOCSIDevice> clients;
+	final private Map<String, OOCSIDevice> clients = new java.util.concurrent.ConcurrentHashMap<>();
 
 	@Inject
 	public HeyOOCSIClient(OOCSIServer server) {
 		super("heyOOCSIClient", server.getChangeListener());
 
 		this.server = server;
-		this.clients = new HashMap<>();
 		server.addClient(this);
 		server.subscribe(this, "heyOOCSI!");
 	}
@@ -206,12 +205,7 @@ public class HeyOOCSIClient extends Client {
 	 * 
 	 */
 	private void purgeStaleClients() {
-		synchronized (clients) {
-			clients = clients.values().stream()
-					.filter(od -> this.server.getClients().stream().anyMatch(c -> c.getName().equals(od.deviceId))
-							|| !od.purgeable())
-					.collect(Collectors.toMap(od -> od.name, od -> od));
-		}
+		clients.values().removeIf(od -> od.purgeable() && this.server.getClient(od.deviceId) == null);
 	}
 
 	/**

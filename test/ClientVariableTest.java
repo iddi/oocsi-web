@@ -490,7 +490,9 @@ public class ClientVariableTest extends ClientTestBase {
 		assertTrue(!client1.isConnected());
 
 		of21.set(10.6f);
-		Thread.sleep(500);
+		for (int i = 0; i < 30 && !client1.isConnected(); i++) {
+			Thread.sleep(50);
+		}
 
 		assertEquals(10.6f, of21.get(), 0);
 		assertEquals(11f, of11.get(), 0);

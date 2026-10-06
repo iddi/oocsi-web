@@ -25,11 +25,28 @@ public class ServiceClientActor extends AbstractActor {
 	private static final String WEBCALL_DATA = "webcall_data";
 	private static final String WEBCALL_ACTION = "webcall";
 
+	private static final int POOL_SIZE = 16;
+	private static final java.util.Map<OOCSIServer, java.util.concurrent.BlockingQueue<ServiceRequestClient>> SERVER_POOLS =
+			new java.util.concurrent.ConcurrentHashMap<>();
+
+	private static java.util.concurrent.BlockingQueue<ServiceRequestClient> getPool(OOCSIServer server) {
+		return SERVER_POOLS.computeIfAbsent(server, s -> {
+			java.util.concurrent.BlockingQueue<ServiceRequestClient> pool = new java.util.concurrent.LinkedBlockingQueue<>();
+			for (int i = 0; i < POOL_SIZE; i++) {
+				ServiceRequestClient client = new ServiceRequestClient(s);
+				s.addClient(client);
+				pool.offer(client);
+			}
+			return pool;
+		});
+	}
+
 	public static Props props(OOCSIServer server) {
 		return Props.create(ServiceClientActor.class, server);
 	}
 
 	private final ServiceRequestClient requestClient;
+	private final boolean isPooled;
 	private final OOCSIServer server;
 	private ActorRef replyTo;
 	private Cancellable timeoutTask;
@@ -37,7 +54,15 @@ public class ServiceClientActor extends AbstractActor {
 	@Inject
 	public ServiceClientActor(OOCSIServer server) {
 		this.server = server;
-		this.requestClient = new ServiceRequestClient(server);
+		ServiceRequestClient pooledClient = getPool(server).poll();
+		if (pooledClient != null) {
+			this.requestClient = pooledClient;
+			this.isPooled = true;
+		} else {
+			this.requestClient = new ServiceRequestClient(server);
+			server.addClient(this.requestClient);
+			this.isPooled = false;
+		}
 	}
 
 	@Override
@@ -46,7 +71,6 @@ public class ServiceClientActor extends AbstractActor {
 				.match(ServiceRequest.class, request -> {
 					this.replyTo = sender();
 					requestClient.reset();
-					server.addClient(requestClient);
 					Channel serviceClient = server.getChannel(request.service);
 
 					if (serviceClient != null) {
@@ -118,7 +142,12 @@ public class ServiceClientActor extends AbstractActor {
 		if (timeoutTask != null) {
 			timeoutTask.cancel();
 		}
-		server.removeClient(requestClient);
+		if (isPooled && requestClient != null) {
+			requestClient.reset();
+			getPool(server).offer(requestClient);
+		} else if (requestClient != null) {
+			server.removeClient(requestClient);
+		}
 
 		super.postStop();
 	}
