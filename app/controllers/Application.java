@@ -90,6 +90,14 @@ public class Application extends Controller {
 			.expireAfterAccess(1, TimeUnit.HOURS)
 			.build();
 
+	private final long wsRateLimitCapacity;
+	private final long wsRateLimitRefillTokens;
+	private final long wsRateLimitRefillDuration;
+	private final Cache<String, Bucket> wsRateLimitBuckets = Caffeine.newBuilder()
+			.maximumSize(100_000)
+			.expireAfterAccess(1, TimeUnit.HOURS)
+			.build();
+
 	private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
 	@Inject
@@ -126,6 +134,17 @@ public class Application extends Controller {
 				? configuration.getLong("oocsi.ratelimit.refillDurationSeconds")
 				: 60;
 
+		// configure dedicated rate limiting for websocket upgrades (/ws)
+		this.wsRateLimitCapacity = configuration.hasPath("oocsi.ratelimit.ws.capacity")
+				? configuration.getLong("oocsi.ratelimit.ws.capacity")
+				: 500;
+		this.wsRateLimitRefillTokens = configuration.hasPath("oocsi.ratelimit.ws.refillTokens")
+				? configuration.getLong("oocsi.ratelimit.ws.refillTokens")
+				: 500;
+		this.wsRateLimitRefillDuration = configuration.hasPath("oocsi.ratelimit.ws.refillDurationSeconds")
+				? configuration.getLong("oocsi.ratelimit.ws.refillDurationSeconds")
+				: 60;
+
 		// trigger the log summary every minute
 		as.scheduler().scheduleAtFixedRate(Duration.ofMinutes(1), Duration.ofMinutes(1), () -> {
 			sl.logSummary();
@@ -147,6 +166,19 @@ public class Application extends Controller {
 		Bucket bucket = rateLimitBuckets.get(clientIp, k -> {
 			Bandwidth limit = BandwidthBuilder.builder().capacity(rateLimitCapacity)
 					.refillGreedy(rateLimitRefillTokens, Duration.ofSeconds(rateLimitRefillDuration)).build();
+			return Bucket.builder().addLimit(limit).build();
+		});
+		return bucket != null && !bucket.tryConsume(1);
+	}
+
+	private boolean isWsRateLimited(Http.RequestHeader request) {
+		if (!rateLimitEnabled || request == null) {
+			return false;
+		}
+		String clientIp = request.remoteAddress();
+		Bucket bucket = wsRateLimitBuckets.get(clientIp, k -> {
+			Bandwidth limit = BandwidthBuilder.builder().capacity(wsRateLimitCapacity)
+					.refillGreedy(wsRateLimitRefillTokens, Duration.ofSeconds(wsRateLimitRefillDuration)).build();
 			return Bucket.builder().addLimit(limit).build();
 		});
 		return bucket != null && !bucket.tryConsume(1);
@@ -358,7 +390,7 @@ public class Application extends Controller {
 	 */
 	public WebSocket ws() {
 		return WebSocket.Text.acceptOrResult(request -> {
-			if (isRateLimited(request)) {
+			if (isWsRateLimited(request)) {
 				return CompletableFuture.completedFuture(F.Either.Left(status(429, "Too Many Requests")));
 			}
 			return CompletableFuture.completedFuture(F.Either.Right(

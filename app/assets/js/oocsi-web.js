@@ -8,6 +8,9 @@ var OOCSI = (function() {
   var websocket;
   var logger = internalLog;
   var error = internalError;
+  var reconnectTimer = null;
+  var reconnectAttempts = 0;
+  var callCleanupInterval = null;
 
   function isDangerousKey(key) {
     return key === '__proto__' || key === 'prototype' || key === 'constructor';
@@ -27,10 +30,22 @@ var OOCSI = (function() {
       submit(username);
     }  
     logger("CONNECTED");
+    reconnectAttempts = 0;
+    // reconnect subscriptions
+    for (var ch in handlers) {
+      if (!isDangerousKey(ch) && handlers[ch] && handlers[ch].length > 0) {
+        submit('subscribe ' + ch);
+      }
+    }
   }
 
   function onClose(evt) {
     logger("DISCONNECTED");
+    if (evt && (evt.code === 1013 || (evt.reason && evt.reason.indexOf("429") !== -1))) {
+      scheduleReconnect(30000 + Math.floor(Math.random() * 15000));
+    } else {
+      scheduleReconnect();
+    }
   }
 
   function onMessage(evt) {
@@ -66,6 +81,7 @@ var OOCSI = (function() {
   function onError(evt) {
     error();
     logger('ERROR: ' + evt);
+    scheduleReconnect();
   }
 
   function waitForSocket(fn) {
@@ -137,14 +153,14 @@ var OOCSI = (function() {
     if (!channel || isDangerousKey(channel)) {
       return;
     }
+    if(handlers[channel] === undefined) {
+      handlers[channel] = [];
+    }
+    if (typeof fn === 'function' && handlers[channel].indexOf(fn) === -1) {
+      handlers[channel].push(fn);
+    }
     if(internalConnected()) {
       submit('subscribe ' + channel);
-      if(handlers[channel] === undefined) {
-        handlers[channel] = [];
-      }
-      if (typeof fn === 'function' && handlers[channel].indexOf(fn) === -1) {
-        handlers[channel].push(fn);
-      }
     } 
   } 
 
@@ -157,9 +173,31 @@ var OOCSI = (function() {
     }
   }
 
+  function scheduleReconnect(forcedDelay) {
+    if (reconnectTimer) {
+      clearTimeout(reconnectTimer);
+      reconnectTimer = null;
+    }
+    if (typeof document !== 'undefined' && document.hidden) {
+      return;
+    }
+    var delay;
+    if (typeof forcedDelay === 'number') {
+      delay = forcedDelay;
+    } else {
+      // Exponential backoff with full jitter: up to min(30s, 500ms * 2^attempts)
+      var maxBackoff = Math.min(30000, 500 * Math.pow(2, reconnectAttempts));
+      delay = Math.floor(Math.random() * maxBackoff);
+    }
+    reconnectTimer = setTimeout(function() {
+      reconnectAttempts++;
+      internalReconnect();
+    }, delay);
+  }
+
   function internalReconnect() {
-    if(!internalConnected() && (!websocket || websocket.readyState !== WebSocket.CONNECTING)) {
-      logger("RECONNECTING");
+    if(!internalConnected() && (!websocket || (websocket.readyState !== WebSocket.CONNECTING && websocket.readyState !== WebSocket.OPEN))) {
+      logger("RECONNECTING (attempt " + reconnectAttempts + ")");
       init();
       // reconnect subscriptions
       waitForSocket(function() {
@@ -190,8 +228,28 @@ var OOCSI = (function() {
     return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
   }
 
+  if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+    document.addEventListener('visibilitychange', function() {
+      if (!document.hidden && !internalConnected()) {
+        scheduleReconnect(0);
+      }
+    });
+  }
+
   return {
     connect: function(server, clientName, fn) {
+      if (websocket && (websocket.readyState === WebSocket.CONNECTING || websocket.readyState === WebSocket.OPEN)) {
+        logger("ALREADY CONNECTED OR CONNECTING");
+        if (fn && typeof fn === 'function' && username) {
+          if (handlers[username] === undefined) {
+            handlers[username] = [];
+          }
+          if (handlers[username].indexOf(fn) === -1) {
+            handlers[username].push(fn);
+          }
+        }
+        return;
+      }
       wsUri = server;
       username = clientName && clientName.length > 0 ? clientName : "webclient_####";
       username = username.replace(/#/g, function() {
@@ -208,8 +266,9 @@ var OOCSI = (function() {
         handlers[username] = [];
       }
       init();
-      setInterval(internalReconnect, 1000);
-      setInterval(cleanupExpiredCalls, 10000);
+      if (!callCleanupInterval) {
+        callCleanupInterval = setInterval(cleanupExpiredCalls, 10000);
+      }
     },
     send: function(recipient, data) {
       waitForSocket(function() {
@@ -282,6 +341,12 @@ var OOCSI = (function() {
     },
     isConnected: function() {
       return internalConnected();
+    },
+    isConnecting: function() {
+      return websocket ? websocket.readyState === WebSocket.CONNECTING : false;
+    },
+    reconnect: function() {
+      scheduleReconnect(0);
     },
     handle: function() {
       return username;
