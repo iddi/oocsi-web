@@ -26,8 +26,7 @@ public class ServiceClientActor extends AbstractActor {
 	private static final String WEBCALL_ACTION = "webcall";
 
 	private static final int POOL_SIZE = 16;
-	private static final java.util.Map<OOCSIServer, java.util.concurrent.BlockingQueue<ServiceRequestClient>> SERVER_POOLS =
-			new java.util.concurrent.ConcurrentHashMap<>();
+	private static final java.util.Map<OOCSIServer, java.util.concurrent.BlockingQueue<ServiceRequestClient>> SERVER_POOLS = new java.util.concurrent.ConcurrentHashMap<>();
 
 	private static java.util.concurrent.BlockingQueue<ServiceRequestClient> getPool(OOCSIServer server) {
 		return SERVER_POOLS.computeIfAbsent(server, s -> {
@@ -67,74 +66,68 @@ public class ServiceClientActor extends AbstractActor {
 
 	@Override
 	public Receive createReceive() {
-		return receiveBuilder()
-				.match(ServiceRequest.class, request -> {
-					this.replyTo = sender();
-					requestClient.reset();
-					Channel serviceClient = server.getChannel(request.service);
+		return receiveBuilder().match(ServiceRequest.class, request -> {
+			this.replyTo = sender();
+			requestClient.reset();
+			Channel serviceClient = server.getChannel(request.service);
 
-					if (serviceClient != null) {
-						final ActorRef selfRef = self();
-						requestClient.setResponseCallback(msg -> {
-							selfRef.tell(new ServiceResponse(msg), ActorRef.noSender());
-						});
+			if (serviceClient != null) {
+				final ActorRef selfRef = self();
+				requestClient.setResponseCallback(msg -> {
+					selfRef.tell(new ServiceResponse(msg), ActorRef.noSender());
+				});
 
-						timeoutTask = context().system().scheduler().scheduleOnce(
-								Duration.ofMillis(1800),
-								self(),
-								new ServiceTimeout(),
-								context().dispatcher(),
-								ActorRef.noSender());
+				timeoutTask = context().system().scheduler().scheduleOnce(Duration.ofMillis(1800), self(),
+						new ServiceTimeout(), context().dispatcher(), ActorRef.noSender());
 
-						Message serviceMessage = new Message(requestClient.getName(), request.service);
+				Message serviceMessage = new Message(requestClient.getName(), request.service);
 
-						// add webcall action
-						serviceMessage.addData(WEBCALL_ACTION, request.call);
+				// add webcall action
+				serviceMessage.addData(WEBCALL_ACTION, request.call);
 
-						// add message handle
-						serviceMessage.addData(OOCSICall.MESSAGE_HANDLE, request.service);
-						String uuid = UUID.randomUUID().toString();
-						serviceMessage.addData(OOCSICall.MESSAGE_ID, uuid);
+				// add message handle
+				serviceMessage.addData(OOCSICall.MESSAGE_HANDLE, request.service);
+				String uuid = UUID.randomUUID().toString();
+				serviceMessage.addData(OOCSICall.MESSAGE_ID, uuid);
 
-						// try to parse the webcall_data
-						if (request.data != null && request.data.length() > 0) {
-							Map<String, Object> map = Protocol.parseJSONMessage(request.data);
-							// if data could be parsed, use it directly
-							if (map.size() > 0) {
-								serviceMessage.data.putAll(map);
-							}
-							// include data verbatim if cannot be parsed as JSON
-							else {
-								serviceMessage.addData(WEBCALL_DATA, request.data);
-							}
-						}
-
-						// send out to responder
-						serviceClient.send(serviceMessage);
-					} else {
-						if (replyTo != null) {
-							replyTo.tell(new Status.Failure(new IllegalArgumentException("Service not found: " + request.service)), self());
-						}
+				// try to parse the webcall_data
+				if (request.data != null && request.data.length() > 0) {
+					Map<String, Object> map = Protocol.parseJSONMessage(request.data);
+					// if data could be parsed, use it directly
+					if (map.size() > 0) {
+						serviceMessage.data.putAll(map);
 					}
-				})
-				.match(ServiceResponse.class, resp -> {
-					if (timeoutTask != null) {
-						timeoutTask.cancel();
+					// include data verbatim if cannot be parsed as JSON
+					else {
+						serviceMessage.addData(WEBCALL_DATA, request.data);
 					}
-					if (replyTo != null) {
-						replyTo.tell(resp.message, self());
-					}
-				})
-				.match(ServiceTimeout.class, timeout -> {
-					if (replyTo != null) {
-						if (requestClient.completedMessage != null) {
-							replyTo.tell(requestClient.completedMessage, self());
-						} else {
-							replyTo.tell(new Status.Failure(new TimeoutException("Service timeout")), self());
-						}
-					}
-				})
-				.build();
+				}
+
+				// send out to responder
+				serviceClient.send(serviceMessage);
+			} else {
+				if (replyTo != null) {
+					replyTo.tell(
+							new Status.Failure(new IllegalArgumentException("Service not found: " + request.service)),
+							self());
+				}
+			}
+		}).match(ServiceResponse.class, resp -> {
+			if (timeoutTask != null) {
+				timeoutTask.cancel();
+			}
+			if (replyTo != null) {
+				replyTo.tell(resp.message, self());
+			}
+		}).match(ServiceTimeout.class, timeout -> {
+			if (replyTo != null) {
+				if (requestClient.completedMessage != null) {
+					replyTo.tell(requestClient.completedMessage, self());
+				} else {
+					replyTo.tell(new Status.Failure(new TimeoutException("Service timeout")), self());
+				}
+			}
+		}).build();
 	}
 
 	@Override
@@ -154,6 +147,7 @@ public class ServiceClientActor extends AbstractActor {
 
 	private static class ServiceResponse {
 		final Message message;
+
 		ServiceResponse(Message message) {
 			this.message = message;
 		}

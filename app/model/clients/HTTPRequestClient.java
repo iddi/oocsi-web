@@ -211,7 +211,8 @@ public class HTTPRequestClient extends Client {
 		logger.info("Calling http-web-request for URL " + url + " with method " + method + " for " + channel + " by "
 				+ event.getSender());
 		try {
-			WSRequest request = wsClient.url(url).setFollowRedirects(followRedirects).setRequestTimeout(Duration.ofSeconds(5));
+			WSRequest request = wsClient.url(url).setFollowRedirects(followRedirects)
+					.setRequestTimeout(Duration.ofSeconds(5));
 			final CompletionStage<WSResponse> wsResponse;
 			if (method.equals("post")) {
 				if (!postBody.isEmpty()) {

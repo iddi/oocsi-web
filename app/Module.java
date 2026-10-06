@@ -24,7 +24,8 @@ public class Module extends AbstractModule {
 
 	@Provides
 	@Singleton
-	public OOCSIServer provideOOCSIServer(ApplicationLifecycle lifecycle, SummarizingLogger sl, Config configuration) throws IOException {
+	public OOCSIServer provideOOCSIServer(ApplicationLifecycle lifecycle, SummarizingLogger sl, Config configuration)
+			throws IOException {
 		OOCSIServer existing = OOCSIServer.getInstance();
 		if (existing != null) {
 			existing.stop();

@@ -2,8 +2,6 @@ package controllers;
 
 import static org.apache.pekko.pattern.Patterns.ask;
 
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
@@ -14,18 +12,12 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import play.libs.F;
-
 import org.apache.pekko.actor.ActorRef;
 import org.apache.pekko.actor.ActorSystem;
-import org.apache.pekko.actor.Cancellable;
 import org.apache.pekko.actor.PoisonPill;
 import org.apache.pekko.stream.Materializer;
 import org.apache.pekko.stream.javadsl.Source;
@@ -36,6 +28,8 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -60,6 +54,7 @@ import play.data.DynamicForm;
 import play.data.FormFactory;
 import play.inject.ApplicationLifecycle;
 import play.libs.EventSource;
+import play.libs.F;
 import play.libs.Json;
 import play.libs.streams.ActorFlow;
 import play.mvc.Controller;
@@ -85,18 +80,14 @@ public class Application extends Controller {
 	private final long rateLimitCapacity;
 	private final long rateLimitRefillTokens;
 	private final long rateLimitRefillDuration;
-	private final Cache<String, Bucket> rateLimitBuckets = Caffeine.newBuilder()
-			.maximumSize(100_000)
-			.expireAfterAccess(1, TimeUnit.HOURS)
-			.build();
+	private final Cache<String, Bucket> rateLimitBuckets = Caffeine.newBuilder().maximumSize(100_000)
+			.expireAfterAccess(1, TimeUnit.HOURS).build();
 
 	private final long wsRateLimitCapacity;
 	private final long wsRateLimitRefillTokens;
 	private final long wsRateLimitRefillDuration;
-	private final Cache<String, Bucket> wsRateLimitBuckets = Caffeine.newBuilder()
-			.maximumSize(100_000)
-			.expireAfterAccess(1, TimeUnit.HOURS)
-			.build();
+	private final Cache<String, Bucket> wsRateLimitBuckets = Caffeine.newBuilder().maximumSize(100_000)
+			.expireAfterAccess(1, TimeUnit.HOURS).build();
 
 	private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
@@ -195,10 +186,8 @@ public class Application extends Controller {
 		if (rawChannels == null) {
 			return "";
 		}
-		return Arrays.stream(rawChannels.split(","))
-				.map(String::trim)
-				.filter(ch -> !ch.isEmpty() && !Server.RESERVED_NAMES.contains(ch))
-				.collect(Collectors.joining(","));
+		return Arrays.stream(rawChannels.split(",")).map(String::trim)
+				.filter(ch -> !ch.isEmpty() && !Server.RESERVED_NAMES.contains(ch)).collect(Collectors.joining(","));
 	}
 
 	public String filteredChannelList() {
@@ -393,8 +382,8 @@ public class Application extends Controller {
 			if (isWsRateLimited(request)) {
 				return CompletableFuture.completedFuture(F.Either.Left(status(429, "Too Many Requests")));
 			}
-			return CompletableFuture.completedFuture(F.Either.Right(
-					ActorFlow.actorRef(out -> WebSocketClientActor.props(out, server), system, materializer)));
+			return CompletableFuture.completedFuture(F.Either
+					.Right(ActorFlow.actorRef(out -> WebSocketClientActor.props(out, server), system, materializer)));
 		});
 	}
 
@@ -573,10 +562,12 @@ public class Application extends Controller {
 	 * @return
 	 */
 	private Result internalSend(String sender, String channel, String userId, Map<String, String> messageData) {
-		if (channel != null && (!Server.isValidChannelName(channel.trim()) || Server.RESERVED_NAMES.contains(channel.trim()))) {
+		if (channel != null
+				&& (!Server.isValidChannelName(channel.trim()) || Server.RESERVED_NAMES.contains(channel.trim()))) {
 			return badRequest("ERROR: reserved channel name");
 		}
-		if (sender != null && (!Server.isValidClientName(sender.trim()) || Server.RESERVED_NAMES.contains(sender.trim()))) {
+		if (sender != null
+				&& (!Server.isValidClientName(sender.trim()) || Server.RESERVED_NAMES.contains(sender.trim()))) {
 			return badRequest("ERROR: reserved sender name");
 		}
 
@@ -616,9 +607,8 @@ public class Application extends Controller {
 	 * @param request
 	 * @return
 	 */
-	public static final Pattern UUID_RE = Pattern.compile(
-			"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
-			Pattern.CASE_INSENSITIVE);
+	public static final Pattern UUID_RE = Pattern
+			.compile("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", Pattern.CASE_INSENSITIVE);
 
 	public static String validateOrCreateUserId(String cookieValue) {
 		if (cookieValue != null && UUID_RE.matcher(cookieValue).matches()) {
@@ -628,8 +618,7 @@ public class Application extends Controller {
 	}
 
 	private String extractUserId(Request request) {
-		return request.cookie("userId")
-				.map(c -> validateOrCreateUserId(c.value().toString()))
+		return request.cookie("userId").map(c -> validateOrCreateUserId(c.value().toString()))
 				.orElseGet(() -> UUID.randomUUID().toString());
 	}
 
@@ -716,7 +705,8 @@ public class Application extends Controller {
 		String decodedChannelName = channelName;
 		try {
 			if (decodedChannelName != null) {
-				decodedChannelName = java.net.URLDecoder.decode(decodedChannelName, java.nio.charset.StandardCharsets.UTF_8.name());
+				decodedChannelName = java.net.URLDecoder.decode(decodedChannelName,
+						java.nio.charset.StandardCharsets.UTF_8.name());
 			}
 		} catch (Exception ignored) {
 		}
@@ -728,22 +718,20 @@ public class Application extends Controller {
 		final String validChannelName = decodedChannelName;
 
 		// compose push-based flow with a special OOCSI client
-		org.apache.pekko.japi.Pair<org.apache.pekko.stream.javadsl.SourceQueueWithComplete<EventSource.Event>, Source<EventSource.Event, org.apache.pekko.NotUsed>> pair =
-				Source.<EventSource.Event>queue(64, org.apache.pekko.stream.OverflowStrategy.dropHead())
-						.preMaterialize(materializer);
+		org.apache.pekko.japi.Pair<org.apache.pekko.stream.javadsl.SourceQueueWithComplete<EventSource.Event>, Source<EventSource.Event, org.apache.pekko.NotUsed>> pair = Source.<EventSource.Event>queue(
+				64, org.apache.pekko.stream.OverflowStrategy.dropHead()).preMaterialize(materializer);
 
 		final org.apache.pekko.stream.javadsl.SourceQueueWithComplete<EventSource.Event> queue = pair.first();
 		final SSEChannelClient channelClient = new SSEChannelClient("Events-" + UUID.randomUUID().toString(), queue);
 
-		Source<EventSource.Event, ?> eventSource = pair.second()
-				.watchTermination((prevMatValue, completionStage) -> {
-					completionStage.whenComplete((done, exc) -> {
-						server.unsubscribe(channelClient, validChannelName);
-						server.removeClient(channelClient);
-						channelClient.disconnect();
-					});
-					return prevMatValue;
-				});
+		Source<EventSource.Event, ?> eventSource = pair.second().watchTermination((prevMatValue, completionStage) -> {
+			completionStage.whenComplete((done, exc) -> {
+				server.unsubscribe(channelClient, validChannelName);
+				server.removeClient(channelClient);
+				channelClient.disconnect();
+			});
+			return prevMatValue;
+		});
 
 		// connect client
 		server.addClient(channelClient);

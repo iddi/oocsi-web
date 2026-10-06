@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import model.actors.WebSocketClientActor;
 import nl.tue.id.oocsi.server.OOCSIServer;
@@ -19,7 +18,6 @@ import nl.tue.id.oocsi.server.model.Client;
 import nl.tue.id.oocsi.server.model.Server;
 import nl.tue.id.oocsi.server.protocol.Message;
 import nl.tue.id.oocsi.server.protocol.Protocol;
-import play.libs.Json;
 
 public class WebSocketClient extends Client {
 

@@ -59,8 +59,8 @@ public class WebSocketClientActor extends AbstractActor {
 
 				// check input line for exceptional values that cannot be handled safely
 				// do some filtering for SSH clients connecting, invalid names, and other abuse
-				if (clientName.length() == 0 || !Server.isValidClientName(clientName)
-						|| clientName.contains("OpenSSH") || clientName.contains("libssh")) {
+				if (clientName.length() == 0 || !Server.isValidClientName(clientName) || clientName.contains("OpenSSH")
+						|| clientName.contains("libssh")) {
 					OOCSIServer.log("Sanitized invalid client connection handle: " + clientName);
 					clientName = "webclient_####";
 				}

@@ -3,8 +3,9 @@ package model.actors;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.pekko.stream.javadsl.SourceQueueWithComplete;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 import nl.tue.id.oocsi.server.model.Client;
 import nl.tue.id.oocsi.server.protocol.Message;
