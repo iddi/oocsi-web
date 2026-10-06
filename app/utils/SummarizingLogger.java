@@ -14,18 +14,16 @@ public class SummarizingLogger {
 
 	private static final Logger logger = LoggerFactory.getLogger(SummarizingLogger.class);
 
-	// initialize with null
-	private Map<String, Integer> logStatements = null;
+	private final Map<String, Integer> logStatements = new ConcurrentHashMap<>();
 	private boolean dirty = false;
 
-	public synchronized void logSummary() {
-		if (logStatements == null) {
-			logStatements = new ConcurrentHashMap<>();
-			logger.info("-------------------------------------------------");
-			logger.info("-- Starting the summarizing log                --");
-			logger.info("-------------------------------------------------");
-		}
+	public SummarizingLogger() {
+		logger.info("-------------------------------------------------");
+		logger.info("-- Starting the summarizing log                --");
+		logger.info("-------------------------------------------------");
+	}
 
+	public synchronized void logSummary() {
 		// flush logger
 		if (dirty) {
 			logStatements.entrySet().stream().forEach(e -> {
@@ -45,12 +43,8 @@ public class SummarizingLogger {
 
 	public synchronized void log(String message) {
 		try {
-			if (logStatements != null) {
-				logStatements.merge(message, 1, (a, b) -> a + b);
-				dirty = true;
-			} else {
-				logger.info(message);
-			}
+			logStatements.merge(message, 1, (a, b) -> a + b);
+			dirty = true;
 		} catch (Exception e) {
 			logger.error("logging issue", e);
 		}
