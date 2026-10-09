@@ -1,0 +1,6 @@
+Contact: mailto:security@oocsi.net
+Expires: 2027-10-09T00:00:00.000Z
+Preferred-Languages: en
+Policy: https://github.com/iddi/oocsi-web/blob/main/SECURITY.md
+Acknowledgments: https://github.com/iddi/oocsi-web/blob/main/SECURITY.md#hall-of-fame
+Canonical: https://oocsi.net/.well-known/security.txt

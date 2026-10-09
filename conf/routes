@@ -60,6 +60,10 @@ GET 	/tutorials/						controllers.Tutorial.index()
 GET 	/tutorials/paint-the-canvas		controllers.Tutorial.paint_the_canvas()
 
 
+# RFC 9116 security.txt
+GET     /.well-known/security.txt       controllers.Assets.at(path="/public", file="security.txt")
+GET     /security.txt                   controllers.Assets.at(path="/public", file="security.txt")
+
 # services with least priority
 GET 	/:service						controllers.Application.serviceIndex(service)
 GET 	/:service/						controllers.Application.serviceIndex(service)
