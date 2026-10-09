@@ -32,8 +32,8 @@ public class Tutorial extends Controller {
 		new EchoClient("echo", server);
 
 		// start HTTP request client, inject ws client
-		boolean followRedirects = !configuration.hasPath("oocsi.httpclient.followRedirects")
-				|| configuration.getBoolean("oocsi.httpclient.followRedirects");
+		boolean followRedirects = configuration.hasPath("oocsi.httpclient.followRedirects")
+				&& configuration.getBoolean("oocsi.httpclient.followRedirects");
 		new HTTPRequestClient("http-web-request", server, wsClient, followRedirects);
 
 		// start generators

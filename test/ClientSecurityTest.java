@@ -6,6 +6,8 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import nl.tue.id.oocsi.client.OOCSIClient;
+import nl.tue.id.oocsi.client.behavior.OOCSISpatial;
+import nl.tue.id.oocsi.client.socket.SocketClient;
 import play.test.WithServer;
 
 public class ClientSecurityTest extends WithServer {
@@ -60,5 +62,32 @@ public class ClientSecurityTest extends WithServer {
 		assertTrue("Second client should connect after name is freed", c2.isConnected());
 
 		c2.disconnect();
+	}
+
+	/**
+	 * OPEN-H1, OPEN-L5: Multicast discovery removed and neutralized
+	 */
+	@Test
+	public void testMulticastDisabledInClient() {
+		// SocketClient.startMulticastLookup() should safely return false without throwing exceptions
+		SocketClient socketClient = new SocketClient("testToken", null, null);
+		assertFalse("startMulticastLookup must return false since multicast is removed",
+				socketClient.startMulticastLookup());
+
+		// OOCSIClient.connect() without host/port should return false
+		OOCSIClient client = new OOCSIClient("mcastTestClient");
+		assertFalse("connect() without arguments must return false since multicast is removed",
+				client.connect());
+		assertFalse("Client should remain unconnected", client.isConnected());
+	}
+
+	/**
+	 * OPEN-L4: OOCSISpatial volatile metric field concurrency
+	 */
+	@Test
+	public void testSpatialMetricVolatileField() throws Exception {
+		java.lang.reflect.Field metricField = OOCSISpatial.class.getDeclaredField("metric");
+		assertTrue("Field metric in OOCSISpatial must be volatile to prevent thread race conditions",
+				java.lang.reflect.Modifier.isVolatile(metricField.getModifiers()));
 	}
 }
